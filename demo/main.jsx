@@ -5,7 +5,7 @@ import {
   Button, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
   Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
-  PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon,
+  PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
 } from '../src/index.js';
 
 const ROWS = [
@@ -40,7 +40,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'states', label: 'States' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'states', label: 'States' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -134,6 +134,13 @@ function Demo() {
           <Panel><EmptyState title="No customers yet" body="Add your first customer to get started." action={<Button size="sm" icon={PlusIcon}>Add customer</Button>} /></Panel>
           <Panel><EmptyState variant="error" body="The server returned 500." onRetry={() => toast('Retrying')} /></Panel>
         </div>
+      )}
+
+      {tab === 'login' && (
+        <Panel flush>
+          <LoginPage appName="mn-kit demo" subtitle="Try demo@example.com / demo-password (run npm run example)"
+            onSignedIn={(u) => toast(`Signed in as ${u.email}`)} />
+        </Panel>
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Edit customer" subtitle="Bottom sheet on phones"

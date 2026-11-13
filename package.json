@@ -1,7 +1,7 @@
 {
   "name": "@mn/kit",
-  "version": "0.1.0",
-  "description": "Michael's shared React UI kit: design tokens, one button system, layout, inputs, states, modal, confirm and toast.",
+  "version": "0.2.0",
+  "description": "Michael's shared kit: React UI (tokens, components, login page) and Express server pieces (auth, email, rate limits).",
   "type": "module",
   "license": "UNLICENSED",
   "private": true,
@@ -10,26 +10,55 @@
     ".": "./src/index.js",
     "./tokens.css": "./src/tokens.css",
     "./kit.css": "./src/kit.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./server": "./server/index.js",
+    "./email": "./server/email.js"
   },
-  "files": ["src", "README.md"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "src",
+    "server",
+    "README.md"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "scripts": {
     "dev": "vite demo",
     "build:demo": "vite build demo",
-    "test": "vitest run"
+    "test": "vitest run",
+    "example": "node examples/server.js"
   },
   "peerDependencies": {
     "react": ">=18",
-    "react-dom": ">=18"
+    "react-dom": ">=18",
+    "express": ">=4.21"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "express": "^5.3.0",
     "jsdom": "^26.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "supertest": "^7.3.2",
     "vite": "^6.3.5",
     "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express-rate-limit": "^8.7.4",
+    "jose": "^6.2.17",
+    "nodemailer": "^7.0.13"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   }
 }

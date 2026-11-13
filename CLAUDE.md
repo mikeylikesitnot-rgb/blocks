@@ -1,10 +1,13 @@
 # mn-kit
 
-Shared React UI kit (tokens, components, overlays) consumed by Michael's apps
+Shared kit consumed by Michael's apps: React UI (`src/`, import `@mn/kit`) and Express
+sign-in/email (`server/`, import `@mn/kit/server`). Installed
 as a git dependency: `npm install github:mikeylikesitnot-rgb/mn-kit`.
 
 - Source is shipped as-is (`src/*.jsx`, no build step); consumers' Vite compiles it.
 - Plain CSS: classes `mk-*`, variables `--mk-*`. No Tailwind, no icon lib, no router.
+- Server rules: [docs/decisions/auth.md](docs/decisions/auth.md). Never weaken a rule there without saying so in the PR.
+- `npm run example` runs a real API on :3009 that the demo's Login tab talks to.
 - Rules: [docs/decisions/style-guide.md](docs/decisions/style-guide.md). Read before changing anything visual.
 - Every change: update `demo/main.jsx`, add tests in `test/`, run `npm test` and `npm run build:demo`,
   and check the demo at 390px and 1280px in light and dark.

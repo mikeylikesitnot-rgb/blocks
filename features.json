@@ -1,12 +1,132 @@
 {
-  "project": {"name": "mn-kit", "summary": "Shared React UI kit for all apps: design tokens with dark mode, one button system, layout, inputs, empty/loading states, modal, confirm and toast.", "kind": "library", "stack": "React, plain CSS, Vite, Vitest", "path": "/Users/michaelnguyen/apps/mn-kit", "order": 17},
+  "project": {
+    "name": "mn-kit",
+    "summary": "Shared kit for all apps: React UI (tokens with dark mode, components, login page) and Express sign-in, email templates and rate limits.",
+    "kind": "library",
+    "stack": "React, plain CSS, Express, jose, nodemailer, Vite, Vitest",
+    "path": "/Users/michaelnguyen/apps/mn-kit",
+    "order": 17
+  },
   "features": [
-    {"id": "F-001", "name": "Design tokens with dark mode", "area": "Foundation", "status": "live", "since": "2026-11-13", "description": "Colour, type, spacing, radius and shadow variables from AutoDealer, with a dark theme that follows the OS or a forced data-theme.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-002", "name": "Button system", "area": "Components", "status": "live", "since": "2026-11-13", "description": "One Button with 7 variants, 4 sizes, icons, loading and link mode.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-003", "name": "Layout components", "area": "Components", "status": "live", "since": "2026-11-13", "description": "PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented and Toolbar.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-004", "name": "Form inputs", "area": "Components", "status": "live", "since": "2026-11-13", "description": "Input, Textarea, SearchInput, Select and Field with labels, hints and errors wired for screen readers.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-005", "name": "Empty, loading and error states", "area": "Components", "status": "live", "since": "2026-11-13", "description": "EmptyState variants, skeleton rows and stats, and a retry banner.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-006", "name": "Modal, confirm and toast", "area": "Overlays", "status": "live", "since": "2026-11-13", "description": "Modal that becomes a bottom sheet on phones, plus promise-based confirm/alert and toasts replacing browser dialogs.", "branch": null, "spec": null, "mockup": null, "fromRequest": null},
-    {"id": "F-007", "name": "Search and URL state helpers", "area": "Helpers", "status": "live", "since": "2026-11-13", "description": "Forgiving multi-word search matcher, query-string state hook and theme hook.", "branch": null, "spec": null, "mockup": null, "fromRequest": null}
+    {
+      "id": "F-001",
+      "name": "Design tokens with dark mode",
+      "area": "Foundation",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "Colour, type, spacing, radius and shadow variables from AutoDealer, with a dark theme that follows the OS or a forced data-theme.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-002",
+      "name": "Button system",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "One Button with 7 variants, 4 sizes, icons, loading and link mode.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-003",
+      "name": "Layout components",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented and Toolbar.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-004",
+      "name": "Form inputs",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "Input, Textarea, SearchInput, Select and Field with labels, hints and errors wired for screen readers.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-005",
+      "name": "Empty, loading and error states",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "EmptyState variants, skeleton rows and stats, and a retry banner.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-006",
+      "name": "Modal, confirm and toast",
+      "area": "Overlays",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "Modal that becomes a bottom sheet on phones, plus promise-based confirm/alert and toasts replacing browser dialogs.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-007",
+      "name": "Search and URL state helpers",
+      "area": "Helpers",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "Forgiving multi-word search matcher, query-string state hook and theme hook.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-008",
+      "name": "Sign-in server",
+      "area": "Auth",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "Express router with password, Google and emailed-code sign-in, password reset, logout on every device, idle and 8-hour timeouts, and roles.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-009",
+      "name": "Login page",
+      "area": "Auth",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "LoginPage, SessionProvider, useSession and AuthGate: a ready sign-in screen that shows whichever methods the server has on.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-010",
+      "name": "Branded email",
+      "area": "Email",
+      "status": "live",
+      "since": "2026-11-13",
+      "description": "SMTP mailer that prints to the console in development, and HTML+text templates for sign-in codes, password changes, invites and notifications.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    }
   ]
 }

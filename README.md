@@ -1,7 +1,9 @@
 # mn-kit
 
-Shared React UI for all of Michael's web apps, so no app rebuilds buttons,
-modals, empty states or a colour palette again.
+Shared code for all of Michael's web apps, so no app rebuilds buttons,
+modals, a login screen, sign-in sessions or emails again.
+
+**UI (`@mn/kit`)**
 
 - **Tokens:** colour, type, spacing, radius and shadow from AutoDealer, plus a dark theme.
 - **One button system:** 7 variants, 4 sizes, loading and icon-only.
@@ -9,10 +11,17 @@ modals, empty states or a colour palette again.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
+- **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.
 - **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useTheme` (light/dark/system), and inline SVG icons.
 
+**Server (`@mn/kit/server`, Express)**
+- **Sign-in:** `createAuth()` covers password, Google and email-code login, password reset, logout on every device, 30-minute idle and 8-hour hard timeouts, and roles.
+- **Users:** `pgStores(pool)` + `authSchemaSql()` for a new Postgres app, `memoryUserStore()` for prototypes, or three functions over an existing users table.
+- **Email:** `createMailer()` (SMTP; prints to the console in dev) and branded templates: `loginCodeEmail`, `passwordChangedEmail`, `inviteEmail`, `notificationEmail`, `renderEmail`.
+- **Also:** `createLimiter` / `createFormLimiter` / `createCostLimiter`, `encrypt` / `decrypt` for stored secrets.
+
 Plain CSS with `mk-` prefixed classes and `--mk-` variables. No Tailwind,
-no icon library, no router needed. Its only peer dependencies are React and React DOM, version 18 or later.
+no icon library, no router needed. Peer dependencies: React 18 or later for the UI, Express 4.21 or later for the server.
 
 ## Use it in an app
 
@@ -45,6 +54,58 @@ Add `class="mk-root"` to `<body>` for the kit's base font, colour and background
 ```
 
 **Dark mode** follows the OS. Force it with `<html data-theme="dark">`, or use `const [theme, setTheme] = useTheme()`.
+
+## Add sign-in to an app
+
+Server (Express + Postgres):
+
+```js
+import pg from 'pg';
+import { createAuth, pgStores, authSchemaSql, createMailer } from '@mn/kit/server';
+
+const pool = new pg.Pool();
+await pool.query(authSchemaSql());                 // users + login_codes tables, idempotent
+const { userStore, codeStore } = pgStores(pool);
+
+const auth = createAuth({
+  secret: process.env.SESSION_SECRET,              // 32+ chars
+  users: userStore,
+  codeStore,
+  mailer: createMailer(),                          // SMTP_HOST/PORT/USER/PASS/FROM from env
+  brand: { appName: 'My App', color: '#1a56db', url: 'https://myapp.com', logoUrl: 'https://myapp.com/logo.png' },
+  google: { clientId: process.env.GOOGLE_CLIENT_ID }, // optional
+});
+
+app.use('/api/auth', auth.router);                  // /config /login /google /code /code/verify /password /logout /me
+app.get('/api/orders', auth.requireAuth, handler);  // req.user = { id, email, name, role }
+app.delete('/api/orders/:id', auth.requireAuth, auth.requireRole('admin'), handler);
+```
+
+Create a user: `INSERT INTO users (email, role) VALUES ('me@x.com', 'admin')`. They can sign in with an emailed code
+straight away and then set a password. Already have a users table? Pass your own
+`{ findUser, bumpTokenVersion, setPassword }` (see `server/stores.js`).
+
+Front end:
+
+```jsx
+import { SessionProvider, AuthGate, useSession } from '@mn/kit';
+
+<SessionProvider>
+  <AuthGate login={{ appName: 'My App', logo: '/logo.svg' }}><App /></AuthGate>
+</SessionProvider>
+
+const { user, signOut } = useSession();
+```
+
+Send any email:
+
+```js
+import { notificationEmail } from '@mn/kit/server';
+mailer.sendQuietly({ to: 'me@x.com', ...notificationEmail({ brand, title: 'New lead', rows: [['Name', 'Ana']] }) });
+```
+
+Try it all: `npm run example` (API + email previews at http://localhost:3009/emails), then `npm run dev` → Login tab.
+Why it works this way: [docs/decisions/auth.md](docs/decisions/auth.md).
 
 ## Work on the kit
 

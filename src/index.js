@@ -8,3 +8,4 @@ export { matchesQuery, useUrlState } from './search.js';
 export { useTheme } from './theme.js';
 export { cx } from './cx.js';
 export * from './icons.jsx';
+export { SessionProvider, useSession, AuthGate, LoginPage } from './auth.jsx';

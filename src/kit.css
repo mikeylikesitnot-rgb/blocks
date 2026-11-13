@@ -282,3 +282,21 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-toast-error > .mk-icon { color: var(--mk-danger); }
 .mk-toast-info > .mk-icon { color: var(--mk-primary); }
 @media (min-width: 1024px) { .mk-toasts { bottom: var(--mk-space-6); align-items: flex-end; padding-right: var(--mk-space-6); } }
+
+/* ───────── Login page ───────── */
+.mk-auth { min-height: 100dvh; display: flex; align-items: flex-start; justify-content: center; padding: var(--mk-space-12) var(--mk-space-4); background: var(--mk-bg); }
+.mk-auth-card { width: 100%; max-width: 400px; padding: var(--mk-space-8) var(--mk-space-6); background: var(--mk-surface); border: 1px solid var(--mk-border); border-radius: var(--mk-radius-lg); }
+.mk-auth-head { margin-bottom: var(--mk-space-6); text-align: center; }
+.mk-auth-logo { display: block; height: 40px; width: auto; margin: 0 auto var(--mk-space-4); }
+.mk-auth-title { margin: 0; font-size: var(--mk-text-xl); font-weight: var(--mk-weight-heading); color: var(--mk-heading); }
+.mk-auth-sub { margin: var(--mk-space-2) 0 0; font-size: var(--mk-text-sm); color: var(--mk-muted); }
+.mk-auth-error { margin-bottom: var(--mk-space-4); }
+.mk-auth-google { display: flex; justify-content: center; min-height: 44px; }
+.mk-auth-divider { display: flex; align-items: center; gap: var(--mk-space-3); margin: var(--mk-space-5) 0; font-size: var(--mk-text-xs); color: var(--mk-subtle); text-transform: uppercase; letter-spacing: 0.06em; }
+.mk-auth-divider::before, .mk-auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--mk-border); }
+.mk-auth-actions { display: grid; gap: var(--mk-space-2); margin-top: var(--mk-space-5); }
+.mk-auth-row { display: flex; justify-content: space-between; gap: var(--mk-space-2); flex-wrap: wrap; }
+.mk-auth-hint { margin: var(--mk-space-4) 0 0; font-size: var(--mk-text-xs); color: var(--mk-muted); text-align: center; }
+.mk-auth-footer { margin-top: var(--mk-space-6); padding-top: var(--mk-space-4); border-top: 1px solid var(--mk-border); font-size: var(--mk-text-xs); color: var(--mk-muted); text-align: center; }
+.mk-code-input { text-align: center; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: var(--mk-text-2xl) !important; letter-spacing: 0.4em; height: var(--mk-h-lg); }
+@media (min-width: 640px) { .mk-auth { align-items: center; padding-top: var(--mk-space-6); } }
