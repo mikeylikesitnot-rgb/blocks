@@ -1,0 +1,128 @@
+/* ------------------------------------------------------------------
+   mn-kit design tokens
+
+   Lifted from AutoDealer's src/index.css (palette, type scale, 4px spacing
+   grid, tint pairs) and given a dark theme. Every value in kit.css reads
+   from here; an app re-brands by overriding --mk-primary* and --mk-accent*
+   after importing this file, never by editing component CSS.
+
+   Everything is prefixed --mk- so the kit can sit next to an app's own
+   variables (AutoDealer already owns --primary, --gray-*, ...) without one
+   overwriting the other.
+
+   Theme: follows the OS by default. Force one with
+   <html data-theme="light"> or <html data-theme="dark">.
+   ------------------------------------------------------------------ */
+:root {
+  /* Brand */
+  --mk-primary: #1a56db;
+  --mk-primary-hover: #1042a3;
+  --mk-primary-fg: #ffffff;
+  --mk-accent: #f59e0b;
+  --mk-accent-hover: #d97706;
+  --mk-accent-fg: #111827;
+  --mk-danger: #dc2626;
+  --mk-danger-hover: #b91c1c;
+  --mk-success: #059669;
+
+  /* Surfaces and text */
+  --mk-bg: #f9fafb;
+  --mk-surface: #ffffff;
+  --mk-surface-2: #f3f4f6;
+  --mk-border: #e5e7eb;
+  --mk-border-strong: #d1d5db;
+  --mk-text: #1f2937;
+  --mk-heading: #111827;
+  --mk-muted: #6b7280;
+  --mk-subtle: #9ca3af;
+  --mk-overlay: rgb(17 24 39 / 0.45);
+  --mk-toast-bg: #111827;
+  --mk-toast-fg: #ffffff;
+  --mk-focus: #2563eb;
+
+  /* Tints: one bg/fg pair per tone, shared by soft buttons, badges, banners. */
+  --mk-tint-neutral-bg: #f3f4f6;  --mk-tint-neutral-fg: #4b5563;
+  --mk-tint-info-bg: #e1effe;     --mk-tint-info-fg: #1042a3;
+  --mk-tint-success-bg: #d1fae5;  --mk-tint-success-fg: #065f46;
+  --mk-tint-warning-bg: #fef3c7;  --mk-tint-warning-fg: #92400e;
+  --mk-tint-danger-bg: #fee2e2;   --mk-tint-danger-fg: #991b1b;
+  --mk-tint-accent-bg: #ede9fe;   --mk-tint-accent-fg: #5b21b6;
+
+  /* Type: one size per job. */
+  --mk-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mk-text-2xs: 0.6875rem; /* 11px count bubbles, chart ticks */
+  --mk-text-xs: 0.75rem;    /* 12px labels, badges, hints */
+  --mk-text-sm: 0.875rem;   /* 14px table cells, dense UI */
+  --mk-text-base: 1rem;     /* 16px body, form controls */
+  --mk-text-lg: 1.125rem;   /* 18px card titles */
+  --mk-text-xl: 1.25rem;    /* 20px panel titles */
+  --mk-text-2xl: 1.5rem;    /* 24px stat figures */
+  --mk-text-h1: clamp(1.5rem, 1.15rem + 1.2vw, 2.25rem); /* page title */
+  --mk-weight-title: 800;
+  --mk-weight-heading: 700;
+  --mk-weight-label: 600;
+
+  /* 4px grid: --mk-space-N is N x 4px. */
+  --mk-space-1: 4px;  --mk-space-2: 8px;   --mk-space-3: 12px;
+  --mk-space-4: 16px; --mk-space-5: 20px;  --mk-space-6: 24px;
+  --mk-space-8: 32px; --mk-space-10: 40px; --mk-space-12: 48px;
+
+  /* Shape */
+  --mk-radius-sm: 6px;
+  --mk-radius: 8px;
+  --mk-radius-lg: 12px;
+  --mk-radius-full: 999px;
+  --mk-shadow: 0 1px 3px rgb(0 0 0 / 0.1), 0 1px 2px rgb(0 0 0 / 0.06);
+  --mk-shadow-lg: 0 10px 15px rgb(0 0 0 / 0.1), 0 4px 6px rgb(0 0 0 / 0.05);
+
+  /* Control heights: every input, select and md button lines up. */
+  --mk-h-xs: 28px;
+  --mk-h-sm: 32px;
+  --mk-h-md: 40px;
+  --mk-h-lg: 48px;
+
+  color-scheme: light;
+}
+
+/* Dark: same names, new values. Defined twice so it applies both when the OS
+   asks for dark (unless the page forces light) and when the page forces it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --mk-primary: #3b82f6; --mk-primary-hover: #60a5fa; --mk-primary-fg: #0b1220;
+    --mk-accent: #fbbf24;  --mk-accent-hover: #fcd34d;
+    --mk-danger: #ef4444;  --mk-danger-hover: #f87171;
+    --mk-success: #34d399;
+    --mk-bg: #0c0d10; --mk-surface: #16181d; --mk-surface-2: #1f2229;
+    --mk-border: #2a2e37; --mk-border-strong: #3a3f4b;
+    --mk-text: #e5e7eb; --mk-heading: #f9fafb; --mk-muted: #9ca3af; --mk-subtle: #6b7280;
+    --mk-overlay: rgb(0 0 0 / 0.6); --mk-toast-bg: #f9fafb; --mk-toast-fg: #111827; --mk-focus: #60a5fa;
+    --mk-tint-neutral-bg: #252831; --mk-tint-neutral-fg: #d1d5db;
+    --mk-tint-info-bg: #172554;    --mk-tint-info-fg: #bfdbfe;
+    --mk-tint-success-bg: #052e23; --mk-tint-success-fg: #a7f3d0;
+    --mk-tint-warning-bg: #3a2604; --mk-tint-warning-fg: #fde68a;
+    --mk-tint-danger-bg: #3b0d0d;  --mk-tint-danger-fg: #fecaca;
+    --mk-tint-accent-bg: #2e1065;  --mk-tint-accent-fg: #ddd6fe;
+    --mk-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+    --mk-shadow-lg: 0 10px 25px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --mk-primary: #3b82f6; --mk-primary-hover: #60a5fa; --mk-primary-fg: #0b1220;
+  --mk-accent: #fbbf24;  --mk-accent-hover: #fcd34d;
+  --mk-danger: #ef4444;  --mk-danger-hover: #f87171;
+  --mk-success: #34d399;
+  --mk-bg: #0c0d10; --mk-surface: #16181d; --mk-surface-2: #1f2229;
+  --mk-border: #2a2e37; --mk-border-strong: #3a3f4b;
+  --mk-text: #e5e7eb; --mk-heading: #f9fafb; --mk-muted: #9ca3af; --mk-subtle: #6b7280;
+  --mk-overlay: rgb(0 0 0 / 0.6); --mk-toast-bg: #f9fafb; --mk-toast-fg: #111827; --mk-focus: #60a5fa;
+  --mk-tint-neutral-bg: #252831; --mk-tint-neutral-fg: #d1d5db;
+  --mk-tint-info-bg: #172554;    --mk-tint-info-fg: #bfdbfe;
+  --mk-tint-success-bg: #052e23; --mk-tint-success-fg: #a7f3d0;
+  --mk-tint-warning-bg: #3a2604; --mk-tint-warning-fg: #fde68a;
+  --mk-tint-danger-bg: #3b0d0d;  --mk-tint-danger-fg: #fecaca;
+  --mk-tint-accent-bg: #2e1065;  --mk-tint-accent-fg: #ddd6fe;
+  --mk-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+  --mk-shadow-lg: 0 10px 25px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
