@@ -101,6 +101,11 @@ describe('StatCard', () => {
     expect(deltas[0].className).toContain('mk-delta-good');
     expect(deltas[1].className).toContain('mk-delta-bad');
   });
+  it('shows a note line and puts title on the tile', () => {
+    render(<StatCard label="YTD" value="$9" note="Split by days rented" title="Long explanation" />);
+    expect(screen.getByText('Split by days rented').className).toBe('mk-stat-note');
+    expect(document.querySelector('.mk-stat').getAttribute('title')).toBe('Long explanation');
+  });
 });
 
 describe('Modal', () => {
