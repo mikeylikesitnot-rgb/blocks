@@ -11,6 +11,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **App frame:** `SidebarLayout` (sidebar on desktop, slide-out menu on phones), `NavList`, `InitialIcon`, `ThemeSwitch`.
 - **Lists:** `FilterMenu` (checklist dropdown), `GroupedList` (grouped rows with ID, badge and side cells), `highlight`.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
+- **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.

@@ -48,14 +48,16 @@ export function Panel({ title, subtitle, actions, children, flush = false, class
  * KPI tile: label, big number, comparison.
  *   <StatCard label="Net, May" value="$5,916" delta={-12.4} deltaLabel="vs last year" />
  * `invert` when down is good (costs). Clickable when given onClick.
+ * `note` is a short visible line saying how the number is defined (works on phones,
+ * unlike a tooltip); `title` can hold the longer explanation for mouse users.
  */
-export function StatCard({ label, value, sub, delta, deltaSuffix = '%', deltaLabel, invert = false, onClick, className = '' }) {
+export function StatCard({ label, value, sub, note, title, delta, deltaSuffix = '%', deltaLabel, invert = false, onClick, className = '' }) {
   const hasDelta = typeof delta === 'number' && Number.isFinite(delta);
   const good = hasDelta && (invert ? delta < 0 : delta > 0);
   const bad = hasDelta && (invert ? delta > 0 : delta < 0);
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag type={onClick ? 'button' : undefined} onClick={onClick} className={cx('mk-stat', className)}>
+    <Tag type={onClick ? 'button' : undefined} onClick={onClick} title={title} className={cx('mk-stat', className)}>
       <p className="mk-eyebrow mk-eyebrow-trunc">{label}</p>
       <p className="mk-stat-value mk-tabular">{value}</p>
       {(hasDelta || sub) && (
@@ -69,6 +71,7 @@ export function StatCard({ label, value, sub, delta, deltaSuffix = '%', deltaLab
           {sub && <span>{hasDelta ? `· ${sub}` : sub}</span>}
         </p>
       )}
+      {note && <p className="mk-stat-note">{note}</p>}
     </Tag>
   );
 }

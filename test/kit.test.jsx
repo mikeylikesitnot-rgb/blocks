@@ -1,8 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, act, within } from '@testing-library/react';
 import {
   Button, Badge, toneFor, Field, Skeleton, Input, SearchInput, Modal, OverlayProvider, useConfirm, useToast,
-  matchesQuery, StatCard, PlusIcon, XIcon,
+  matchesQuery, StatCard, PlusIcon, XIcon, DataTable,
 } from '../src/index.js';
 
 afterEach(cleanup);
@@ -95,6 +95,11 @@ describe('SearchInput', () => {
 });
 
 describe('StatCard', () => {
+  it('shows a note line and a title tooltip', () => {
+    const { container } = render(<StatCard label="Net" value="1" note="Split by days rented" title="How it is counted" />);
+    expect(screen.getByText('Split by days rented')).toBeTruthy();
+    expect(container.querySelector('.mk-stat').getAttribute('title')).toBe('How it is counted');
+  });
   it('colours delta by direction and invert', () => {
     render(<><StatCard label="Rev" value="1" delta={5} /><StatCard label="Cost" value="1" delta={5} invert /></>);
     const deltas = document.querySelectorAll('.mk-delta');
@@ -145,5 +150,85 @@ describe('matchesQuery', () => {
     expect(matchesQuery('lop', ['Ana Lopez'])).toBe(true);
     expect(matchesQuery('ben', ['Ana Lopez'])).toBe(false);
     expect(matchesQuery('', [])).toBe(true);
+  });
+});
+
+describe('DataTable', () => {
+  const COLS = [
+    { key: 'name', label: 'Name', mobile: 'title' },
+    { key: 'city', label: 'City' },
+    { key: 'total', label: 'Total' },
+  ];
+  const DATA = [
+    { id: 1, name: 'Ben', city: 'Plano', total: 20 },
+    { id: 2, name: 'Ana', city: 'Dallas', total: 300 },
+    { id: 3, name: 'Chris', city: 'Frisco', total: 5 },
+  ];
+  const table = () => within(screen.getByRole('table'));
+  const names = () => table().getAllByRole('row').slice(1).map((r) => r.cells[0].textContent);
+
+  it('renders a row per item, plus a phone card per item', () => {
+    render(<DataTable columns={COLS} data={DATA} />);
+    expect(table().getAllByRole('row')).toHaveLength(4);
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(table().getByText('Frisco')).toBeTruthy();
+  });
+
+  it('sorts ascending then descending on header click', () => {
+    render(<DataTable columns={COLS} data={DATA} />);
+    expect(names()).toEqual(['Ben', 'Ana', 'Chris']);
+    fireEvent.click(table().getByRole('button', { name: 'Total' }));
+    expect(names()).toEqual(['Chris', 'Ben', 'Ana']);
+    expect(table().getAllByRole('columnheader')[2].getAttribute('aria-sort')).toBe('ascending');
+    fireEvent.click(table().getByRole('button', { name: 'Total' }));
+    expect(names()).toEqual(['Ana', 'Ben', 'Chris']);
+    expect(table().getAllByRole('columnheader')[2].getAttribute('aria-sort')).toBe('descending');
+    fireEvent.click(table().getByRole('button', { name: 'Name' }));
+    expect(names()).toEqual(['Ana', 'Ben', 'Chris']);
+  });
+
+  it('hands sorting to onSort when controlled', () => {
+    const calls = [];
+    render(<DataTable columns={COLS} data={DATA} sortBy="total" sortDir="asc" onSort={(...a) => calls.push(a)} />);
+    expect(names()).toEqual(['Ben', 'Ana', 'Chris']);
+    fireEvent.click(table().getByRole('button', { name: 'Total' }));
+    expect(calls).toEqual([['total', 'desc']]);
+  });
+
+  it('right-aligns numeric columns only', () => {
+    render(<DataTable columns={COLS} data={DATA} />);
+    const [nameTh, , totalTh] = table().getAllByRole('columnheader');
+    expect(totalTh.className).toContain('mk-dt-right');
+    expect(nameTh.className).not.toContain('mk-dt-right');
+    expect(table().getByText('300').className).toContain('mk-dt-right');
+  });
+
+  it('shows the empty state', () => {
+    render(<DataTable columns={COLS} data={[]} empty={{ title: 'No trips yet', body: 'Import one.' }} />);
+    expect(screen.getByText('No trips yet')).toBeTruthy();
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+  });
+
+  it('shows the filtered state with a working Clear filters', () => {
+    let cleared = 0;
+    render(<DataTable columns={COLS} data={[]} filtered onClearFilters={() => { cleared += 1; }} />);
+    expect(screen.getByText('Nothing matches these filters')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(cleared).toBe(1);
+  });
+
+  it('shows a skeleton while loading with no rows', () => {
+    render(<DataTable columns={COLS} data={[]} loading />);
+    expect(screen.getByLabelText('Loading').getAttribute('aria-busy')).toBe('true');
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.queryByText('Nothing here yet')).toBeNull();
+  });
+
+  it('remembers a reordered column order under storageKey', () => {
+    localStorage.setItem('dt-test', JSON.stringify(['total', 'name']));
+    render(<DataTable columns={COLS} data={DATA} reorderable storageKey="dt-test" />);
+    expect(table().getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['Total', 'Name', 'City']);
+    localStorage.removeItem('dt-test');
   });
 });

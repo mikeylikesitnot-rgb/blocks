@@ -163,6 +163,18 @@
       "spec": "docs/specs/hub-ui.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "F-014",
+      "name": "DataTable",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-14",
+      "description": "Sortable table with a sticky header, drag-to-reorder columns (optionally remembered), auto right-aligned numbers, loading/empty/filtered states, and a card list on phones.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

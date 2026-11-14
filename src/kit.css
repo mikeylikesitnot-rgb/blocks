@@ -141,6 +141,7 @@
 button.mk-stat { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
 button.mk-stat:hover { background: var(--mk-surface-2); border-color: var(--mk-border-strong); }
 .mk-stat-value { margin: var(--mk-space-2) 0 0; font-size: var(--mk-text-2xl); font-weight: var(--mk-weight-heading); letter-spacing: -0.01em; color: var(--mk-heading); }
+.mk-stat-note { margin: 2px 0 0; font-size: var(--mk-text-xs); color: var(--mk-muted); }
 .mk-stat-foot { margin: var(--mk-space-1) 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; font-size: var(--mk-text-xs); color: var(--mk-muted); }
 .mk-delta { font-weight: var(--mk-weight-label); }
 .mk-delta-good { color: var(--mk-tint-success-fg); }
@@ -450,3 +451,65 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 
 .mk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .mk-mark { background: var(--mk-mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+
+/* ───────── DataTable: table on desktop, card list under 768px ───────── */
+.mk-dt { overflow: hidden; background: var(--mk-surface); border: 1px solid var(--mk-border); border-radius: var(--mk-radius-lg); }
+.mk-dt-scroll { overflow-x: auto; }
+/* Sticky header: the scroll box must scroll on BOTH axes. An overflow-x-only
+   wrapper (or the .mk-dt overflow:hidden) becomes the sticky container but
+   never scrolls vertically, so the header would ride away with the page.
+   Sticky goes on each th (not thead) with an opaque background, and the table
+   uses separate borders, because collapsed borders don't travel with sticky cells. */
+.mk-dt-sticky { overflow: auto; overscroll-behavior: contain; }
+.mk-dt-sticky th { position: sticky; top: 0; z-index: 1; }
+.mk-dt-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--mk-text-sm); color: var(--mk-text); }
+.mk-dt-table th {
+  padding: 10px var(--mk-space-4); background: var(--mk-surface-2); border-bottom: 1px solid var(--mk-border);
+  font-size: var(--mk-text-xs); font-weight: var(--mk-weight-label); color: var(--mk-muted);
+  text-align: left; white-space: nowrap;
+}
+.mk-dt-table td { padding: var(--mk-space-3) var(--mk-space-4); white-space: nowrap; }
+.mk-dt-table tbody tr + tr td { border-top: 1px solid var(--mk-border); }
+.mk-dt-dense .mk-dt-table th { padding: var(--mk-space-2) var(--mk-space-3); }
+.mk-dt-dense .mk-dt-table td { padding: var(--mk-space-2) var(--mk-space-3); }
+.mk-dt-table tbody tr:hover td { background: var(--mk-surface-2); }
+.mk-dt-table .mk-dt-right { text-align: right; font-variant-numeric: tabular-nums; }
+.mk-dt-table .mk-dt-center { text-align: center; }
+.mk-dt-th { display: inline-flex; align-items: center; gap: var(--mk-space-1); }
+.mk-dt-right .mk-dt-th, .mk-dt-right .mk-dt-sort { flex-direction: row-reverse; }
+.mk-dt-sort {
+  display: inline-flex; align-items: center; gap: var(--mk-space-1); min-height: 24px;
+  background: none; border: 0; padding: 0; border-radius: var(--mk-radius-sm);
+  font: inherit; color: inherit; cursor: pointer;
+}
+.mk-dt-sort:hover, .mk-dt-sort-active { color: var(--mk-heading); }
+.mk-dt-sort:focus-visible { outline: 2px solid var(--mk-focus); outline-offset: 2px; }
+.mk-dt-sort-icon { font-size: 12px; color: var(--mk-subtle); }
+.mk-dt-sort-active .mk-dt-sort-icon { color: var(--mk-primary); }
+/* The grip sits in the cell padding so header text lines up with the column. */
+.mk-dt-grip { font-size: 12px; color: var(--mk-subtle); cursor: grab; opacity: 0; margin-inline-start: calc(-12px - var(--mk-space-1)); }
+.mk-dt-right .mk-dt-grip { margin-inline-start: 0; margin-inline-end: calc(-12px - var(--mk-space-1)); }
+.mk-dt-table th:hover .mk-dt-grip { opacity: 1; }
+.mk-dt-dragging { opacity: 0.4; }
+.mk-dt-table th.mk-dt-drop { box-shadow: inset 2px 0 0 var(--mk-primary); background: var(--mk-tint-info-bg); }
+.mk-dt-blank { color: var(--mk-subtle); }
+.mk-dt-clickable { cursor: pointer; }
+.mk-dt-clickable:focus-visible { outline: 2px solid var(--mk-focus); outline-offset: -2px; }
+
+.mk-dt-cards { list-style: none; margin: 0; padding: 0; }
+.mk-dt-card { padding: var(--mk-space-3) var(--mk-space-4); }
+.mk-dt-card + .mk-dt-card { border-top: 1px solid var(--mk-border); }
+.mk-dt-card.mk-dt-clickable:active { background: var(--mk-surface-2); }
+.mk-dt-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--mk-space-3); }
+.mk-dt-card-title { min-width: 0; font-size: var(--mk-text-sm); font-weight: var(--mk-weight-label); color: var(--mk-heading); }
+.mk-dt-card-badges { display: flex; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; gap: var(--mk-space-1); }
+.mk-dt-card-sub { margin-top: 2px; display: flex; flex-wrap: wrap; column-gap: var(--mk-space-2); font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-dt-card-body { margin: var(--mk-space-2) 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px var(--mk-space-4); font-size: var(--mk-text-sm); }
+.mk-dt-card-body > div { min-width: 0; }
+.mk-dt-card-body dt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-dt-card-body dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mk-text); }
+.mk-dt-has-cards { display: none; }
+@media (min-width: 768px) {
+  .mk-dt-cards { display: none; }
+  .mk-dt-has-cards { display: block; }
+}
