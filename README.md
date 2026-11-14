@@ -15,6 +15,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.
+- **Rich text editor (`@mn/kit/editor`, optional):** `RichTextEditor` (Tiptap), `RichText` viewer, lazy `RichTextField`. See below.
 - **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useUrlList` (a list kept as `?key=a,b`), `useTheme` (light/dark/system), and inline SVG icons.
 
 **Server (`@mn/kit/server`, Express)**
@@ -97,6 +98,44 @@ A row passes when it matches any value ticked in a menu, and every menu together
 Saving filters to an account is the app's job (the kit makes no API calls): save the
 lists on change, and have Reset filters clear the saved copy too. See the demo's
 **Project hub** tab for a full page.
+
+## Rich text editor
+
+`@mn/kit/editor` is a separate entry point, so apps that never edit rich text
+never load Tiptap. Install the Tiptap packages yourself when you use it (they are
+optional peer dependencies, like the server packages):
+
+```bash
+npm install @tiptap/react @tiptap/pm @tiptap/starter-kit
+```
+
+```jsx
+import { RichTextEditor, RichText } from '@mn/kit/editor';
+
+<RichTextEditor value={notes} onChange={setNotes} ariaLabel="Notes" storageKey="myapp_notes_height" />
+<RichText html={row.notes} />   // read-only view, styled like the editor
+```
+
+- **Props:** `value` (or `content`), `onChange` (or `onUpdate`) gets the HTML, `""` when empty.
+  `toolbar` lists buttons in order (`'|'` is a separator; default: undo, redo, bold, italic,
+  underline, strike, link, bullet and numbered lists, quote, code block). `disable` switches
+  StarterKit extensions off, e.g. `['heading', 'codeBlock', 'horizontalRule']`, which also
+  hides their buttons and stops that markup being typed or pasted in. `minRows` (4) or
+  `minHeight` (px), `storageKey` (user-resizable, height remembered), `resizable`, `id`,
+  `ariaLabel`, `disabled`, `className`. Ctrl/Cmd+K opens the link form.
+- **HTML:** the same as AutoDealer and TuroApp saved before v0.7.0, so stored notes load and
+  re-save unchanged (`test/editor.test.jsx` round-trips both apps' output). Links come out as
+  `<a target="_blank" rel="noopener noreferrer" href="...">`; only http, https, mailto and tel links
+  can be added. A value with no tags (plain text from before an app had an editor) is shown with
+  its line breaks. Still sanitize on the server when saving: the editor is not a security control.
+- **Bundle size:** Tiptap is ~130KB gzipped. In an app whose customers download one bundle,
+  import from `@mn/kit/editor/lite` instead: `RichTextField` (same props) loads the editor as
+  its own chunk the first time it renders, and `RichText` never needs Tiptap.
+- **CSS:** `editor.css` (`mk-rte-*` classes) is imported by the editor modules themselves, so it
+  ships only with apps that use them. It reads the kit tokens, so `kit.css` must be loaded too.
+  `@mn/kit/editor.css` is exported if you would rather import it yourself.
+- Helpers: `isBlankHtml`, `sameHtml`, `htmlToText`, `toRichHtml`, `editorExtensions()`
+  (the exact Tiptap schema, for a server-side or test round trip).
 
 ## Add sign-in to an app
 

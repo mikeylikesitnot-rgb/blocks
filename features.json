@@ -175,6 +175,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "F-016",
+      "name": "Rich text editor",
+      "area": "Components",
+      "status": "progress",
+      "since": null,
+      "description": "@mn/kit/editor: one Tiptap editor merged from AutoDealer and TuroApp (toolbar, link form and preview, resizable, legacy plain text), a RichText viewer and a lazy RichTextField; saves the same HTML both apps store today.",
+      "branch": "kit-editor",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

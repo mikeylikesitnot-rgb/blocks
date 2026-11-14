@@ -8,6 +8,7 @@ import {
   PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
 } from '../src/index.js';
 import { HubDemo } from './HubDemo.jsx';
+import { EditorDemo } from './EditorDemo.jsx';
 
 const TRIPS = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
@@ -52,7 +53,7 @@ function Demo() {
       <PageHeader
         title="mn-kit"
         subtitle="Shared UI for every app. Tokens, one button system, layout, inputs, states, overlays."
-        meta={<Badge tone="info">v0.4</Badge>}
+        meta={<Badge tone="info">v0.7</Badge>}
         actions={
           <>
             <Segmented label="Theme" value={theme} onChange={setTheme}
@@ -62,7 +63,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'login', label: 'Login' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'editor', label: 'Editor' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -185,6 +186,8 @@ function Demo() {
       {tab === 'hub' && (
         <Panel flush style={{ overflow: 'hidden' }}><HubDemo /></Panel>
       )}
+
+      {tab === 'editor' && <EditorDemo />}
 
       {tab === 'login' && (
         <Panel flush>
