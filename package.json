@@ -1,6 +1,6 @@
 {
   "name": "@mn/kit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Michael's shared kit: React UI (tokens, components, login page) and Express server pieces (auth, email, rate limits).",
   "type": "module",
   "license": "UNLICENSED",
@@ -29,29 +29,43 @@
     "example": "node examples/server.js"
   },
   "peerDependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": ">=4.21",
+    "express-rate-limit": "^8.7.4",
+    "jose": "^6.2.17",
+    "nodemailer": "^7.0.13",
     "react": ">=18",
-    "react-dom": ">=18",
-    "express": ">=4.21"
+    "react-dom": ">=18"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "bcryptjs": "^3.0.3",
     "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "jose": "^6.2.17",
     "jsdom": "^26.1.0",
+    "nodemailer": "^7.0.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "supertest": "^7.3.2",
     "vite": "^6.3.5",
     "vitest": "^3.2.4"
   },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "express-rate-limit": "^8.7.4",
-    "jose": "^6.2.17",
-    "nodemailer": "^7.0.13"
-  },
   "peerDependenciesMeta": {
+    "bcryptjs": {
+      "optional": true
+    },
     "express": {
+      "optional": true
+    },
+    "express-rate-limit": {
+      "optional": true
+    },
+    "jose": {
+      "optional": true
+    },
+    "nodemailer": {
       "optional": true
     },
     "react": {

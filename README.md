@@ -32,6 +32,14 @@ no icon library, no router needed. Peer dependencies: React 18 or later for the 
 npm install github:mikeylikesitnot-rgb/mn-kit
 ```
 
+A client-only app needs nothing else. An app that uses `@mn/kit/server` or
+`@mn/kit/email` also installs the server packages itself (since v0.5.0 they are
+optional peer dependencies, so client installs stay small):
+
+```bash
+npm install jose bcryptjs express-rate-limit nodemailer
+```
+
 ```jsx
 // main.jsx
 import '@mn/kit/kit.css';            // tokens + components; import before the app's own CSS
