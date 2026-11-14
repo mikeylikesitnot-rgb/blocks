@@ -141,6 +141,7 @@
 button.mk-stat { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
 button.mk-stat:hover { background: var(--mk-surface-2); border-color: var(--mk-border-strong); }
 .mk-stat-value { margin: var(--mk-space-2) 0 0; font-size: var(--mk-text-2xl); font-weight: var(--mk-weight-heading); letter-spacing: -0.01em; color: var(--mk-heading); }
+.mk-stat-note { margin: 2px 0 0; font-size: var(--mk-text-xs); color: var(--mk-muted); }
 .mk-stat-foot { margin: var(--mk-space-1) 0 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; font-size: var(--mk-text-xs); color: var(--mk-muted); }
 .mk-delta { font-weight: var(--mk-weight-label); }
 .mk-delta-good { color: var(--mk-tint-success-fg); }

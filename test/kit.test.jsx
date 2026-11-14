@@ -73,6 +73,11 @@ describe('SearchInput', () => {
 });
 
 describe('StatCard', () => {
+  it('shows a note line and a title tooltip', () => {
+    const { container } = render(<StatCard label="Net" value="1" note="Split by days rented" title="How it is counted" />);
+    expect(screen.getByText('Split by days rented')).toBeTruthy();
+    expect(container.querySelector('.mk-stat').getAttribute('title')).toBe('How it is counted');
+  });
   it('colours delta by direction and invert', () => {
     render(<><StatCard label="Rev" value="1" delta={5} /><StatCard label="Cost" value="1" delta={5} invert /></>);
     const deltas = document.querySelectorAll('.mk-delta');

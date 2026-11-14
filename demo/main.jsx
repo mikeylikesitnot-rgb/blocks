@@ -69,7 +69,7 @@ function Demo() {
           <StatGrid cols={4}>
             <StatCard label="Revenue, Nov" value="$48,210" delta={12.4} deltaLabel="vs Oct" />
             <StatCard label="Costs" value="$9,880" delta={4.1} invert deltaLabel="vs Oct" />
-            <StatCard label="Open leads" value="37" sub="9 new today" />
+            <StatCard label="Open leads" value="37" sub="9 new today" note="Leads not yet contacted" title="Counts leads with no logged call or email." />
             <StatCard label="Overdue" value="5" onClick={() => toast.info('Clickable stat')} />
           </StatGrid>
 
