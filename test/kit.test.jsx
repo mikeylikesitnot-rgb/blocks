@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import {
-  Button, Badge, toneFor, Field, Input, SearchInput, Modal, OverlayProvider, useConfirm, useToast,
+  Button, Badge, toneFor, Field, Skeleton, Input, SearchInput, Modal, OverlayProvider, useConfirm, useToast,
   matchesQuery, StatCard, PlusIcon, XIcon,
 } from '../src/index.js';
 
@@ -55,6 +55,28 @@ describe('Field', () => {
     const input = screen.getByLabelText('Email');
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(document.getElementById(input.getAttribute('aria-describedby')).textContent).toBe('Bad email');
+  });
+
+  it('leaves a wrapper child alone so the label reaches the real input', () => {
+    const { container } = render(
+      <Field label="Price" htmlFor="price"><div className="row"><input id="price" /></div></Field>,
+    );
+    expect(container.querySelectorAll('#price')).toHaveLength(1);
+    expect(screen.getByLabelText('Price').tagName).toBe('INPUT');
+  });
+
+  it('wires a plain native input too', () => {
+    render(<Field label="Name" hint="Full name"><input /></Field>);
+    expect(screen.getByLabelText('Name').getAttribute('aria-describedby')).toBeTruthy();
+  });
+});
+
+describe('Skeleton', () => {
+  it('has no inline height, so a size class can set it', () => {
+    const { container } = render(<Skeleton className="tall" />);
+    expect(container.firstChild.style.height).toBe('');
+    const { container: c2 } = render(<Skeleton style={{ height: 40 }} />);
+    expect(c2.firstChild.style.height).toBe('40px');
   });
 });
 

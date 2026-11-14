@@ -231,7 +231,7 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-empty-actions { margin-top: var(--mk-space-2); display: flex; gap: var(--mk-space-2); }
 .mk-empty-actions:empty { display: none; }
 
-.mk-skeleton { border-radius: var(--mk-radius-sm); background: var(--mk-surface-2); animation: mk-pulse 1.6s ease-in-out infinite; }
+.mk-skeleton { height: 14px; border-radius: var(--mk-radius-sm); background: var(--mk-surface-2); animation: mk-pulse 1.6s ease-in-out infinite; }
 @keyframes mk-pulse { 50% { opacity: 0.5; } }
 @media (prefers-reduced-motion: reduce) { .mk-skeleton, .mk-spin { animation: none; } }
 .mk-skel-row { display: flex; align-items: center; gap: var(--mk-space-4); padding: 14px var(--mk-space-4); }

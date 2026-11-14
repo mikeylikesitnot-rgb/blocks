@@ -25,9 +25,9 @@ export function EmptyState({ variant = 'empty', icon, title, body, action, onCle
   );
 }
 
-/** Grey placeholder block. Size it with style or a class. */
+/** Grey placeholder block, 14px tall by default. Size it with style or a class. */
 export function Skeleton({ className = '', style }) {
-  return <div className={cx('mk-skeleton', className)} style={{ height: 14, ...style }} aria-hidden />;
+  return <div className={cx('mk-skeleton', className)} style={style} aria-hidden />;
 }
 
 /** Table-shaped skeleton so the layout doesn't jump when rows arrive. */
