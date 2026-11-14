@@ -9,6 +9,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **One button system:** 7 variants, 4 sizes, loading and icon-only.
 - **Layout:** PageHeader, Panel, StatCard/StatGrid, Tabs, Segmented, Toolbar.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
+- **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.

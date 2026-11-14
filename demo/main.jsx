@@ -4,9 +4,27 @@ import '../src/kit.css';
 import {
   Button, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
-  Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
+  DataTable, Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
   PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
 } from '../src/index.js';
+
+const TRIPS = Array.from({ length: 40 }, (_, i) => ({
+  id: i + 1,
+  guest: ['Ana Lopez', 'Ben Carter', 'Chris Wu', 'Dana Kim', 'Eli Ross'][i % 5],
+  car: ['Civic', 'Model 3', 'RAV4', 'F-150'][i % 4],
+  start: `2026-11-${String((i % 28) + 1).padStart(2, '0')}`,
+  days: (i * 7) % 9 + 1,
+  total: ((i * 37) % 900) + 80,
+  status: ['Completed', 'Active', 'Pending', 'Overdue'][i % 4],
+}));
+const TRIP_COLS = [
+  { key: 'guest', label: 'Guest', mobile: 'title' },
+  { key: 'car', label: 'Car', mobile: 'subtitle' },
+  { key: 'start', label: 'Start', mobile: 'subtitle' },
+  { key: 'days', label: 'Days' },
+  { key: 'total', label: 'Total', render: (v) => `$${v.toLocaleString()}` },
+  { key: 'status', label: 'Status', render: (v) => <Badge text={v} />, mobile: 'badge', sortable: false },
+];
 
 const ROWS = [
   { name: 'Ana Lopez', phone: '(214) 555-2415', status: 'Active' },
@@ -19,6 +37,9 @@ function Demo() {
   const [tab, setTab] = useUrlState('tab', 'components');
   const [q, setQ] = useUrlState('q');
   const [view, setView] = useState('list');
+  const [tq, setTq] = useState('');
+  const [tableLoading, setTableLoading] = useState(false);
+  const trips = TRIPS.filter((t) => matchesQuery(tq, [t.guest, t.car, t.status]));
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const confirm = useConfirm();
@@ -40,7 +61,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'states', label: 'States' }, { value: 'login', label: 'Login' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'states', label: 'States' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -123,6 +144,30 @@ function Demo() {
             </table>
           )}
         </Panel>
+      )}
+
+      {tab === 'table' && (
+        <div style={{ display: 'grid', gap: 16 }}>
+          <Toolbar right={`${trips.length} of ${TRIPS.length}`}>
+            <SearchInput value={tq} onChange={setTq} placeholder="Guest, car, status" />
+            <Button variant="secondary" size="sm" onClick={() => setTableLoading((v) => !v)}>{tableLoading ? 'Show rows' : 'Show loading'}</Button>
+          </Toolbar>
+          <DataTable
+            label="Trips"
+            columns={TRIP_COLS}
+            data={tableLoading ? [] : trips}
+            loading={tableLoading}
+            filtered={!!tq}
+            onClearFilters={() => setTq('')}
+            onRowClick={(r) => toast.info(`Trip ${r.id}: ${r.guest}`)}
+            defaultSort={{ key: 'start', dir: 'desc' }}
+            reorderable
+            storageKey="mk-demo-trip-cols"
+            stickyHeader
+            maxHeight="420px"
+          />
+          <DataTable label="Empty" columns={TRIP_COLS} data={[]} dense empty={{ title: 'No trips yet', body: 'Import an export to start.' }} />
+        </div>
       )}
 
       {tab === 'states' && (
