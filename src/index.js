@@ -4,7 +4,11 @@ export { PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar } from 
 export { Input, Textarea, SearchInput, Select, Field } from './Inputs.jsx';
 export { EmptyState, Skeleton, SkeletonRows, SkeletonStats, Banner, ErrorBanner } from './States.jsx';
 export { Modal, OverlayProvider, useConfirm, useAlert, useToast } from './Overlay.jsx';
-export { matchesQuery, useUrlState } from './search.js';
+export { matchesQuery, useUrlState, useUrlList } from './search.js';
+export { highlight } from './highlight.jsx';
+export { SidebarLayout, NavList, InitialIcon, ThemeSwitch, initials } from './Shell.jsx';
+export { FilterMenu, filterSummary } from './FilterMenu.jsx';
+export { GroupedList } from './GroupedList.jsx';
 export { useTheme } from './theme.js';
 export { cx } from './cx.js';
 export * from './icons.jsx';

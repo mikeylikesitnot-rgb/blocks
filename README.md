@@ -8,11 +8,13 @@ modals, a login screen, sign-in sessions or emails again.
 - **Tokens:** colour, type, spacing, radius and shadow from AutoDealer, plus a dark theme.
 - **One button system:** 7 variants, 4 sizes, loading and icon-only.
 - **Layout:** PageHeader, Panel, StatCard/StatGrid, Tabs, Segmented, Toolbar.
+- **App frame:** `SidebarLayout` (sidebar on desktop, slide-out menu on phones), `NavList`, `InitialIcon`, `ThemeSwitch`.
+- **Lists:** `FilterMenu` (checklist dropdown), `GroupedList` (grouped rows with ID, badge and side cells), `highlight`.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.
-- **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useTheme` (light/dark/system), and inline SVG icons.
+- **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useUrlList` (a list kept as `?key=a,b`), `useTheme` (light/dark/system), and inline SVG icons.
 
 **Server (`@mn/kit/server`, Express)**
 - **Sign-in:** `createAuth()` covers password, Google and email-code login, password reset, logout on every device, 30-minute idle and 8-hour hard timeouts, and roles.
@@ -54,6 +56,38 @@ Add `class="mk-root"` to `<body>` for the kit's base font, colour and background
 ```
 
 **Dark mode** follows the OS. Force it with `<html data-theme="dark">`, or use `const [theme, setTheme] = useTheme()`.
+
+## A Project Hub style page
+
+```jsx
+import { SidebarLayout, NavList, InitialIcon, ThemeSwitch, FilterMenu, GroupedList, Badge,
+  SearchInput, Toolbar, Button, EmptyState, useUrlState, useUrlList } from '@mn/kit';
+
+const [q, setQ] = useUrlState('q');
+const [status, setStatus] = useUrlList('status');           // ?status=live,planned
+
+<SidebarLayout brand="My App" footer={<ThemeSwitch />} sidebar={
+  <NavList label="Projects" value={slug} onChange={setSlug} items={[
+    { value: '', label: 'All', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: 42 },
+    { section: 'Projects' },
+    { value: 'kit', label: 'mn-kit', icon: <InitialIcon name="mn-kit" color={1} />, count: '2 building', hot: true },
+  ]} />
+}>
+  <Toolbar>
+    <SearchInput value={q} onChange={setQ} />
+    <FilterMenu label="Status" allLabel="All statuses" value={status} onChange={setStatus}
+      options={[{ value: 'live', label: 'Live' }, { value: 'planned', label: 'Planned' }]} />
+    <Button variant="ghost" size="sm" onClick={reset}>Reset filters</Button>
+  </Toolbar>
+  <GroupedList query={q} columns={['ID', 'Status', 'Feature', 'Area', 'Live since']} groups={groups}
+    empty={<EmptyState variant="filtered" onClear={reset} />} />
+</SidebarLayout>
+```
+
+A row passes when it matches any value ticked in a menu, and every menu together.
+Saving filters to an account is the app's job (the kit makes no API calls): save the
+lists on change, and have Reset filters clear the saved copy too. See the demo's
+**Project hub** tab for a full page.
 
 ## Add sign-in to an app
 

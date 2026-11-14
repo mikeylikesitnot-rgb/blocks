@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
  * Every typed word must match somewhere in `fields`. Words match by prefix
@@ -50,4 +50,16 @@ export function useUrlState(key, fallback = '') {
   }, [key, fallback]);
 
   return [value, set];
+}
+
+/**
+ * A list kept in the URL as one comma-separated param (?status=live,planned),
+ * for FilterMenu. Empty list = param removed. Values must not contain commas.
+ *   const [status, setStatus] = useUrlList('status');
+ */
+export function useUrlList(key) {
+  const [raw, setRaw] = useUrlState(key);
+  const list = useMemo(() => (raw ? raw.split(',').filter(Boolean) : []), [raw]);
+  const set = useCallback((arr) => setRaw((arr || []).join(',')), [setRaw]);
+  return [list, set];
 }

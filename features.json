@@ -127,6 +127,42 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "F-011",
+      "name": "Sidebar layout",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-14",
+      "description": "SidebarLayout, NavList, InitialIcon and ThemeSwitch: the Project Hub sidebar with counts and a theme switch, which becomes a slide-out menu on phones.",
+      "branch": null,
+      "spec": "docs/specs/hub-ui.md",
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-012",
+      "name": "Checklist filter menu",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-14",
+      "description": "FilterMenu: a select-style button that opens a checklist and reads All / names / 'Status: 3 selected', with useUrlList to keep the choice in the URL.",
+      "branch": null,
+      "spec": "docs/specs/hub-ui.md",
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-013",
+      "name": "Grouped list with search highlight",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-14",
+      "description": "GroupedList rows grouped under headings with an ID, badge, title, description and side cells, stacking on phones; highlight() marks search words.",
+      "branch": null,
+      "spec": "docs/specs/hub-ui.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

@@ -7,6 +7,7 @@ import {
   Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
   PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
 } from '../src/index.js';
+import { HubDemo } from './HubDemo.jsx';
 
 const ROWS = [
   { name: 'Ana Lopez', phone: '(214) 555-2415', status: 'Active' },
@@ -30,7 +31,7 @@ function Demo() {
       <PageHeader
         title="mn-kit"
         subtitle="Shared UI for every app. Tokens, one button system, layout, inputs, states, overlays."
-        meta={<Badge tone="info">v0.1</Badge>}
+        meta={<Badge tone="info">v0.3</Badge>}
         actions={
           <>
             <Segmented label="Theme" value={theme} onChange={setTheme}
@@ -40,7 +41,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'states', label: 'States' }, { value: 'login', label: 'Login' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -134,6 +135,10 @@ function Demo() {
           <Panel><EmptyState title="No customers yet" body="Add your first customer to get started." action={<Button size="sm" icon={PlusIcon}>Add customer</Button>} /></Panel>
           <Panel><EmptyState variant="error" body="The server returned 500." onRetry={() => toast('Retrying')} /></Panel>
         </div>
+      )}
+
+      {tab === 'hub' && (
+        <Panel flush style={{ overflow: 'hidden' }}><HubDemo /></Panel>
       )}
 
       {tab === 'login' && (
