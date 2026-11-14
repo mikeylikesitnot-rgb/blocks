@@ -414,6 +414,44 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-filter-none { margin: 0; padding: var(--mk-space-2); font-size: var(--mk-text-sm); color: var(--mk-muted); }
 .mk-filter-foot { display: flex; justify-content: flex-end; padding: var(--mk-space-1) var(--mk-space-2); border-top: 1px solid var(--mk-border); margin-top: var(--mk-space-1); font-size: var(--mk-text-sm); color: var(--mk-primary); }
 
+/* ───────── RangeFilter: two-handle slider in a FilterMenu-style dropdown ───────── */
+.mk-range-menu { display: grid; gap: var(--mk-space-3); min-width: 280px; padding: var(--mk-space-3); overflow: visible; }
+.mk-range-menu .mk-filter-foot { margin: 0; padding: var(--mk-space-2) 0 0; justify-content: flex-start; }
+/* Two range inputs stacked on one track. The inputs are transparent and ignore
+   the pointer; only their thumbs take it, so either handle can be grabbed. The
+   filled stretch is the track's own gradient, from --mk-lo to --mk-hi. */
+.mk-range-slider { position: relative; height: 28px; margin: 0 9px; }
+.mk-range-slider::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 4px; transform: translateY(-50%); border-radius: 2px;
+  background: linear-gradient(to right, var(--mk-border) var(--mk-lo), var(--mk-primary) var(--mk-lo), var(--mk-primary) var(--mk-hi), var(--mk-border) var(--mk-hi));
+}
+.mk-range-slider input[type='range'] {
+  position: absolute; inset: 0; width: calc(100% + 18px); height: 100%; margin: 0 -9px; padding: 0;
+  background: none; border: 0; appearance: none; -webkit-appearance: none; pointer-events: none;
+}
+.mk-range-slider input[type='range']:focus { outline: none; }
+.mk-range-slider input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--mk-primary); background: var(--mk-surface); box-shadow: var(--mk-shadow); cursor: grab; pointer-events: auto;
+}
+.mk-range-slider input[type='range']::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%; box-sizing: border-box;
+  border: 2px solid var(--mk-primary); background: var(--mk-surface); box-shadow: var(--mk-shadow); cursor: grab; pointer-events: auto;
+}
+.mk-range-slider input[type='range']::-moz-range-track { background: none; }
+.mk-range-slider input[type='range']:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--mk-focus); outline-offset: 2px; }
+.mk-range-slider input[type='range']:focus-visible::-moz-range-thumb { outline: 2px solid var(--mk-focus); outline-offset: 2px; }
+.mk-range-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--mk-space-2); }
+.mk-range-field { display: grid; gap: 2px; font-size: var(--mk-text-xs); font-weight: var(--mk-weight-label); color: var(--mk-muted); }
+.mk-range-field .mk-input { height: var(--mk-h-sm); font-weight: normal; }
+
+/* ───────── ColumnOrder: show/hide and move columns ───────── */
+.mk-cols-row { display: flex; align-items: center; gap: 2px; }
+.mk-cols-row .mk-filter-option { flex: 1; min-width: 0; }
+.mk-cols-row .mk-filter-option input:disabled { opacity: 0.5; }
+.mk-icon-btn.mk-cols-move { position: static; transform: none; width: 32px; height: 32px; font-size: 14px; flex: none; }
+.mk-icon-btn.mk-cols-move:disabled { opacity: 0.35; cursor: default; background: none; }
+
 /* ───────── GroupedList ───────── */
 .mk-glist { background: var(--mk-surface); border: 1px solid var(--mk-border); border-radius: var(--mk-radius-lg); overflow: hidden; }
 .mk-glist-head, .mk-glist-row {

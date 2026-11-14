@@ -175,6 +175,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "F-015",
+      "name": "List filter pieces",
+      "area": "Components",
+      "status": "progress",
+      "since": null,
+      "description": "RangeFilter (two-handle price/cost slider with Min/Max boxes), useSavedFilters (URL first, then this session, then the saved set, optionally per account), listParam/rangeParam/inRange/rangeBounds, SortTh with useSort, and ColumnOrder to show, hide and move columns.",
+      "branch": "kit-filters-signup",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

@@ -24,6 +24,23 @@ export function matchesQuery(query, fields) {
 
 const EVT = 'mk:urlstate';
 
+/** Tell every URL-backed hook on the page to re-read the query. */
+export const URL_EVENT = EVT;
+
+/**
+ * Patch some query params and leave the rest alone (null or '' removes one).
+ * Replaces rather than pushes, so filtering doesn't fill up Back.
+ */
+export function patchUrl(changes) {
+  const url = new URL(window.location.href);
+  for (const [k, v] of Object.entries(changes)) {
+    if (v == null || v === '') url.searchParams.delete(k);
+    else url.searchParams.set(k, String(v));
+  }
+  window.history.replaceState(window.history.state, '', url);
+  window.dispatchEvent(new Event(EVT));
+}
+
 /**
  * A string kept in the URL query (?key=value) so searches and tabs survive a
  * reload and can be shared. Uses history.replaceState, so it works with or
@@ -42,11 +59,7 @@ export function useUrlState(key, fallback = '') {
   }, [key, fallback]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = useCallback((v) => {
-    const url = new URL(window.location.href);
-    if (v == null || v === '' || v === fallback) url.searchParams.delete(key);
-    else url.searchParams.set(key, v);
-    window.history.replaceState(window.history.state, '', url);
-    window.dispatchEvent(new Event(EVT));
+    patchUrl({ [key]: v === fallback ? null : v });
   }, [key, fallback]);
 
   return [value, set];

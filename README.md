@@ -9,7 +9,9 @@ modals, a login screen, sign-in sessions or emails again.
 - **One button system:** 7 variants, 4 sizes, loading and icon-only.
 - **Layout:** PageHeader, Panel, StatCard/StatGrid, Tabs, Segmented, Toolbar.
 - **App frame:** `SidebarLayout` (sidebar on desktop, slide-out menu on phones), `NavList`, `InitialIcon`, `ThemeSwitch`.
-- **Lists:** `FilterMenu` (checklist dropdown), `GroupedList` (grouped rows with ID, badge and side cells), `highlight`.
+- **Lists:** `FilterMenu` (checklist dropdown), `RangeFilter` (price/cost slider with Min/Max boxes), `GroupedList` (grouped rows with ID, badge and side cells), `highlight`.
+- **List filters:** `useSavedFilters` (filters in the URL, remembered per browser session and saved per browser or account; a shared link wins), `listParam`, `rangeParam`, `inRange`, `rangeBounds`.
+- **Tables you build yourself:** `SortTh` + `useSort` (sortable header cells), `ColumnOrder` + `useColumnOrder` (show, hide and move columns, remembered).
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
 - **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
@@ -94,9 +96,41 @@ const [status, setStatus] = useUrlList('status');           // ?status=live,plan
 ```
 
 A row passes when it matches any value ticked in a menu, and every menu together.
-Saving filters to an account is the app's job (the kit makes no API calls): save the
-lists on change, and have Reset filters clear the saved copy too. See the demo's
-**Project hub** tab for a full page.
+See the demo's **Project hub** tab for a full page.
+
+## Saved list filters
+
+The rules are AutoDealer's `docs/decisions/list-filters.md`: checklists for categories,
+a slider for money, everything in the URL, saved, and a shared link always wins.
+
+```jsx
+import { FilterMenu, RangeFilter, ColumnOrder, DataTable, useSavedFilters, useColumnOrder,
+  listParam, rangeParam, inRange, rangeBounds } from '@mn/kit';
+
+// load/save are optional; without them the set is saved in this browser only.
+const prefs = { load: (k) => api.get(`/ui-prefs/${k}`), save: (k, v) => api.put(`/ui-prefs/${k}`, v) };
+const { filters, setFilters, resetFilters } = useSavedFilters('cars.filters', ['make', 'minPrice', 'maxPrice'],
+  { ...prefs, linkKeys: ['q'] });                 // never put the search box or page number in keys
+const make = listParam(filters.make);             // ?make=Honda,Toyota
+const price = rangeParam(filters, 'minPrice', 'maxPrice');
+const rows = cars.filter((c) => (!make.length || make.includes(c.make)) && inRange(c.price, price));
+const cols = useColumnOrder('cars.columns', COLUMNS, prefs);
+
+<FilterMenu label="Make" allLabel="All makes" value={make} options={makes}
+  onChange={(v) => setFilters({ make: v.join(',') || null })} />
+<RangeFilter label="Price" allLabel="Any price" value={price} step={500}
+  bounds={rangeBounds(cars.map((c) => c.price), 500, price)}
+  onChange={(min, max) => setFilters({ minPrice: min, maxPrice: max })} />
+<ColumnOrder {...cols.menu} />
+<Button variant="ghost" size="sm" onClick={() => resetFilters({ q: null })}>Reset filters</Button>
+<DataTable columns={cols.columns} onReorder={cols.onReorder} data={rows} />
+```
+
+What the URL starts with: a link naming any key or `linkKey` is shown as is and saves nothing;
+otherwise this browser session's filters for that list (parked when it unmounts); otherwise
+the saved set. Every `setFilters` saves the whole set; `resetFilters` clears the URL and the
+saved copy. For a table you build by hand, `useSort(rows)` + `<SortTh col="name" sort={sort}>`
+gives the same sortable headers DataTable has. See the demo's **Filters** tab.
 
 ## Add sign-in to an app
 
