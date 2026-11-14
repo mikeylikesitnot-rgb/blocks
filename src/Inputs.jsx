@@ -59,15 +59,23 @@ export const Select = forwardRef(function Select({ className = '', active = fals
   );
 });
 
+const NATIVE_CONTROLS = ['input', 'select', 'textarea'];
+
 /**
- * Label above, hint or error below. Wires id/aria for a single child input.
+ * Label above, hint or error below. Wires id/aria onto a single child control
+ * (a native input/select/textarea or the kit's Input, Textarea, Select,
+ * SearchInput). Any other child, such as a wrapper div, is left alone: give the
+ * real input an id and pass the same id as htmlFor.
  *   <Field label="Email" hint="We never share it" error={err}><Input type="email" /></Field>
+ *   <Field label="Price" htmlFor="price"><div className="row"><input id="price" /></div></Field>
  */
 export function Field({ label, hint, error, htmlFor, children, className = '' }) {
   const auto = useId();
-  const id = htmlFor || (isValidElement(children) && children.props.id) || auto;
-  const msgId = `${id}-msg`;
-  const child = isValidElement(children)
+  const control = isValidElement(children)
+    && (NATIVE_CONTROLS.includes(children.type) || [Input, Textarea, Select, SearchInput].includes(children.type));
+  const id = htmlFor || (control ? children.props.id || auto : undefined);
+  const msgId = `${id || auto}-msg`;
+  const child = control
     ? cloneElement(children, {
         id: children.props.id || id,
         'aria-describedby': error || hint ? msgId : undefined,
