@@ -95,16 +95,16 @@ describe('SearchInput', () => {
 });
 
 describe('StatCard', () => {
-  it('shows a note line and a title tooltip', () => {
-    const { container } = render(<StatCard label="Net" value="1" note="Split by days rented" title="How it is counted" />);
-    expect(screen.getByText('Split by days rented')).toBeTruthy();
-    expect(container.querySelector('.mk-stat').getAttribute('title')).toBe('How it is counted');
-  });
   it('colours delta by direction and invert', () => {
     render(<><StatCard label="Rev" value="1" delta={5} /><StatCard label="Cost" value="1" delta={5} invert /></>);
     const deltas = document.querySelectorAll('.mk-delta');
     expect(deltas[0].className).toContain('mk-delta-good');
     expect(deltas[1].className).toContain('mk-delta-bad');
+  });
+  it('shows a note line and puts title on the tile', () => {
+    render(<StatCard label="YTD" value="$9" note="Split by days rented" title="Long explanation" />);
+    expect(screen.getByText('Split by days rented').className).toBe('mk-stat-note');
+    expect(document.querySelector('.mk-stat').getAttribute('title')).toBe('Long explanation');
   });
 });
 

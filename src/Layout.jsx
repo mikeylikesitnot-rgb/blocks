@@ -48,8 +48,8 @@ export function Panel({ title, subtitle, actions, children, flush = false, class
  * KPI tile: label, big number, comparison.
  *   <StatCard label="Net, May" value="$5,916" delta={-12.4} deltaLabel="vs last year" />
  * `invert` when down is good (costs). Clickable when given onClick.
- * `note` is a short visible line saying how the number is defined (works on phones,
- * unlike a tooltip); `title` can hold the longer explanation for mouse users.
+ * `note` is a short visible line saying how the number is defined (works on
+ * phones, unlike a tooltip); `title` holds the longer explanation for mouse users.
  */
 export function StatCard({ label, value, sub, note, title, delta, deltaSuffix = '%', deltaLabel, invert = false, onClick, className = '' }) {
   const hasDelta = typeof delta === 'number' && Number.isFinite(delta);
