@@ -70,6 +70,10 @@
 :where(.mk-rte-input, .mk-rte-view) :where(p, ul, ol, blockquote, pre, h1, h2, h3, h4, h5, h6, hr) { margin: 0; }
 .mk-rte-input > * + *, .mk-rte-view > * + * { margin-top: 0.6em; }
 :where(.mk-rte-input, .mk-rte-view) :where(ul, ol) { padding-left: 1.4em; }
+/* Explicit markers: CSS resets such as Tailwind's preflight set list-style: none. */
+:where(.mk-rte-input, .mk-rte-view) ul { list-style: disc; }
+:where(.mk-rte-input, .mk-rte-view) ol { list-style: decimal; }
+:where(.mk-rte-input, .mk-rte-view) :where(ul, ol) ul { list-style: circle; }
 .mk-rte-input li, .mk-rte-view li { margin: 0.15em 0; }
 .mk-rte-input li > p, .mk-rte-view li > p { margin: 0; }
 .mk-rte-input :where(h1, h2, h3, h4, h5, h6), .mk-rte-view :where(h1, h2, h3, h4, h5, h6) {
