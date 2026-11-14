@@ -18,8 +18,9 @@ deleted user or a role change takes effect on the next request.
 
 **Google proves identity, not access.** A verified Google email gets in only
 if it is already a user, unless the app turns on `signup` and supplies
-`createUser`. Tokens are checked against Google's keys with `jose`, with no
-Google SDK.
+`createUser`. The same goes for an emailed code; the login page's sign-up form
+sends a name with the code, used only when the account is created. Tokens are
+checked against Google's keys with `jose`, with no Google SDK.
 
 **Email codes follow AutoDealer's customer portal:**
 - 6 digits, live 10 minutes, and only the newest code counts.

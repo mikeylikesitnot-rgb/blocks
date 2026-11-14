@@ -16,7 +16,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
-- **Login:** `LoginPage` (password, Google, emailed code), `SessionProvider`, `useSession`, `AuthGate`.
+- **Login:** `LoginPage` (password, Google, emailed code, and sign-up when the server allows it), `SessionProvider`, `useSession`, `AuthGate`.
 - **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useUrlList` (a list kept as `?key=a,b`), `useTheme` (light/dark/system), and inline SVG icons.
 
 **Server (`@mn/kit/server`, Express)**
@@ -157,6 +157,10 @@ app.use('/api/auth', auth.router);                  // /config /login /google /c
 app.get('/api/orders', auth.requireAuth, handler);  // req.user = { id, email, name, role }
 app.delete('/api/orders/:id', auth.requireAuth, auth.requireRole('admin'), handler);
 ```
+
+Self-serve sign-up: pass `signup: true` and a `users.createUser(email, { name })`, plus a mailer.
+The login page then shows "New here? Create an account" (name + email, then the emailed code);
+`/code/verify` passes the name to `createUser` only when it creates the account.
 
 Create a user: `INSERT INTO users (email, role) VALUES ('me@x.com', 'admin')`. They can sign in with an emailed code
 straight away and then set a password. Already have a users table? Pass your own

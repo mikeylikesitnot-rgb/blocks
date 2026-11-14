@@ -187,6 +187,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "F-016",
+      "name": "Sign-up on the login page",
+      "area": "Sign-in",
+      "status": "progress",
+      "since": null,
+      "description": "When the server has signup and email codes on, LoginPage offers 'New here? Create an account': name and email, then the emailed code creates the account with that name and signs them in.",
+      "branch": "kit-filters-signup",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

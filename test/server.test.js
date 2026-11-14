@@ -188,6 +188,38 @@ describe('email code sign-in', () => {
   });
 });
 
+describe('sign-up with an emailed code', () => {
+  it('creates the user with the name sent on verify, only when signup is on', async () => {
+    const created = [];
+    const sent = [];
+    const users = memoryUserStore([{ email: 'ben@example.com', role: 'user' }]);
+    users.createUser = async (email, extra) => {
+      created.push([email, extra]);
+      users.rows.push({ id: 7, email, name: extra.name ?? null, role: 'user', tokenVersion: 0 });
+      return users.findUser(email);
+    };
+    const mailer = { send: async (m) => { sent.push(m); return {}; } };
+    const auth = createAuth({ secret: SECRET, users, mailer, signup: true, rateLimits: false });
+    const app = express();
+    app.use('/api/auth', auth.router);
+    const ctx = { app, sent };
+    const r = await request(ctx.app).post('/api/auth/code').send({ email: 'New@Example.com' });
+    expect(r.body).toEqual({ sent: true });
+    const code = ctx.sent[0].text.match(/Code: (\d{6})/)[1];
+    const ok = await request(ctx.app).post('/api/auth/code/verify').send({ email: 'new@example.com', code, name: '  Nia Park  ' });
+    expect(ok.status).toBe(200);
+    expect(ok.body.user).toEqual({ id: 7, email: 'new@example.com', name: 'Nia Park', role: 'user' });
+    expect(created).toEqual([['new@example.com', { name: 'Nia Park' }]]);
+
+    // An existing user's name is not touched by a name sent on verify.
+    await request(ctx.app).post('/api/auth/code').send({ email: 'ben@example.com' });
+    const code2 = ctx.sent[1].text.match(/Code: (\d{6})/)[1];
+    const ben = await request(ctx.app).post('/api/auth/code/verify').send({ email: 'ben@example.com', code: code2, name: 'Someone Else' });
+    expect(ben.body.user.name).toBeNull();
+    expect(created).toHaveLength(1);
+  });
+});
+
 describe('google sign-in', () => {
   it('lets in existing users only, unless signup is on', async () => {
     const verify = async (cred) => ({ email: cred, email_verified: true, name: 'G' });
