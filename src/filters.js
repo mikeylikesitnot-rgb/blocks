@@ -17,7 +17,16 @@ const getter = (params) => {
 const posInt = (v) => (v != null && /^[1-9][0-9]*$/.test(String(v)) ? Number(v) : null);
 
 /** A checklist's values from one comma-separated param (?make=Honda,Toyota). Empty pieces dropped. */
-export const listParam = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+export const listParam = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean)
+  .map((x) => x.replace(/%2C/gi, ',').replace(/%25/g, '%'));
+
+/**
+ * The other way: a checklist's values as one param, or null when none (so it
+ * drops out of the URL). A comma or % inside a value is escaped ("Dallas, TX"
+ * -> "Dallas%2C TX"), which listParam undoes.
+ *   setFilters({ location: listValue(ticked) })
+ */
+export const listValue = (values) => (values || []).map((x) => String(x).replace(/%/g, '%25').replace(/,/g, '%2C')).join(',') || null;
 
 /**
  * A number range kept as two params (?minPrice=5000&maxPrice=12000), whole
@@ -72,9 +81,12 @@ export function shortMoney(n) {
   return `$${Number.isInteger(k) ? k : k.toFixed(1)}k`;
 }
 
-/** What the closed RangeFilter button says: "Any price", "$5k–$12k", "$5k+", "Up to $12k". */
-export function rangeSummary([min, max], { allLabel = 'Any', upTo = 'Up to', format = shortMoney } = {}) {
+/**
+ * What the closed RangeFilter button says: "Any price", "$5k–$12k", "$5k+", "Up to $12k".
+ * `unit` goes after the figures: "$40–$90/day", "$40+/day", "Up to $90/day".
+ */
+export function rangeSummary([min, max], { allLabel = 'Any', upTo = 'Up to', format = shortMoney, unit = '' } = {}) {
   if (min == null && max == null) return allLabel;
-  if (min != null && max != null) return `${format(min)}–${format(max)}`;
-  return min != null ? `${format(min)}+` : `${upTo} ${format(max)}`;
+  if (min != null && max != null) return `${format(min)}–${format(max)}${unit}`;
+  return min != null ? `${format(min)}+${unit}` : `${upTo} ${format(max)}${unit}`;
 }

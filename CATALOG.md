@@ -50,19 +50,19 @@ before writing your own. Missing an option? Add it to the block here, never fork
 - **SortTh** (+ useSort, sortRows): Sortable header cell for a table you build yourself. Props: col, sort (from useSort(rows, {values, defaultSort}) -> {rows, sortBy, sortDir, onSort}). `import { SortTh, useSort, sortRows } from '@mn/blocks'`
 - **ColumnOrder** (+ useColumnOrder, orderColumns): Show, hide and move columns, remembered per browser or account. Props: useColumnOrder(prefKey, columns, {load, save}) -> {columns, onReorder, menu}; <ColumnOrder {...cols.menu} />. `import { ColumnOrder, useColumnOrder, orderColumns } from '@mn/blocks'`
 - **FilterMenu** (+ filterSummary): Checklist dropdown for a category filter. Props: label, allLabel, options [{value,label}], value [], onChange(values), align. `import { FilterMenu, filterSummary } from '@mn/blocks'`
-- **RangeFilter**: Price/cost dropdown: two-handle slider plus Min/Max boxes. Props: label, allLabel, value [min,max] (null = open), bounds, step, onChange(min,max), format, formatValue. `import { RangeFilter } from '@mn/blocks'`
+- **RangeFilter**: Number-range dropdown (price, cost, $/day, days): two-handle slider plus Min/Max boxes. Props: label, allLabel, value [min,max] (null = open), bounds, step, onChange(min,max), format, formatValue, unit ("/day" after the figures). `import { RangeFilter } from '@mn/blocks'`
 - **useSavedFilters**: A list's filters in the URL, remembered per session and saved per browser or account; a shared link wins. Props: (prefKey, keys, {load, save, linkKeys}) -> {filters, setFilters, resetFilters}. `import { useSavedFilters } from '@mn/blocks'`
-- **listParam**: Parse "a,b" from a filter param into an array. Props: (value). `import { listParam } from '@mn/blocks'`
+- **listParam** (+ listValue): Parse "a,b" from a filter param into an array; listValue joins ticks back (null when none), escaping commas inside values. Props: (value); listValue(values). `import { listParam, listValue } from '@mn/blocks'`
 - **rangeParam**: Read [min, max] numbers from two params. Props: (params, minKey, maxKey, legacyKey). `import { rangeParam } from '@mn/blocks'`
 - **inRange**: Whether a number passes a [min, max] range (null = open end). Props: (n, [min, max]). `import { inRange } from '@mn/blocks'`
 - **rangeBounds**: Slider ends from the data, rounded to step, widened to include a picked range. Props: (values, step, picked). `import { rangeBounds } from '@mn/blocks'`
-- **rangeSummary** (+ money, shortMoney): Button text for a range ("$5k-$12k"); money/shortMoney format dollars. Props: ([min,max], {allLabel, upTo, format}). `import { rangeSummary, money, shortMoney } from '@mn/blocks'`
+- **rangeSummary** (+ money, shortMoney): Button text for a range ("$5k-$12k"); money/shortMoney format dollars. Props: ([min,max], {allLabel, upTo, format, unit}). `import { rangeSummary, money, shortMoney } from '@mn/blocks'`
 - **GroupedList**: Grouped rows (ID chip, badge, title, side cells) with search highlighting; cards on phones. Props: groups [{key,title,note,items}], columns, query, empty, loading, error, onRetry. `import { GroupedList } from '@mn/blocks'`
 - **highlight**: Mark every typed word inside a string for search results. Props: (text, query). `import { highlight } from '@mn/blocks'`
 - **matchesQuery**: Forgiving search: every word must prefix-match some field; digits match anywhere. Props: (query, fields[]). `import { matchesQuery } from '@mn/blocks'`
 - **useUrlState**: A string kept in ?key= (replaceState, no router needed). Props: (key, fallback) -> [value, setValue]. `import { useUrlState } from '@mn/blocks'`
 - **useUrlList**: A list kept in ?key=a,b. Props: (key) -> [values, setValues]. `import { useUrlList } from '@mn/blocks'`
-- **patchUrl**: Set or remove some query params and tell URL hooks to re-read. Props: ({key: value|null}). `import { patchUrl } from '@mn/blocks'`
+- **patchUrl** (+ URL_EVENT): Set or remove some query params and tell URL hooks to re-read; a router app dispatches URL_EVENT on its own navigations so the hooks follow. Props: ({key: value|null}); window.dispatchEvent(new Event(URL_EVENT)). `import { patchUrl, URL_EVENT } from '@mn/blocks'`
 
 ### Attachments
 

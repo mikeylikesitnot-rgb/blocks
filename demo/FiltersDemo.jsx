@@ -1,6 +1,6 @@
 import {
   FilterMenu, RangeFilter, ColumnOrder, DataTable, SortTh, Panel, Toolbar, SearchInput, Button, Badge,
-  useSavedFilters, useColumnOrder, useSort, useUrlState, listParam, rangeParam, inRange, rangeBounds, matchesQuery, money,
+  useSavedFilters, useColumnOrder, useSort, useUrlState, listParam, listValue, rangeParam, inRange, rangeBounds, matchesQuery, money,
 } from '../src/index.js';
 
 const MAKES = ['Honda', 'Toyota', 'Ford', 'Chevrolet', 'Nissan'];
@@ -12,6 +12,7 @@ const CARS = Array.from({ length: 30 }, (_, i) => ({
   miles: 30000 + ((i * 13771) % 150000),
   price: i % 9 === 0 ? 0 : 3500 + ((i * 2731) % 38000),
   status: ['Available', 'Pending', 'Sold'][i % 3],
+  daily: i % 7 === 0 ? null : 35 + ((i * 17) % 80),
 }));
 const COLUMNS = [
   { key: 'make', label: 'Make', mobile: 'title', locked: true },
@@ -24,16 +25,18 @@ const COLUMNS = [
 
 export function FiltersDemo() {
   const [q, setQ] = useUrlState('fq');
-  const { filters, setFilters, resetFilters } = useSavedFilters('mk-demo.carFilters', ['make', 'minPrice', 'maxPrice'], { linkKeys: ['fq'] });
+  const { filters, setFilters, resetFilters } = useSavedFilters('mk-demo.carFilters', ['make', 'minPrice', 'maxPrice', 'minDaily', 'maxDaily'], { linkKeys: ['fq'] });
   const make = listParam(filters.make);
   const price = rangeParam(filters, 'minPrice', 'maxPrice');
+  const daily = rangeParam(filters, 'minDaily', 'maxDaily');
   const cols = useColumnOrder('mk-demo.carColumns', COLUMNS);
 
   const shown = CARS.filter((c) =>
     (!make.length || make.includes(c.make))
     && inRange(c.price || null, price)
+    && inRange(c.daily, daily)
     && matchesQuery(q, [c.make, c.model, c.year]));
-  const anyFilter = make.length || price[0] != null || price[1] != null || q;
+  const anyFilter = make.length || price[0] != null || price[1] != null || daily[0] != null || daily[1] != null || q;
   const reset = () => resetFilters({ fq: null });
 
   const small = useSort(CARS.slice(0, 5), { defaultSort: { key: 'price', dir: 'desc' } });
@@ -42,11 +45,14 @@ export function FiltersDemo() {
     <div style={{ display: 'grid', gap: 16 }}>
       <Toolbar right={`${shown.length} of ${CARS.length} cars`}>
         <SearchInput value={q} onChange={setQ} placeholder="Make, model, year" />
-        <FilterMenu label="Make" allLabel="All makes" value={make} onChange={(v) => setFilters({ make: v.join(',') || null })}
+        <FilterMenu label="Make" allLabel="All makes" value={make} onChange={(v) => setFilters({ make: listValue(v) })}
           options={MAKES.map((m) => ({ value: m, label: m, count: CARS.filter((c) => c.make === m).length }))} />
         <RangeFilter label="Price" allLabel="Any price" value={price} step={500}
           bounds={rangeBounds(CARS.map((c) => c.price), 500, price)}
           onChange={(min, max) => setFilters({ minPrice: min, maxPrice: max })} />
+        <RangeFilter label="Avg $/day" allLabel="Any $/day" value={daily} step={5} unit="/day" format={(n) => `$${n}`}
+          bounds={rangeBounds(CARS.map((c) => c.daily).filter((n) => n != null), 5, daily)}
+          onChange={(min, max) => setFilters({ minDaily: min, maxDaily: max })} />
         <ColumnOrder {...cols.menu} />
         {anyFilter ? <Button variant="ghost" size="sm" onClick={reset}>Reset filters</Button> : null}
       </Toolbar>
