@@ -14,7 +14,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **Tables you build yourself:** `SortTh` + `useSort` (sortable header cells), `ColumnOrder` + `useColumnOrder` (show, hide and move columns, remembered).
 - **Attachments:** `FileDrop` (drag, drop or pick, with type and size checks), `usePasteFiles` (⌘V a screenshot anywhere in a panel, even while typing; text pastes stay text), `AttachmentGrid` (image thumbnails that open in a `Lightbox`, other files as download rows), `formatBytes`, `checkFiles`. UI only: the app uploads and serves the files.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
-- **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones.
+- **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones. Pass `singleLayout` when cells hold inputs, selects or buttons: only the layout for the current width is rendered, so each control exists once.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code, and sign-up when the server allows it), `SessionProvider`, `useSession`, `AuthGate`.

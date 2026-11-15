@@ -65,7 +65,7 @@ const AREAS = [
     { name: 'Field', does: 'Label + hint/error around one control, wired for screen readers.', props: 'label, hint, error, htmlFor' },
   ] },
   { title: 'Lists, filters & tables', sub: '', items: [
-    { name: 'DataTable', does: 'Sortable table with sticky header, column drag, auto right-aligned numbers, loading/empty states and a card list on phones.', props: 'columns [{key,label,render,sortValue,align,mobile}], data, rowKey, onRowClick, defaultSort, onReorder | reorderable+storageKey, loading, filtered, onClearFilters, stickyHeader, dense' },
+    { name: 'DataTable', does: 'Sortable table with sticky header, column drag, auto right-aligned numbers, loading/empty states and a card list on phones.', props: 'columns [{key,label,render,sortValue,align,mobile}], data, rowKey, onRowClick, defaultSort, onReorder | reorderable+storageKey, loading, filtered, onClearFilters, stickyHeader, dense, singleLayout (render only the active layout; use when cells hold controls)' },
     { name: 'SortTh', also: ['useSort', 'sortRows'], does: 'Sortable header cell for a table you build yourself.', props: 'col, sort (from useSort(rows, {values, defaultSort}) -> {rows, sortBy, sortDir, onSort})' },
     { name: 'ColumnOrder', also: ['useColumnOrder', 'orderColumns'], does: 'Show, hide and move columns, remembered per browser or account.', props: 'useColumnOrder(prefKey, columns, {load, save}) -> {columns, onReorder, menu}; <ColumnOrder {...cols.menu} />' },
     { name: 'FilterMenu', also: ['filterSummary'], does: 'Checklist dropdown for a category filter.', props: 'label, allLabel, options [{value,label}], value [], onChange(values), align' },

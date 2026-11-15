@@ -231,4 +231,57 @@ describe('DataTable', () => {
     expect(table().getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['Total', 'Name', 'City']);
     localStorage.removeItem('dt-test');
   });
+
+  describe('singleLayout', () => {
+    const original = window.matchMedia;
+    let phone = false;
+    const listeners = new Set();
+    const mockMedia = () => {
+      window.matchMedia = (query) => ({
+        get matches() { return phone && query.includes('max-width'); },
+        media: query,
+        addEventListener: (_, fn) => listeners.add(fn),
+        removeEventListener: (_, fn) => listeners.delete(fn),
+      });
+    };
+    afterEach(() => { window.matchMedia = original; phone = false; listeners.clear(); });
+    const COLS_INPUT = [
+      { key: 'name', label: 'Name', mobile: 'title' },
+      { key: 'city', label: 'City', render: (v, r) => <input id={`city-${r.id}`} aria-label={`City for ${r.name}`} defaultValue={v} /> },
+    ];
+
+    it('renders only the table on a wide screen, so each control exists once', () => {
+      mockMedia();
+      render(<DataTable columns={COLS_INPUT} data={DATA} singleLayout />);
+      expect(screen.getByRole('table')).toBeTruthy();
+      expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+      expect(screen.getAllByLabelText('City for Ana')).toHaveLength(1);
+    });
+
+    it('renders only the cards on a phone and follows width changes', () => {
+      phone = true;
+      mockMedia();
+      render(<DataTable columns={COLS_INPUT} data={DATA} singleLayout />);
+      expect(screen.queryByRole('table')).toBeNull();
+      expect(screen.getAllByRole('listitem')).toHaveLength(3);
+      expect(screen.getAllByLabelText('City for Ana')).toHaveLength(1);
+      phone = false;
+      act(() => listeners.forEach((fn) => fn()));
+      expect(screen.getByRole('table')).toBeTruthy();
+      expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    });
+
+    it('falls back to the table when matchMedia is missing', () => {
+      window.matchMedia = undefined;
+      render(<DataTable columns={COLS} data={DATA} singleLayout />);
+      expect(screen.getByRole('table')).toBeTruthy();
+      expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    });
+
+    it('still renders both layouts by default', () => {
+      mockMedia();
+      render(<DataTable columns={COLS_INPUT} data={DATA} />);
+      expect(screen.getAllByLabelText('City for Ana')).toHaveLength(2);
+    });
+  });
 });

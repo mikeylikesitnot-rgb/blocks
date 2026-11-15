@@ -170,7 +170,7 @@
       "area": "Components",
       "status": "live",
       "since": "2026-11-14",
-      "description": "Sortable table with a sticky header, drag-to-reorder columns (optionally remembered), auto right-aligned numbers, loading/empty/filtered states, and a card list on phones.",
+      "description": "Sortable table with a sticky header, drag-to-reorder columns (optionally remembered), auto right-aligned numbers, loading/empty/filtered states, and a card list on phones; singleLayout (v0.11.0) renders only the active layout so controls in cells exist once.",
       "branch": null,
       "spec": null,
       "mockup": null,

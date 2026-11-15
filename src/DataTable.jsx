@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, isValidElement } from 'react';
+import { useMemo, useRef, useState, useSyncExternalStore, isValidElement } from 'react';
 import { cx } from './cx.js';
 import { EmptyState, SkeletonRows } from './States.jsx';
 import { GripIcon } from './icons.jsx';
@@ -24,16 +24,24 @@ import { SortTh, sortRows } from './SortTh.jsx';
  * (e.g. server-side sorting); onSort alone without sortBy is still controlled.
  * Column order: pass onReorder(from, to) to own it, or `reorderable` (plus an
  * optional `storageKey`) to let the table keep and remember it itself.
+ *
+ * By default both layouts are rendered and CSS shows one. Pass `singleLayout`
+ * when cells hold controls (inputs, selects, buttons): only the layout for the
+ * current width is rendered (via matchMedia), so each control exists once, with
+ * no duplicate ids, labels, tab stops or effects.
  */
 export function DataTable({
   columns, data, onRowClick, rowKey, rowClassName,
   sortable = true, sortBy: sortByProp, sortDir: sortDirProp, onSort, defaultSort,
   onReorder, reorderable = false, storageKey,
   loading = false, empty, filtered = false, onClearFilters,
-  dense = false, stickyHeader = false, maxHeight = '70vh', mobileCards = true,
+  dense = false, stickyHeader = false, maxHeight = '70vh', mobileCards = true, singleLayout = false,
   label, className = '',
 }) {
   const rows = data || [];
+  const phone = useMatchMedia(PHONE_QUERY);
+  const showCards = mobileCards && (!singleLayout || phone);
+  const showTable = !mobileCards || !singleLayout || !phone;
   const controlled = !!onSort;
   const [innerSort, setInnerSort] = useState(() => ({ key: defaultSort?.key ?? null, dir: defaultSort?.dir ?? 'asc' }));
   const sortBy = controlled ? sortByProp : innerSort.key;
@@ -123,7 +131,7 @@ export function DataTable({
 
   /* Phone layout: each row is a card. */
   let cards = null;
-  if (mobileCards) {
+  if (showCards) {
     const titleCol = cols.find((c) => c.mobile === 'title') || cols.find((c) => !c.mobile) || cols[0];
     const subCols = cols.filter((c) => c !== titleCol && c.mobile === 'subtitle');
     const badgeCols = cols.filter((c) => c !== titleCol && c.mobile === 'badge');
@@ -156,8 +164,8 @@ export function DataTable({
   return (
     <div className={wrapCls} aria-busy={loading || undefined}>
       {cards}
-      <div
-        className={cx('mk-dt-scroll', mobileCards && 'mk-dt-has-cards', stickyHeader && 'mk-dt-sticky')}
+      {showTable && <div
+        className={cx('mk-dt-scroll', mobileCards && !singleLayout && 'mk-dt-has-cards', stickyHeader && 'mk-dt-sticky')}
         style={stickyHeader ? { maxHeight } : undefined}
       >
         <table className="mk-dt-table" aria-label={label}>
@@ -199,8 +207,25 @@ export function DataTable({
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
     </div>
+  );
+}
+
+/* Matches kit.css: cards below 768px, table from 768px up. */
+const PHONE_QUERY = '(max-width: 767.98px)';
+
+/** Live result of a media query; false where matchMedia is missing (SSR, old test envs). */
+function useMatchMedia(query) {
+  return useSyncExternalStore(
+    (onChange) => {
+      if (typeof window === 'undefined' || !window.matchMedia) return () => {};
+      const mql = window.matchMedia(query);
+      mql.addEventListener?.('change', onChange);
+      return () => mql.removeEventListener?.('change', onChange);
+    },
+    () => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(query).matches : false),
+    () => false,
   );
 }
 

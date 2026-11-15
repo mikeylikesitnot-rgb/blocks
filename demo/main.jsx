@@ -171,6 +171,20 @@ function Demo() {
             maxHeight="420px"
           />
           <DataTable label="Empty" columns={TRIP_COLS} data={[]} dense empty={{ title: 'No trips yet', body: 'Import an export to start.' }} />
+          <DataTable
+            label="Trips with controls"
+            singleLayout
+            dense
+            columns={[
+              { key: 'guest', label: 'Guest', mobile: 'title' },
+              { key: 'status', label: 'Status', sortable: false, render: (v, r) => (
+                <Select aria-label={`Status for ${r.guest}`} defaultValue={v}>
+                  {[...new Set(TRIPS.map((t) => t.status))].map((s) => <option key={s} value={s}>{s}</option>)}
+                </Select>
+              ) },
+            ]}
+            data={TRIPS.slice(0, 4)}
+          />
         </div>
       )}
 
