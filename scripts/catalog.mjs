@@ -71,7 +71,7 @@ const AREAS = [
     { name: 'FilterMenu', also: ['filterSummary'], does: 'Checklist dropdown for a category filter.', props: 'label, allLabel, options [{value,label}], value [], onChange(values), align' },
     { name: 'RangeFilter', does: 'Number-range dropdown (price, cost, $/day, days): two-handle slider plus Min/Max boxes.', props: 'label, allLabel, value [min,max] (null = open), bounds, step, onChange(min,max), format, formatValue, unit ("/day" after the figures)' },
     { name: 'useSavedFilters', does: 'A list\'s filters in the URL, remembered per session and saved per browser or account; a shared link wins.', props: '(prefKey, keys, {load, save, linkKeys}) -> {filters, setFilters, resetFilters}' },
-    { name: 'listParam', does: 'Parse "a,b" from a filter param into an array.', props: '(value)' },
+    { name: 'listParam', also: ['listValue'], does: 'Parse "a,b" from a filter param into an array; listValue joins ticks back (null when none), escaping commas inside values.', props: '(value); listValue(values)' },
     { name: 'rangeParam', does: 'Read [min, max] numbers from two params.', props: '(params, minKey, maxKey, legacyKey)' },
     { name: 'inRange', does: 'Whether a number passes a [min, max] range (null = open end).', props: '(n, [min, max])' },
     { name: 'rangeBounds', does: 'Slider ends from the data, rounded to step, widened to include a picked range.', props: '(values, step, picked)' },

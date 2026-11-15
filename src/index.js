@@ -6,7 +6,7 @@ export { EmptyState, Skeleton, SkeletonRows, SkeletonStats, Banner, ErrorBanner 
 export { DataTable } from './DataTable.jsx';
 export { Modal, OverlayProvider, useConfirm, useAlert, useToast } from './Overlay.jsx';
 export { matchesQuery, useUrlState, useUrlList, patchUrl, URL_EVENT } from './search.js';
-export { listParam, rangeParam, inRange, rangeBounds, rangeSummary, money, shortMoney } from './filters.js';
+export { listParam, listValue, rangeParam, inRange, rangeBounds, rangeSummary, money, shortMoney } from './filters.js';
 export { useSavedFilters } from './savedFilters.js';
 export { RangeFilter } from './RangeFilter.jsx';
 export { SortTh, useSort, sortRows } from './SortTh.jsx';

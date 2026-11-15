@@ -6,7 +6,7 @@
 
 ## Done
 
-- 2026-11-15: v0.10.0 RangeFilter `unit` ("$40–$90/day", "Up to $90/day"; also a `unit` option on rangeSummary) and `URL_EVENT` exported, so a router app (TuroApp) can tell the URL hooks about its own navigations; first used by TuroApp list filters
+- 2026-11-15: v0.10.0 RangeFilter `unit` ("$40–$90/day", "Up to $90/day"; also a `unit` option on rangeSummary), `listValue` (joins checklist ticks, escaping commas inside values; listParam undoes it) and `URL_EVENT` exported, so a router app (TuroApp) can tell the URL hooks about its own navigations; first used by TuroApp list filters
 - 2026-11-15: v0.9.0 renamed mn-kit to Blocks (`@mn/blocks`, repo `mikeylikesitnot-rgb/blocks`); apps switch their imports and dependency to `github:mikeylikesitnot-rgb/blocks#v0.9.0`. Catalog (F-019): CATALOG.md, one generated line per export, checked by `npm run verify`
 - 2026-11-15: v0.8.0 attachments (F-018): FileDrop, usePasteFiles (paste a screenshot anywhere in a panel, even while typing), AttachmentGrid with Lightbox and a `preview` flag; first used by AIAgent
 - 2026-11-15: v0.7.0 rich text editor (F-017): `@mn/kit/editor` (then mn-kit, now Blocks) merges AutoDealer's and TuroApp's Tiptap editors, saving the same HTML; Tiptap packages are optional peer dependencies. TuroApp adopts it first; AutoDealer later

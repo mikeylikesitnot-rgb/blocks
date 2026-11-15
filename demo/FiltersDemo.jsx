@@ -1,6 +1,6 @@
 import {
   FilterMenu, RangeFilter, ColumnOrder, DataTable, SortTh, Panel, Toolbar, SearchInput, Button, Badge,
-  useSavedFilters, useColumnOrder, useSort, useUrlState, listParam, rangeParam, inRange, rangeBounds, matchesQuery, money,
+  useSavedFilters, useColumnOrder, useSort, useUrlState, listParam, listValue, rangeParam, inRange, rangeBounds, matchesQuery, money,
 } from '../src/index.js';
 
 const MAKES = ['Honda', 'Toyota', 'Ford', 'Chevrolet', 'Nissan'];
@@ -45,7 +45,7 @@ export function FiltersDemo() {
     <div style={{ display: 'grid', gap: 16 }}>
       <Toolbar right={`${shown.length} of ${CARS.length} cars`}>
         <SearchInput value={q} onChange={setQ} placeholder="Make, model, year" />
-        <FilterMenu label="Make" allLabel="All makes" value={make} onChange={(v) => setFilters({ make: v.join(',') || null })}
+        <FilterMenu label="Make" allLabel="All makes" value={make} onChange={(v) => setFilters({ make: listValue(v) })}
           options={MAKES.map((m) => ({ value: m, label: m, count: CARS.filter((c) => c.make === m).length }))} />
         <RangeFilter label="Price" allLabel="Any price" value={price} step={500}
           bounds={rangeBounds(CARS.map((c) => c.price), 500, price)}

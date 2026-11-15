@@ -17,7 +17,16 @@ const getter = (params) => {
 const posInt = (v) => (v != null && /^[1-9][0-9]*$/.test(String(v)) ? Number(v) : null);
 
 /** A checklist's values from one comma-separated param (?make=Honda,Toyota). Empty pieces dropped. */
-export const listParam = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+export const listParam = (v) => String(v ?? '').split(',').map((x) => x.trim()).filter(Boolean)
+  .map((x) => x.replace(/%2C/gi, ',').replace(/%25/g, '%'));
+
+/**
+ * The other way: a checklist's values as one param, or null when none (so it
+ * drops out of the URL). A comma or % inside a value is escaped ("Dallas, TX"
+ * -> "Dallas%2C TX"), which listParam undoes.
+ *   setFilters({ location: listValue(ticked) })
+ */
+export const listValue = (values) => (values || []).map((x) => String(x).replace(/%/g, '%25').replace(/,/g, '%2C')).join(',') || null;
 
 /**
  * A number range kept as two params (?minPrice=5000&maxPrice=12000), whole
