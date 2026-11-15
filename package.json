@@ -4,6 +4,7 @@
   "description": "Michael's shared kit: React UI (tokens, components, login page, optional rich text editor) and Express server pieces (auth, email, rate limits).",
   "type": "module",
   "license": "UNLICENSED",
+  "repository": "github:mikeylikesitnot-rgb/mn-kit",
   "private": true,
   "main": "src/index.js",
   "exports": {
@@ -20,7 +21,8 @@
   "files": [
     "src",
     "server",
-    "README.md"
+    "README.md",
+    "CATALOG.md"
   ],
   "sideEffects": [
     "**/*.css"
@@ -29,7 +31,10 @@
     "dev": "vite demo",
     "build:demo": "vite build demo",
     "test": "vitest run",
-    "example": "node examples/server.js"
+    "example": "node examples/server.js",
+    "catalog": "node scripts/catalog.mjs",
+    "catalog:check": "node scripts/catalog.mjs --check",
+    "verify": "npm run catalog:check && npm test && npm run build:demo"
   },
   "peerDependencies": {
     "@tiptap/pm": "^3.20.1",

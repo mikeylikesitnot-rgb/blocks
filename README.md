@@ -232,7 +232,12 @@ Why it works this way: [docs/decisions/auth.md](docs/decisions/auth.md).
 ```bash
 npm install
 npm run dev       # demo of every component at http://localhost:5173
-npm test          # vitest
+npm test          # vitest (includes the CATALOG.md check)
+npm run catalog   # rewrite CATALOG.md after adding or changing an export
 ```
+
+[CATALOG.md](CATALOG.md) lists every export in one line each, for agents and apps to
+read instead of the source. It is generated from `scripts/catalog.mjs`: a new export
+needs a line there, or `npm test` fails.
 
 Rules for changes are in [docs/decisions/style-guide.md](docs/decisions/style-guide.md).
