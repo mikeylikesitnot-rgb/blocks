@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState, isValidElement } from 'react';
 import { cx } from './cx.js';
 import { EmptyState, SkeletonRows } from './States.jsx';
-import { ArrowUpIcon, ArrowDownIcon, ChevronsUpDownIcon, GripIcon } from './icons.jsx';
+import { GripIcon } from './icons.jsx';
+import { SortTh, sortRows } from './SortTh.jsx';
 
 /**
  * Sortable table that turns into a card list on phones (< 768px).
@@ -60,14 +61,7 @@ export function DataTable({
     if (controlled || !sortBy) return rows;
     const col = columns.find((c) => c.key === sortBy);
     if (!col) return rows;
-    const get = col.sortValue || ((r) => r[col.key]);
-    const sign = sortDir === 'desc' ? -1 : 1;
-    // Stable sort; blanks always go last whatever the direction.
-    return rows.map((r, i) => [r, get(r), i]).sort((a, b) => {
-      const ea = isBlank(a[1]), eb = isBlank(b[1]);
-      if (ea || eb) return ea === eb ? a[2] - b[2] : ea ? 1 : -1;
-      return compare(a[1], b[1]) * sign || a[2] - b[2];
-    }).map((x) => x[0]);
+    return sortRows(rows, col.sortValue || ((r) => r[col.key]), sortDir);
   }, [rows, columns, sortBy, sortDir, controlled]);
 
   const wrapCls = cx('mk-dt', dense && 'mk-dt-dense', className);
@@ -93,10 +87,10 @@ export function DataTable({
     return v == null || v === '' ? <span className="mk-dt-blank">—</span> : v;
   };
 
-  const clickSort = (key) => {
-    const nextDir = sortBy === key && sortDir === 'asc' ? 'desc' : 'asc';
-    if (controlled) onSort(key, nextDir);
-    else setInnerSort({ key, dir: nextDir });
+  const sortState = {
+    sortBy,
+    sortDir,
+    onSort: (key, nextDir) => (controlled ? onSort(key, nextDir) : setInnerSort({ key, dir: nextDir })),
   };
 
   const moveColumn = (from, to) => {
@@ -171,30 +165,25 @@ export function DataTable({
             <tr>
               {cols.map((col, idx) => {
                 const canSort = sortable && col.sortable !== false;
-                const active = sortBy === col.key;
-                const SortIcon = active ? (sortDir === 'asc' ? ArrowUpIcon : ArrowDownIcon) : ChevronsUpDownIcon;
+                const thProps = {
+                  key: col.key,
+                  className: cx(dragIdx === idx && 'mk-dt-dragging', overIdx === idx && dragIdx !== idx && 'mk-dt-drop'),
+                  style: col.width ? { width: col.width } : undefined,
+                  draggable: canReorder || undefined,
+                  onDragStart: canReorder ? (e) => dragStart(e, idx) : undefined,
+                  onDragOver: canReorder ? (e) => dragOver(e, idx) : undefined,
+                  onDrop: canReorder ? (e) => drop(e, idx) : undefined,
+                  onDragEnd: canReorder ? dragEnd : undefined,
+                };
+                const grip = canReorder ? <GripIcon className="mk-dt-grip" /> : null;
+                if (canSort) {
+                  const { key, ...rest } = thProps;
+                  return <SortTh key={key} {...rest} col={col.key} sort={sortState} align={aligns[col.key]} prefix={grip}>{col.label}</SortTh>;
+                }
+                const { key, ...rest } = thProps;
                 return (
-                  <th
-                    key={col.key}
-                    scope="col"
-                    aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
-                    className={cx(alignCls(col.key), dragIdx === idx && 'mk-dt-dragging', overIdx === idx && dragIdx !== idx && 'mk-dt-drop')}
-                    style={col.width ? { width: col.width } : undefined}
-                    draggable={canReorder || undefined}
-                    onDragStart={canReorder ? (e) => dragStart(e, idx) : undefined}
-                    onDragOver={canReorder ? (e) => dragOver(e, idx) : undefined}
-                    onDrop={canReorder ? (e) => drop(e, idx) : undefined}
-                    onDragEnd={canReorder ? dragEnd : undefined}
-                  >
-                    <span className="mk-dt-th">
-                      {canReorder && <GripIcon className="mk-dt-grip" />}
-                      {canSort ? (
-                        <button type="button" className={cx('mk-dt-sort', active && 'mk-dt-sort-active')} onClick={() => clickSort(col.key)}>
-                          {col.label}
-                          <SortIcon className="mk-dt-sort-icon" />
-                        </button>
-                      ) : col.label}
-                    </span>
+                  <th key={key} scope="col" {...rest} className={cx(alignCls(col.key), rest.className)}>
+                    <span className="mk-dt-th">{grip}{col.label}</span>
                   </th>
                 );
               })}
@@ -213,15 +202,6 @@ export function DataTable({
       </div>
     </div>
   );
-}
-
-const isBlank = (v) => v == null || v === '' || (typeof v === 'number' && Number.isNaN(v));
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-function compare(a, b) {
-  if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
-  if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
-  return collator.compare(String(a), String(b));
 }
 
 /** Saved keys first (if still present), then any new columns in their given order. */

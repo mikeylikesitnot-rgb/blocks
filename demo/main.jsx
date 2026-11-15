@@ -9,6 +9,7 @@ import {
 } from '../src/index.js';
 import { HubDemo } from './HubDemo.jsx';
 import { EditorDemo } from './EditorDemo.jsx';
+import { FiltersDemo } from './FiltersDemo.jsx';
 
 const TRIPS = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
@@ -63,7 +64,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'editor', label: 'Editor' }, { value: 'login', label: 'Login' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'filters', label: 'Filters' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'editor', label: 'Editor' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -171,6 +172,8 @@ function Demo() {
           <DataTable label="Empty" columns={TRIP_COLS} data={[]} dense empty={{ title: 'No trips yet', body: 'Import an export to start.' }} />
         </div>
       )}
+
+      {tab === 'filters' && <FiltersDemo />}
 
       {tab === 'states' && (
         <div style={{ display: 'grid', gap: 16 }}>

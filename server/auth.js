@@ -229,7 +229,10 @@ export function createAuth(options) {
     if (!email || !(await codes.verify(email, req.body?.code))) {
       return res.status(401).json({ error: 'That code is wrong or has expired' });
     }
-    const user = await findOrCreate(email, {});
+    // A sign-up form sends the person's name with the code; it is used only
+    // when this sign-in creates the account.
+    const name = String(req.body?.name ?? '').trim().slice(0, 100);
+    const user = await findOrCreate(email, name ? { name } : {});
     if (!user) return res.status(401).json({ error: 'That code is wrong or has expired' });
     res.json({ user: await startSession(res, user, 'code') });
   }));

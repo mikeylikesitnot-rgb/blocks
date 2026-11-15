@@ -109,7 +109,9 @@ function GoogleButton({ clientId, onCredential }) {
 
 /**
  * Sign-in screen: password, Google, and emailed code, showing whichever the
- * server has turned on (GET {apiBase}/config).
+ * server has turned on (GET {apiBase}/config). When the server has `signup`
+ * on and can send email, it also offers "Create an account": name + email,
+ * then the emailed code signs them in and creates the account.
  *   <LoginPage appName="NextGen" logo="/logo.svg" subtitle="Staff sign-in" />
  * Inside a SessionProvider it signs the app in by itself; otherwise pass onSignedIn(user).
  */
@@ -117,7 +119,9 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
   const session = useContext(SessionCtx);
   const apiBase = apiProp || session?.apiBase || '/api/auth';
   const [config, setConfig] = useState(null);
-  const [step, setStep] = useState('start'); // start | code
+  const [step, setStep] = useState('start'); // start | signup | code
+  const [signingUp, setSigningUp] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -153,14 +157,32 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
     if (!email.trim()) throw new Error('Enter your email first');
     await post(`${apiBase}/code`, { email });
     setCode('');
+    setSigningUp(false);
     setStep('code');
     setNotice(`If ${email.trim()} has an account, a 6-digit code is on its way.`);
   });
 
+  const sendSignupCode = run('signup', async () => {
+    if (!name.trim()) throw new Error('Enter your name');
+    if (!email.trim()) throw new Error('Enter your email');
+    await post(`${apiBase}/code`, { email });
+    setCode('');
+    setSigningUp(true);
+    setStep('code');
+    setNotice(`We sent a 6-digit code to ${email.trim()}. Enter it to create your account.`);
+  });
+
+  const resend = signingUp ? sendSignupCode : sendCode;
+
   const verifyCode = run('verify', async () => {
-    const { user } = await post(`${apiBase}/code/verify`, { email, code });
+    // The name only matters when this sign-in creates the account.
+    const body = signingUp ? { email, code, name: name.trim() } : { email, code };
+    const { user } = await post(`${apiBase}/code/verify`, body);
     done(user);
   });
+
+  const goTo = (next) => { setStep(next); setError(null); };
+  const canSignup = !!(config?.signup && config?.code);
 
   const google = (credential) => run('google', async () => {
     const { user } = await post(`${apiBase}/google`, { credential });
@@ -172,7 +194,9 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
       <div className="mk-auth-card">
         <div className="mk-auth-head">
           {logo && <img src={logo} alt="" className="mk-auth-logo" />}
-          <h1 className="mk-auth-title">{step === 'code' ? 'Check your email' : `Sign in${appName ? ` to ${appName}` : ''}`}</h1>
+          <h1 className="mk-auth-title">
+            {step === 'code' ? 'Check your email' : step === 'signup' ? `Create your account${appName ? ` on ${appName}` : ''}` : `Sign in${appName ? ` to ${appName}` : ''}`}
+          </h1>
           {step === 'start' && subtitle && <p className="mk-auth-sub">{subtitle}</p>}
           {step === 'code' && notice && <p className="mk-auth-sub">{notice}</p>}
         </div>
@@ -210,7 +234,28 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
                 <p className="mk-auth-hint">Forgot your password? Sign in with an emailed code, then set a new one.</p>
               )}
             </form>
+            {canSignup && (
+              <p className="mk-auth-switch">
+                New here? <button type="button" className="mk-link-btn" onClick={() => goTo('signup')}>Create an account</button>
+              </p>
+            )}
           </>
+        ) : step === 'signup' && canSignup ? (
+          <form onSubmit={sendSignupCode} noValidate>
+            <Field label="Name">
+              <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required autoFocus />
+            </Field>
+            <Field label="Email">
+              <Input type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </Field>
+            <div className="mk-auth-actions">
+              <Button type="submit" block loading={busy === 'signup'} disabled={!name.trim() || !email.trim() || !!busy}>Email me a code</Button>
+            </div>
+            <p className="mk-auth-hint">We’ll email you a 6-digit code to confirm it’s your address.</p>
+            <p className="mk-auth-switch">
+              Already have an account? <button type="button" className="mk-link-btn" onClick={() => goTo('start')}>Sign in</button>
+            </p>
+          </form>
         ) : (
           <form onSubmit={verifyCode} noValidate>
             <Field label="6-digit code">
@@ -225,10 +270,10 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
               />
             </Field>
             <div className="mk-auth-actions">
-              <Button type="submit" block loading={busy === 'verify'} disabled={code.length !== 6 || !!busy}>Sign in</Button>
+              <Button type="submit" block loading={busy === 'verify'} disabled={code.length !== 6 || !!busy}>{signingUp ? 'Create account' : 'Sign in'}</Button>
               <div className="mk-auth-row">
-                <Button variant="ghost" size="sm" onClick={() => { setStep('start'); setError(null); }}>Use a different email</Button>
-                <Button variant="ghost" size="sm" disabled={!!busy} onClick={sendCode}>Send a new code</Button>
+                <Button variant="ghost" size="sm" onClick={() => goTo(signingUp ? 'signup' : 'start')}>Use a different email</Button>
+                <Button variant="ghost" size="sm" disabled={!!busy} onClick={resend}>Send a new code</Button>
               </div>
             </div>
           </form>
