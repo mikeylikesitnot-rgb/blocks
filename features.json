@@ -4,7 +4,7 @@
     "summary": "Blocks (formerly mn-kit, @mn/blocks): shared kit for all apps: React UI (tokens with dark mode, components, login page) and Express sign-in, email templates and rate limits, with a CATALOG.md of every export.",
     "kind": "library",
     "stack": "React, plain CSS, Express, jose, nodemailer, Vite, Vitest",
-    "path": "/Users/michaelnguyen/apps/mn-kit",
+    "path": "/Users/michaelnguyen/apps/blocks",
     "order": 17
   },
   "features": [
