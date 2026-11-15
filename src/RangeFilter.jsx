@@ -20,11 +20,12 @@ const SETTLE_MS = 300;
  * param drops out of the URL. Dragging reports once the hand rests (~300ms);
  * typing reports on Enter or leaving the box; closing reports anything pending.
  * `format` is the short figure on the button, `formatValue` the exact one in
- * the boxes and for screen readers (both default to dollars).
+ * the boxes and for screen readers (both default to dollars). `unit` is added
+ * after the figures on the button: unit="/day" reads "$40–$90/day".
  */
 export function RangeFilter({
   label, allLabel, value = [null, null], bounds, step = 1, onChange,
-  format = shortMoney, formatValue = money, upTo = 'Up to', className = '', align = 'start',
+  format = shortMoney, formatValue = money, upTo = 'Up to', unit = '', className = '', align = 'start',
 }) {
   const [lo, hi] = bounds;
   const [open, setOpen] = useState(false);
@@ -79,7 +80,7 @@ export function RangeFilter({
 
   const pct = (n) => `${((n - lo) / (hi - lo || 1)) * 100}%`;
   const shown = drag ? asValue(drag) : [value[0] ?? null, value[1] ?? null];
-  const summary = rangeSummary(shown, { allLabel: allLabel || label, upTo, format });
+  const summary = rangeSummary(shown, { allLabel: allLabel || label, upTo, format, unit });
   const active = shown[0] != null || shown[1] != null;
 
   return (

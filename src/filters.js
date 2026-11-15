@@ -72,9 +72,12 @@ export function shortMoney(n) {
   return `$${Number.isInteger(k) ? k : k.toFixed(1)}k`;
 }
 
-/** What the closed RangeFilter button says: "Any price", "$5k–$12k", "$5k+", "Up to $12k". */
-export function rangeSummary([min, max], { allLabel = 'Any', upTo = 'Up to', format = shortMoney } = {}) {
+/**
+ * What the closed RangeFilter button says: "Any price", "$5k–$12k", "$5k+", "Up to $12k".
+ * `unit` goes after the figures: "$40–$90/day", "$40+/day", "Up to $90/day".
+ */
+export function rangeSummary([min, max], { allLabel = 'Any', upTo = 'Up to', format = shortMoney, unit = '' } = {}) {
   if (min == null && max == null) return allLabel;
-  if (min != null && max != null) return `${format(min)}–${format(max)}`;
-  return min != null ? `${format(min)}+` : `${upTo} ${format(max)}`;
+  if (min != null && max != null) return `${format(min)}–${format(max)}${unit}`;
+  return min != null ? `${format(min)}+${unit}` : `${upTo} ${format(max)}${unit}`;
 }

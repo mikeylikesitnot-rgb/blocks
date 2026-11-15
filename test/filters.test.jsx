@@ -4,6 +4,7 @@ import { render, screen, fireEvent, cleanup, act, renderHook, waitFor } from '@t
 import {
   listParam, rangeParam, inRange, rangeBounds, rangeSummary, shortMoney, useSavedFilters,
   RangeFilter, SortTh, useSort, ColumnOrder, useColumnOrder, orderColumns, DataTable,
+  useUrlState, URL_EVENT,
 } from '../src/index.js';
 
 const resetAll = () => {
@@ -58,6 +59,12 @@ describe('filter helpers', () => {
     expect(rangeSummary([null, 10000])).toBe('Up to $10k');
     expect(rangeSummary([5000, 12000])).toBe('$5k–$12k');
     expect(rangeSummary([5500, null])).toBe('$5.5k+');
+    // unit follows the figures, never the "any" label
+    const day = { allLabel: 'Any $/day', unit: '/day', format: (n) => `$${n}` };
+    expect(rangeSummary([null, null], day)).toBe('Any $/day');
+    expect(rangeSummary([40, 90], day)).toBe('$40–$90/day');
+    expect(rangeSummary([40, null], day)).toBe('$40+/day');
+    expect(rangeSummary([null, 90], day)).toBe('Up to $90/day');
     expect(shortMoney(750)).toBe('$750');
   });
 });
@@ -210,6 +217,32 @@ describe('RangeFilter', () => {
     fireEvent.blur(min);
     expect(out()).toEqual([5000, 10000]);
     expect(btn.textContent).toBe('$5k–$10k');
+  });
+
+  it('unit is appended to the button summary and its aria-label', () => {
+    function PerDay() {
+      const [v, setV] = useState([null, 90]);
+      return <RangeFilter label="Avg $/day" allLabel="Any $/day" value={v} bounds={[0, 150]} step={5} unit="/day"
+        format={(n) => `$${n}`} onChange={(a, b) => setV([a, b])} />;
+    }
+    render(<PerDay />);
+    const btn = screen.getByRole('button', { name: 'Avg $/day: Up to $90/day' });
+    expect(btn.textContent).toBe('Up to $90/day');
+    fireEvent.click(btn);
+    const min = screen.getByLabelText('Min');
+    fireEvent.change(min, { target: { value: '40' } });
+    fireEvent.keyDown(min, { key: 'Enter' });
+    expect(btn.textContent).toBe('$40–$90/day');
+  });
+
+  it('URL_EVENT makes URL hooks re-read after a navigation they did not make', () => {
+    window.history.replaceState(null, '', '/?status=live');
+    const { result } = renderHook(() => useUrlState('status'));
+    expect(result.current[0]).toBe('live');
+    window.history.pushState(null, '', '/'); // a router's own navigation: no popstate
+    expect(result.current[0]).toBe('live');
+    act(() => { window.dispatchEvent(new Event(URL_EVENT)); });
+    expect(result.current[0]).toBe('');
   });
 
   it('a handle dragged to its end drops the limit; reports after the hand rests', () => {

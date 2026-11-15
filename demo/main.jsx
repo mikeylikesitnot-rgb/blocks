@@ -55,7 +55,7 @@ function Demo() {
       <PageHeader
         title="Blocks"
         subtitle="Shared UI for every app. Tokens, one button system, layout, inputs, states, overlays."
-        meta={<Badge tone="info">v0.8</Badge>}
+        meta={<Badge tone="info">v0.10</Badge>}
         actions={
           <>
             <Segmented label="Theme" value={theme} onChange={setTheme}
