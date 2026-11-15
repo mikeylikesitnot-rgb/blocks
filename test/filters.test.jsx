@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
-import { useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { render, screen, fireEvent, cleanup, act, renderHook, waitFor } from '@testing-library/react';
 import {
   listParam, rangeParam, inRange, rangeBounds, rangeSummary, shortMoney, useSavedFilters,
@@ -89,13 +89,41 @@ describe('useSavedFilters', () => {
     expect(qs().get('bogus')).toBeNull();
   });
 
-  it('otherwise the saved set is applied, and unmounting parks the filters', () => {
+  it('otherwise the saved set is applied, already on the first render', () => {
     localStorage.setItem('t.f', JSON.stringify({ status: 'live', maxPrice: '9000' }));
-    const { result, unmount } = renderHook(() => useSavedFilters('t.f', KEYS));
+    const seen = [];
+    const { result } = renderHook(() => { const r = useSavedFilters('t.f', KEYS); seen.push(r.filters.status); return r; }, { wrapper: StrictMode });
+    expect(seen[0]).toBe('live');
+    expect(seen.every((v) => v === 'live')).toBe(true);
     expect(result.current.filters).toEqual({ status: 'live', maxPrice: '9000' });
     expect(qs().toString()).toBe('status=live&maxPrice=9000');
-    unmount();
-    expect(JSON.parse(sessionStorage.getItem('mk.parked.t.f'))).toEqual({ status: 'live', maxPrice: '9000' });
+  });
+
+  it('an unchanged link is not remembered: coming back clean shows the saved set', () => {
+    localStorage.setItem('t.f', JSON.stringify({ status: 'live' }));
+    go('?status=planned');
+    renderHook(() => useSavedFilters('t.f', KEYS)).unmount();
+    expect(sessionStorage.getItem('mk.parked.t.f')).toBeNull();
+    go('');
+    const { result } = renderHook(() => useSavedFilters('t.f', KEYS));
+    expect(result.current.filters.status).toBe('live');
+  });
+
+  it('a link the person then changes is remembered for the session and saved', () => {
+    go('?status=planned');
+    const a = renderHook(() => useSavedFilters('t.f', KEYS));
+    act(() => a.result.current.setFilters({ maxPrice: 8000 }));
+    a.unmount();
+    go('');
+    const { result } = renderHook(() => useSavedFilters('t.f', KEYS));
+    expect(result.current.filters).toEqual({ status: 'planned', maxPrice: '8000' });
+  });
+
+  it('StrictMode calls load and applies the account set', async () => {
+    const load = vi.fn(async () => ({ status: 'kia' }));
+    const { result } = renderHook(() => useSavedFilters('t.f', KEYS, { load }), { wrapper: StrictMode });
+    await waitFor(() => expect(result.current.filters.status).toBe('kia'));
+    expect(JSON.parse(localStorage.getItem('t.f'))).toEqual({ status: 'kia' });
   });
 
   it('setFilters saves the whole set; resetFilters clears URL and saved copy', () => {
@@ -197,6 +225,41 @@ describe('RangeFilter', () => {
     expect(screen.getByLabelText('Price maximum').getAttribute('aria-valuetext')).toBe('No limit');
   });
 
+  it('Enter keeps focus in the box, and the box follows a reset', () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: 'Any price' }));
+    const min = screen.getByLabelText('Min');
+    min.focus();
+    fireEvent.change(min, { target: { value: '5000' } });
+    fireEvent.keyDown(min, { key: 'Enter' });
+    expect(out()).toEqual([5000, null]);
+    expect(document.activeElement).toBe(screen.getByLabelText('Min'));
+    expect(screen.getByLabelText('Min').value).toBe('5000');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.getByLabelText('Min').value).toBe('');
+  });
+
+  it('a max of 0 means no limit, matching what the URL keeps', () => {
+    render(<Harness initial={[null, 10000]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Price: Up to $10k' }));
+    const max = screen.getByLabelText('Max');
+    fireEvent.change(max, { target: { value: '0' } });
+    fireEvent.blur(max);
+    expect(out()).toEqual([null, null]);
+    expect(max.value).toBe('');
+    expect(rangeParam({ maxPrice: '0' }, 'minPrice', 'maxPrice')).toEqual([null, null]);
+  });
+
+  it('the high handle sits on top unless the low one is past the middle', () => {
+    render(<Harness initial={[null, 1000]} />);
+    fireEvent.click(screen.getAllByRole('button')[0]);
+    const z = (name) => Number(screen.getByLabelText(name).style.zIndex);
+    expect(z('Price maximum')).toBeGreaterThan(z('Price minimum'));
+    fireEvent.change(screen.getByLabelText('Price maximum'), { target: { value: '20000' } });
+    fireEvent.change(screen.getByLabelText('Price minimum'), { target: { value: '15000' } });
+    expect(z('Price minimum')).toBeGreaterThan(z('Price maximum'));
+  });
+
   it('closing reports a pending drag; Clear resets; Esc closes and refocuses', () => {
     render(<Harness />);
     const btn = screen.getByRole('button', { name: 'Any price' });
@@ -239,6 +302,17 @@ describe('SortTh + useSort', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Name' }));
     expect(names()).toBe('abc');
     expect(th.getAttribute('aria-sort')).toBeNull();
+  });
+});
+
+describe('useSort memo', () => {
+  it('keeps the same sorted array across renders with an inline values object', () => {
+    const rows = [{ v: 2 }, { v: 1 }];
+    const { result, rerender } = renderHook(() => useSort(rows, { values: { v: (r) => r.v }, defaultSort: { key: 'v' } }));
+    const first = result.current.rows;
+    expect(first.map((r) => r.v)).toEqual([1, 2]);
+    rerender();
+    expect(result.current.rows).toBe(first);
   });
 });
 

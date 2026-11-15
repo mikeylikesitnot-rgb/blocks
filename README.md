@@ -127,7 +127,7 @@ const cols = useColumnOrder('cars.columns', COLUMNS, prefs);
 ```
 
 What the URL starts with: a link naming any key or `linkKey` is shown as is and saves nothing;
-otherwise this browser session's filters for that list (parked when it unmounts); otherwise
+otherwise the filters last set on that list in this browser session; otherwise
 the saved set. Every `setFilters` saves the whole set; `resetFilters` clears the URL and the
 saved copy. For a table you build by hand, `useSort(rows)` + `<SortTh col="name" sort={sort}>`
 gives the same sortable headers DataTable has. See the demo's **Filters** tab.

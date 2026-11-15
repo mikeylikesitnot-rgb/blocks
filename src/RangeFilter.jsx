@@ -103,28 +103,32 @@ export function RangeFilter({
               type="range" min={lo} max={hi} step={step} value={dMin}
               aria-label={`${label} minimum`}
               aria-valuetext={dMin <= lo ? 'No minimum' : formatValue(dMin)}
-              // Pushed to the top end, the low handle sits under the high one; lift it.
-              style={{ zIndex: dMin > lo + (hi - lo) / 2 ? 2 : 1 }}
+              // The high handle sits on top, so handles that meet at the low end
+              // can still be pulled apart upward; past the middle, lift the low
+              // one instead so handles meeting at the top can be pulled down.
+              style={{ zIndex: dMin > lo + (hi - lo) / 2 ? 3 : 1 }}
               onChange={(e) => setDrag([Math.min(Number(e.target.value), dMax), dMax])}
             />
             <input
               type="range" min={lo} max={hi} step={step} value={dMax}
               aria-label={`${label} maximum`}
               aria-valuetext={dMax >= hi ? 'No limit' : formatValue(dMax)}
+              style={{ zIndex: 2 }}
               onChange={(e) => setDrag([dMin, Math.max(Number(e.target.value), dMin)])}
             />
           </div>
           <div className="mk-range-fields">
             <NumberBox
-              key={`min-${dMin}`} label="Min" value={dMin <= lo ? null : dMin} placeholder={formatValue(lo)}
+              label="Min" value={dMin <= lo ? null : dMin} placeholder={formatValue(lo)} zeroIsEmpty
               onCommit={(n) => {
                 const min = n == null ? lo : Math.max(lo, n);
                 commit(min > dMax ? [min, hi] : [min, dMax]);
               }}
             />
             <NumberBox
-              key={`max-${dMax}`} label="Max" value={dMax >= hi ? null : dMax} placeholder="No limit"
+              label="Max" value={dMax >= hi ? null : dMax} placeholder="No limit" zeroIsEmpty
               onCommit={(n) => {
+                // A max of 0 means nothing (zeroIsEmpty): no limit, as the URL reads it.
                 const max = n == null ? hi : n;
                 commit(max < dMin ? [lo, max] : [dMin, max]);
               }}
@@ -143,14 +147,28 @@ export function RangeFilter({
 
 // A number box that reports on Enter or blur, not per keystroke ("1" on the
 // way to "12000" isn't a filter). "$" and commas are forgiven; empty = no limit.
-function NumberBox({ label, value, placeholder, onCommit }) {
-  const [text, setText] = useState(value == null ? '' : String(value));
-  const commit = () => {
-    const raw = text.replace(/[$,\s]/g, '');
-    if (raw === '') { if (value != null) onCommit(null); return; }
+// It follows `value` (a handle moving, a reset) while it isn't being typed in,
+// and is never remounted, so Enter keeps the focus in the box.
+function NumberBox({ label, value, placeholder, onCommit, zeroIsEmpty = false }) {
+  const show = (v) => (v == null ? '' : String(v));
+  const [text, setText] = useState(show(value));
+  // Follow `value` unless the box already says the same number ("$10,000" typed
+  // and committed stays as typed); typing never changes `value`, so this
+  // doesn't clobber a figure half-typed.
+  useEffect(() => {
+    setText((cur) => (parse(cur) === value ? cur : show(value)));
+  }, [value]);
+  const parse = (t) => {
+    const raw = t.replace(/[$,\s]/g, '');
+    if (raw === '') return null;
     const n = Math.round(Number(raw));
-    if (!Number.isFinite(n) || n < 0) { setText(value == null ? '' : String(value)); return; }
-    if (n !== value) onCommit(n);
+    if (!Number.isFinite(n) || n < 0) return undefined;
+    return zeroIsEmpty && n === 0 ? null : n;
+  };
+  const commit = () => {
+    const n = parse(text);
+    if (n === undefined || (n === null && text.trim() !== '')) setText(show(value));
+    if (n !== undefined && n !== value) onCommit(n);
   };
   return (
     <label className="mk-range-field">

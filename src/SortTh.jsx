@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { cx } from './cx.js';
 import { ArrowUpIcon, ArrowDownIcon, ChevronsUpDownIcon } from './icons.jsx';
 
@@ -72,9 +72,16 @@ export function sortRows(rows, get, dir = 'asc') {
  */
 export function useSort(rows, { values = {}, defaultSort } = {}) {
   const [state, setState] = useState(() => ({ key: defaultSort?.key ?? null, dir: defaultSort?.dir ?? 'asc' }));
-  const list = rows || [];
-  const get = state.key ? (values[state.key] || ((r) => r[state.key])) : null;
-  const sorted = useMemo(() => (get ? sortRows(list, get, state.dir) : list), [list, state, get]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Read through a ref: `values` is usually an inline object, and a new one
+  // every render must not re-sort. Sorting reruns when rows or the sort change.
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
+  const sorted = useMemo(() => {
+    const list = rows || [];
+    if (!state.key) return list;
+    const key = state.key;
+    return sortRows(list, valuesRef.current[key] || ((r) => r[key]), state.dir);
+  }, [rows, state]);
   return {
     rows: sorted,
     sortBy: state.key,
