@@ -1,6 +1,6 @@
 # Style guide
 
-These rules apply to every app built on mn-kit. They come from what went
+These rules apply to every app built on Blocks. They come from what went
 wrong in AutoDealer and TuroApp before each grew a single system.
 
 ## Tokens, never literals

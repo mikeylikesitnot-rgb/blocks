@@ -1,6 +1,6 @@
 # Sign-in and email
 
-`@mn/kit/server` is AutoDealer's sign-in (its `docs/decisions/auth.md`) made
+`@mn/blocks/server` is AutoDealer's sign-in (its `docs/decisions/auth.md`) made
 app-agnostic. These rules are why it is shaped the way it is; keep them.
 
 **The session is a JWT in an httpOnly cookie.** Never localStorage: page

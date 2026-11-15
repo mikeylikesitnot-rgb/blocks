@@ -39,7 +39,7 @@ export function createMailer({ getConfig, transport, logger = console, ...static
     const cfg = await config();
     if (!cfg.host && !transport) {
       if (isProd()) throw new Error('Email is not set up: no SMTP host.');
-      logger.info?.(`\n[mn-kit mailer: no SMTP_HOST, printing instead]\nTo: ${[].concat(to).join(', ')}\nSubject: ${subject}\n\n${text || html}\n`);
+      logger.info?.(`\n[blocks mailer: no SMTP_HOST, printing instead]\nTo: ${[].concat(to).join(', ')}\nSubject: ${subject}\n\n${text || html}\n`);
       return { printed: true };
     }
     const info = await transportFor(cfg).sendMail({
@@ -49,7 +49,7 @@ export function createMailer({ getConfig, transport, logger = console, ...static
   }
 
   function sendQuietly(message) {
-    send(message).catch((err) => logger.warn?.('[mn-kit mailer] send failed:', err?.message || err));
+    send(message).catch((err) => logger.warn?.('[blocks mailer] send failed:', err?.message || err));
   }
 
   async function verify() {

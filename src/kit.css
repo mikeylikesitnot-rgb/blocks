@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------
-   mn-kit component styles. Every value reads a token from tokens.css.
+   Blocks component styles. Every value reads a token from tokens.css.
    Classes are prefixed .mk- so they never collide with an app's own CSS.
    Import order in an app:  tokens.css, kit.css, then the app's CSS.
    ------------------------------------------------------------------ */

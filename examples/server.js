@@ -12,7 +12,7 @@ import {
   loginCodeEmail, passwordChangedEmail, inviteEmail, notificationEmail,
 } from '../server/index.js';
 
-const brand = { appName: 'mn-kit demo', color: '#1a56db', url: 'http://localhost:5173' };
+const brand = { appName: 'Blocks demo', color: '#1a56db', url: 'http://localhost:5173' };
 const users = memoryUserStore([
   { email: 'demo@example.com', name: 'Demo', role: 'admin', passwordHash: await hashPassword('demo-password') },
 ]);
@@ -46,4 +46,4 @@ app.get('/emails/:name', (req, res) => {
   res.type(req.query.text ? 'text/plain' : 'html').send(req.query.text ? make().text : make().html);
 });
 
-app.listen(3009, () => console.log('mn-kit example API on http://localhost:3009  (emails: /emails)'));
+app.listen(3009, () => console.log('Blocks example API on http://localhost:3009  (emails: /emails)'));

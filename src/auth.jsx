@@ -4,7 +4,7 @@ import { Input, Field } from './Inputs.jsx';
 import { Banner } from './States.jsx';
 
 /*
- * Front end for @mn/kit/server's createAuth router.
+ * Front end for @mn/blocks/server's createAuth router.
  *
  *   <SessionProvider apiBase="/api/auth">
  *     <AuthGate login={{ appName: 'NextGen', logo: '/logo.svg' }}>

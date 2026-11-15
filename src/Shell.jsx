@@ -71,7 +71,7 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
  *   <NavList value={slug} onChange={setSlug} items={[
  *     { value: '', label: 'All projects', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: 42 },
  *     { section: 'Projects', count: 9 },
- *     { value: 'kit', label: 'mn-kit', icon: <InitialIcon name="mn-kit" color={2} />, count: '2 building', hot: true },
+ *     { value: 'kit', label: 'Blocks', icon: <InitialIcon name="Blocks" color={2} />, count: '2 building', hot: true },
  *   ]} />
  */
 export function NavList({ items, value, onChange, label, className = '' }) {

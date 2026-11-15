@@ -1,9 +1,9 @@
-# mn-kit
+# Blocks
 
-Shared code for all of Michael's web apps, so no app rebuilds buttons,
+`@mn/blocks` (called mn-kit, `@mn/kit`, before v0.9.0). Shared code for all of Michael's web apps, so no app rebuilds buttons,
 modals, a login screen, sign-in sessions or emails again.
 
-**UI (`@mn/kit`)**
+**UI (`@mn/blocks`)**
 
 - **Tokens:** colour, type, spacing, radius and shadow from AutoDealer, plus a dark theme.
 - **One button system:** 7 variants, 4 sizes, loading and icon-only.
@@ -18,10 +18,10 @@ modals, a login screen, sign-in sessions or emails again.
 - **States:** EmptyState (empty / filtered / error), Skeleton, SkeletonRows, SkeletonStats, Banner.
 - **Overlays:** Modal (bottom sheet on phones), plus `useConfirm`, `useAlert` and `useToast` to replace `window.confirm`/`alert`.
 - **Login:** `LoginPage` (password, Google, emailed code, and sign-up when the server allows it), `SessionProvider`, `useSession`, `AuthGate`.
-- **Rich text editor (`@mn/kit/editor`, optional):** `RichTextEditor` (Tiptap), `RichText` viewer, lazy `RichTextField`. See below.
+- **Rich text editor (`@mn/blocks/editor`, optional):** `RichTextEditor` (Tiptap), `RichText` viewer, lazy `RichTextField`. See below.
 - **Helpers:** `matchesQuery` (forgiving search), `useUrlState` (state kept in `?key=`), `useUrlList` (a list kept as `?key=a,b`), `useTheme` (light/dark/system), and inline SVG icons.
 
-**Server (`@mn/kit/server`, Express)**
+**Server (`@mn/blocks/server`, Express)**
 - **Sign-in:** `createAuth()` covers password, Google and email-code login, password reset, logout on every device, 30-minute idle and 8-hour hard timeouts, and roles.
 - **Users:** `pgStores(pool)` + `authSchemaSql()` for a new Postgres app, `memoryUserStore()` for prototypes, or three functions over an existing users table.
 - **Email:** `createMailer()` (SMTP; prints to the console in dev) and branded templates: `loginCodeEmail`, `passwordChangedEmail`, `inviteEmail`, `notificationEmail`, `renderEmail`.
@@ -33,11 +33,11 @@ no icon library, no router needed. Peer dependencies: React 18 or later for the 
 ## Use it in an app
 
 ```bash
-npm install github:mikeylikesitnot-rgb/mn-kit
+npm install github:mikeylikesitnot-rgb/blocks
 ```
 
-A client-only app needs nothing else. An app that uses `@mn/kit/server` or
-`@mn/kit/email` also installs the server packages itself (since v0.5.0 they are
+A client-only app needs nothing else. An app that uses `@mn/blocks/server` or
+`@mn/blocks/email` also installs the server packages itself (since v0.5.0 they are
 optional peer dependencies, so client installs stay small):
 
 ```bash
@@ -46,21 +46,21 @@ npm install jose bcryptjs express-rate-limit nodemailer
 
 ```jsx
 // main.jsx
-import '@mn/kit/kit.css';            // tokens + components; import before the app's own CSS
-import { OverlayProvider } from '@mn/kit';
+import '@mn/blocks/kit.css';            // tokens + components; import before the app's own CSS
+import { OverlayProvider } from '@mn/blocks';
 
 createRoot(root).render(<OverlayProvider><App /></OverlayProvider>);
 ```
 
 ```jsx
-import { PageHeader, Button, Panel, Badge, useConfirm, useToast, PlusIcon } from '@mn/kit';
+import { PageHeader, Button, Panel, Badge, useConfirm, useToast, PlusIcon } from '@mn/blocks';
 
 <PageHeader title="Customers" actions={<Button icon={PlusIcon}>Add</Button>} />
 ```
 
 Add `class="mk-root"` to `<body>` for the kit's base font, colour and background (optional).
 
-**Update** to the newest version: `npm update @mn/kit`. To pin a version: `github:mikeylikesitnot-rgb/mn-kit#v0.1.0`.
+**Update** to the newest version: `npm update @mn/blocks`. To pin a version: `github:mikeylikesitnot-rgb/blocks#v0.1.0`.
 
 **Re-brand** by overriding tokens after the import. Never edit kit CSS from an app:
 
@@ -74,7 +74,7 @@ Add `class="mk-root"` to `<body>` for the kit's base font, colour and background
 
 ```jsx
 import { SidebarLayout, NavList, InitialIcon, ThemeSwitch, FilterMenu, GroupedList, Badge,
-  SearchInput, Toolbar, Button, EmptyState, useUrlState, useUrlList } from '@mn/kit';
+  SearchInput, Toolbar, Button, EmptyState, useUrlState, useUrlList } from '@mn/blocks';
 
 const [q, setQ] = useUrlState('q');
 const [status, setStatus] = useUrlList('status');           // ?status=live,planned
@@ -83,7 +83,7 @@ const [status, setStatus] = useUrlList('status');           // ?status=live,plan
   <NavList label="Projects" value={slug} onChange={setSlug} items={[
     { value: '', label: 'All', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: 42 },
     { section: 'Projects' },
-    { value: 'kit', label: 'mn-kit', icon: <InitialIcon name="mn-kit" color={1} />, count: '2 building', hot: true },
+    { value: 'kit', label: 'Blocks', icon: <InitialIcon name="Blocks" color={1} />, count: '2 building', hot: true },
   ]} />
 }>
   <Toolbar>
@@ -107,7 +107,7 @@ a slider for money, everything in the URL, saved, and a shared link always wins.
 
 ```jsx
 import { FilterMenu, RangeFilter, ColumnOrder, DataTable, useSavedFilters, useColumnOrder,
-  listParam, rangeParam, inRange, rangeBounds } from '@mn/kit';
+  listParam, rangeParam, inRange, rangeBounds } from '@mn/blocks';
 
 // load/save are optional; without them the set is saved in this browser only.
 const prefs = { load: (k) => api.get(`/ui-prefs/${k}`), save: (k, v) => api.put(`/ui-prefs/${k}`, v) };
@@ -136,7 +136,7 @@ gives the same sortable headers DataTable has. See the demo's **Filters** tab.
 
 ## Rich text editor
 
-`@mn/kit/editor` is a separate entry point, so apps that never edit rich text
+`@mn/blocks/editor` is a separate entry point, so apps that never edit rich text
 never load Tiptap. Install the Tiptap packages yourself when you use it (they are
 optional peer dependencies, like the server packages):
 
@@ -145,7 +145,7 @@ npm install @tiptap/react @tiptap/pm @tiptap/starter-kit
 ```
 
 ```jsx
-import { RichTextEditor, RichText } from '@mn/kit/editor';
+import { RichTextEditor, RichText } from '@mn/blocks/editor';
 
 <RichTextEditor value={notes} onChange={setNotes} ariaLabel="Notes" storageKey="myapp_notes_height" />
 <RichText html={row.notes} />   // read-only view, styled like the editor
@@ -164,11 +164,11 @@ import { RichTextEditor, RichText } from '@mn/kit/editor';
   can be added. A value with no tags (plain text from before an app had an editor) is shown with
   its line breaks. Still sanitize on the server when saving: the editor is not a security control.
 - **Bundle size:** Tiptap is ~130KB gzipped. In an app whose customers download one bundle,
-  import from `@mn/kit/editor/lite` instead: `RichTextField` (same props) loads the editor as
+  import from `@mn/blocks/editor/lite` instead: `RichTextField` (same props) loads the editor as
   its own chunk the first time it renders, and `RichText` never needs Tiptap.
 - **CSS:** `editor.css` (`mk-rte-*` classes) is imported by the editor modules themselves, so it
   ships only with apps that use them. It reads the kit tokens, so `kit.css` must be loaded too.
-  `@mn/kit/editor.css` is exported if you would rather import it yourself.
+  `@mn/blocks/editor.css` is exported if you would rather import it yourself.
 - Helpers: `isBlankHtml`, `sameHtml`, `htmlToText`, `toRichHtml`, `editorExtensions()`
   (the exact Tiptap schema, for a server-side or test round trip).
 
@@ -178,7 +178,7 @@ Server (Express + Postgres):
 
 ```js
 import pg from 'pg';
-import { createAuth, pgStores, authSchemaSql, createMailer } from '@mn/kit/server';
+import { createAuth, pgStores, authSchemaSql, createMailer } from '@mn/blocks/server';
 
 const pool = new pg.Pool();
 await pool.query(authSchemaSql());                 // users + login_codes tables, idempotent
@@ -209,7 +209,7 @@ straight away and then set a password. Already have a users table? Pass your own
 Front end:
 
 ```jsx
-import { SessionProvider, AuthGate, useSession } from '@mn/kit';
+import { SessionProvider, AuthGate, useSession } from '@mn/blocks';
 
 <SessionProvider>
   <AuthGate login={{ appName: 'My App', logo: '/logo.svg' }}><App /></AuthGate>
@@ -221,7 +221,7 @@ const { user, signOut } = useSession();
 Send any email:
 
 ```js
-import { notificationEmail } from '@mn/kit/server';
+import { notificationEmail } from '@mn/blocks/server';
 mailer.sendQuietly({ to: 'me@x.com', ...notificationEmail({ brand, title: 'New lead', rows: [['Name', 'Ana']] }) });
 ```
 

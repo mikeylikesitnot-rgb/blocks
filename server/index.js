@@ -1,4 +1,4 @@
-// @mn/kit/server: Express sign-in, email, rate limits, secret encryption.
+// @mn/blocks/server: Express sign-in, email, rate limits, secret encryption.
 export { createAuth, hashPassword, makeGoogleVerifier } from './auth.js';
 export { memoryUserStore, pgStores, authSchemaSql } from './stores.js';
 export { createCodes, memoryCodeStore } from './codes.js';

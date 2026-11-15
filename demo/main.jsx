@@ -53,7 +53,7 @@ function Demo() {
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px 96px' }}>
       <PageHeader
-        title="mn-kit"
+        title="Blocks"
         subtitle="Shared UI for every app. Tokens, one button system, layout, inputs, states, overlays."
         meta={<Badge tone="info">v0.8</Badge>}
         actions={
@@ -196,7 +196,7 @@ function Demo() {
 
       {tab === 'login' && (
         <Panel flush>
-          <LoginPage appName="mn-kit demo" subtitle="Try demo@example.com / demo-password (run npm run example)"
+          <LoginPage appName="Blocks demo" subtitle="Try demo@example.com / demo-password (run npm run example)"
             onSignedIn={(u) => toast(`Signed in as ${u.email}`)} />
         </Panel>
       )}

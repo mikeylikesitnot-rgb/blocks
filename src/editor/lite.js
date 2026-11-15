@@ -1,4 +1,4 @@
-/* @mn/kit/editor/lite: everything that works without loading Tiptap up front.
+/* @mn/blocks/editor/lite: everything that works without loading Tiptap up front.
    RichText renders a stored value; RichTextField loads the editor as its own
    chunk the first time it renders. Use this from bundles customers download. */
 export { RichText } from './RichText.jsx';

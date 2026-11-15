@@ -152,7 +152,7 @@ export function createAuth(options) {
         if (!req.get(BACKGROUND_HEADER)) setCookie(res, await sign({ email: session.user.email, ...pick(session.claims) }));
       }
     } catch (err) {
-      logger.warn?.('[mn-kit auth] session lookup failed:', err?.message || err);
+      logger.warn?.('[blocks auth] session lookup failed:', err?.message || err);
     }
     next();
   }
@@ -216,7 +216,7 @@ export function createAuth(options) {
         try {
           await mailer.send({ to: email, ...loginCodeEmail({ brand, code, minutes: CODE_TTL_MS / 60000 }) });
         } catch (err) {
-          logger.error?.('[mn-kit auth] could not send sign-in code:', err?.message || err);
+          logger.error?.('[blocks auth] could not send sign-in code:', err?.message || err);
           return res.status(502).json({ error: 'We couldn’t send the email. Please try again in a minute.' });
         }
       }

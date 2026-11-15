@@ -6,7 +6,7 @@ import {
 
 const PROJECTS = [
   { slug: 'autodealer', name: 'AutoDealer', summary: 'NextGen Cars and Trucks website and admin console.' },
-  { slug: 'mn-kit', name: 'mn-kit', summary: 'Shared React UI and Express sign-in for every app.' },
+  { slug: 'blocks', name: 'Blocks', summary: 'Shared React UI and Express sign-in for every app.' },
   { slug: 'project-hub', name: 'Project Hub', summary: 'Every feature across all projects in one page.' },
   { slug: 'turo', name: 'TuroApp', summary: 'Trip, payout and expense tracking for the Turo fleet.' },
 ];
@@ -15,8 +15,8 @@ const FEATURES = [
   F('autodealer', 'F-014', 'List filters', 'Admin', 'live', '2026-11-11', 'Checklist dropdowns and a price slider on every list, saved per account.'),
   F('autodealer', 'F-021', 'Payment calculator', 'Public site', 'progress', null, 'Monthly payment estimate on each vehicle page.', 'autodealer-payment-calc'),
   F('autodealer', 'F-022', 'Delinquency report', 'Financing', 'planned', null, 'Accounts 30, 60 and 90 days late, with a call list.'),
-  F('mn-kit', 'F-002', 'Button system', 'Components', 'live', '2026-11-13', 'One Button with 7 variants, 4 sizes, icons, loading and link mode.'),
-  F('mn-kit', 'F-011', 'Sidebar layout', 'Layout', 'progress', null, 'Sidebar that becomes a slide-out menu on phones.', 'hub-ui'),
+  F('blocks', 'F-002', 'Button system', 'Components', 'live', '2026-11-13', 'One Button with 7 variants, 4 sizes, icons, loading and link mode.'),
+  F('blocks', 'F-011', 'Sidebar layout', 'Layout', 'progress', null, 'Sidebar that becomes a slide-out menu on phones.', 'hub-ui'),
   F('project-hub', 'F-004', 'Requests for any project', 'Requests', 'live', '2026-11-13', 'Add an idea for any project, then accept or drop it.'),
   F('project-hub', 'F-008', 'Sync all projects', 'Sync', 'live', '2026-11-13', 'Say "sync all" and every changed feature list updates.'),
   F('turo', 'F-006', 'Invoice import', 'Trips', 'planned', null, 'Read Turo invoice emails into trips automatically.'),

@@ -1,10 +1,10 @@
 {
-  "name": "@mn/kit",
-  "version": "0.8.0",
-  "description": "Michael's shared kit: React UI (tokens, components, login page, optional rich text editor) and Express server pieces (auth, email, rate limits).",
+  "name": "@mn/blocks",
+  "version": "0.9.0",
+  "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",
-  "repository": "github:mikeylikesitnot-rgb/mn-kit",
+  "repository": "github:mikeylikesitnot-rgb/blocks",
   "private": true,
   "main": "src/index.js",
   "exports": {

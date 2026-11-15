@@ -8,7 +8,7 @@ import { EmptyState, SkeletonRows } from './States.jsx';
  * side cells. A header row on desktop; stacked cards on phones. String
  * ids, titles, descriptions and side cells get search matches marked.
  *   <GroupedList query={q} columns={['ID', 'Status', 'Feature', 'Area', 'Live since']}
- *     groups={[{ key: 'kit', title: 'mn-kit', note: '3 shown', items: [
+ *     groups={[{ key: 'kit', title: 'Blocks', note: '3 shown', items: [
  *       { key: 'F-001', id: 'F-001', badge: <Badge tone="success">Live</Badge>,
  *         title: 'Buttons', description: 'One system', links: <a href="…">Spec</a>, aside: ['Components', '2026-11-13'] },
  *     ] }]} />

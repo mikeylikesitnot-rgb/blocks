@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------
-   mn-kit rich text editor (@mn/kit/editor). Imported by the editor's own
+   Blocks rich text editor (@mn/blocks/editor). Imported by the editor's own
    modules, so it lands in the same chunk as the editor and apps without an
    editor never ship it. Needs kit.css (tokens, Button) loaded first.
    ------------------------------------------------------------------ */

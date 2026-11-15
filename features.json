@@ -1,7 +1,7 @@
 {
   "project": {
-    "name": "mn-kit",
-    "summary": "Shared kit for all apps: React UI (tokens with dark mode, components, login page) and Express sign-in, email templates and rate limits.",
+    "name": "Blocks",
+    "summary": "Blocks (formerly mn-kit, @mn/blocks): shared kit for all apps: React UI (tokens with dark mode, components, login page) and Express sign-in, email templates and rate limits, with a CATALOG.md of every export.",
     "kind": "library",
     "stack": "React, plain CSS, Express, jose, nodemailer, Vite, Vitest",
     "path": "/Users/michaelnguyen/apps/mn-kit",
@@ -220,6 +220,18 @@
       "since": "2026-11-15",
       "description": "FileDrop (drag, drop or pick with type/size checks), usePasteFiles (paste a screenshot anywhere in a panel, even while typing), AttachmentGrid with image thumbnails, a Lightbox and download rows. UI only; apps store the files. First used by AIAgent.",
       "branch": "kit-attachments",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "F-019",
+      "name": "Catalog (CATALOG.md)",
+      "area": "Docs",
+      "status": "live",
+      "since": "2026-11-15",
+      "description": "CATALOG.md lists every export in one line (what it does, key props, import line), generated from the real exports by npm run catalog; npm run verify fails when an export has no line or the file is stale.",
+      "branch": "kit-catalog",
       "spec": null,
       "mockup": null,
       "fromRequest": null
