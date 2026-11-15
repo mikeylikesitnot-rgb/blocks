@@ -28,3 +28,5 @@ export const ArrowUpIcon = make(<path d="M12 19V5M5 12l7-7 7 7" />);
 export const ArrowDownIcon = make(<path d="M12 5v14M19 12l-7 7-7-7" />);
 export const ChevronsUpDownIcon = make(<path d="m7 15 5 5 5-5M7 9l5-5 5 5" />);
 export const GripIcon = make(<><circle cx="9" cy="6" r="1" /><circle cx="9" cy="12" r="1" /><circle cx="9" cy="18" r="1" /><circle cx="15" cy="6" r="1" /><circle cx="15" cy="12" r="1" /><circle cx="15" cy="18" r="1" /></>);
+export const PaperclipIcon = make(<path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5" />);
+export const FileIcon = make(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /></>);

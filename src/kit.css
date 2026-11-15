@@ -553,3 +553,29 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
   .mk-dt-cards { display: none; }
   .mk-dt-has-cards { display: block; }
 }
+
+/* ───────── Attachments ───────── */
+.mk-drop { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mk-space-3); padding: var(--mk-space-3); border: 1px dashed var(--mk-border-strong); border-radius: var(--mk-radius); background: var(--mk-surface); transition: border-color 0.15s, background 0.15s; }
+.mk-drop-compact { padding: var(--mk-space-2); gap: var(--mk-space-2); }
+.mk-drop-over { border-color: var(--mk-primary); border-style: solid; background: var(--mk-surface-2); }
+.mk-drop-disabled { opacity: 0.6; }
+.mk-drop-hint { font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-att { display: grid; gap: var(--mk-space-2); }
+.mk-att-thumbs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: var(--mk-space-2); }
+.mk-att-thumb { position: relative; aspect-ratio: 4 / 3; }
+.mk-att-thumb-btn { display: block; width: 100%; height: 100%; padding: 0; border: 1px solid var(--mk-border); border-radius: var(--mk-radius); background: var(--mk-surface-2); overflow: hidden; cursor: zoom-in; }
+.mk-att-thumb-btn:focus-visible { outline: 2px solid var(--mk-primary); outline-offset: 2px; }
+.mk-att-thumb-btn img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mk-att-thumb .mk-att-remove { position: absolute; top: 4px; right: 4px; background: var(--mk-surface); box-shadow: var(--mk-shadow); }
+.mk-att-spin { position: absolute; inset: 0; display: grid; place-items: center; color: var(--mk-muted); font-size: 18px; }
+.mk-att-pending { opacity: 0.6; }
+.mk-att-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mk-att-file { display: flex; align-items: center; gap: var(--mk-space-2); min-height: 32px; padding: 2px var(--mk-space-2); border-radius: var(--mk-radius-sm); font-size: var(--mk-text-sm); }
+.mk-att-file:hover { background: var(--mk-surface-2); }
+.mk-att-file-icon { display: grid; color: var(--mk-muted); font-size: 16px; }
+.mk-att-error .mk-att-file-icon, .mk-att-error .mk-att-meta { color: var(--mk-danger); }
+.mk-att-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mk-text); text-decoration: none; }
+a.mk-att-name:hover { text-decoration: underline; }
+.mk-att-meta { flex-shrink: 0; font-size: var(--mk-text-xs); color: var(--mk-muted); font-variant-numeric: tabular-nums; }
+.mk-lightbox .mk-modal-body { display: grid; place-items: center; background: var(--mk-surface-2); }
+.mk-lightbox-img { display: block; max-width: 100%; max-height: 75dvh; object-fit: contain; border-radius: var(--mk-radius-sm); }

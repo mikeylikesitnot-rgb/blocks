@@ -83,6 +83,13 @@ const AREAS = [
     { name: 'useUrlList', does: 'A list kept in ?key=a,b.', props: '(key) -> [values, setValues]' },
     { name: 'patchUrl', does: 'Set or remove some query params and tell URL hooks to re-read.', props: '({key: value|null})' },
   ] },
+  { title: 'Attachments', sub: '', items: [
+    { name: 'FileDrop', does: 'Drop zone with an "Add files" button; rejected files (type or size) go to onReject. UI only: the app uploads.', props: 'onFiles(files), onReject([{file,reason}]), accept [\'image/*\', \'.log\'], maxSize, multiple, disabled, label, hint, compact' },
+    { name: 'usePasteFiles', also: ['filesFromPaste', 'nameClipboardFile'], does: 'Paste a screenshot or file anywhere inside a panel; text fields keep pasted text; clipboard images get a dated name.', props: '(ref | null, onFiles, {enabled})' },
+    { name: 'AttachmentGrid', does: 'Images as thumbnails that open a Lightbox, other files as download rows; optional remove button.', props: 'items [{id,name,size,mime,url,thumbUrl,pending,error,preview}], onRemove(item), removeLabel' },
+    { name: 'Lightbox', does: 'Full-size image in a modal (bottom sheet on phones).', props: 'open, onClose, src, alt, title, footer' },
+    { name: 'checkFiles', also: ['fileAccepted', 'formatBytes', 'isImage'], does: 'File helpers: split into ok/rejected by type and size, match an accept list, "1.4 MB" sizes, image mime check.', props: '(files, {accept, maxSize}) -> {ok, rejected}' },
+  ] },
   { title: 'States & overlays', sub: '', items: [
     { name: 'EmptyState', does: 'Empty, no-results or error message with the right icon and action.', props: 'variant empty|filtered|error, title, body, action, onClear, onRetry, compact' },
     { name: 'Skeleton', does: 'One grey loading block.', props: 'className, style' },
