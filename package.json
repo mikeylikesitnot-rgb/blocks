@@ -1,6 +1,6 @@
 {
   "name": "@mn/kit",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Michael's shared kit: React UI (tokens, components, login page, optional rich text editor) and Express server pieces (auth, email, rate limits).",
   "type": "module",
   "license": "UNLICENSED",

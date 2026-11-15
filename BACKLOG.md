@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-15: v0.8.0 attachments (F-018): FileDrop, usePasteFiles (paste a screenshot anywhere in a panel, even while typing), AttachmentGrid with Lightbox and a `preview` flag; first used by AIAgent
 - 2026-11-15: v0.7.0 rich text editor (F-017): `@mn/kit/editor` merges AutoDealer's and TuroApp's Tiptap editors, saving the same HTML; Tiptap packages are optional peer dependencies. TuroApp adopts it first; AutoDealer later
 - 2026-11-14: v0.6.0 sign-up on LoginPage (F-016): "Create an account" with name + email and an emailed code, shown when the server has `signup` and a mailer; `/code/verify` takes the name for the new account
 - 2026-11-14: v0.6.0 list filter pieces (F-015): RangeFilter, useSavedFilters, listParam/rangeParam/inRange/rangeBounds, SortTh + useSort, ColumnOrder + useColumnOrder, per AutoDealer list-filters.md
