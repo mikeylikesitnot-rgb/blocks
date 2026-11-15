@@ -28,6 +28,11 @@ export function htmlToText(html) {
     .trim();
 }
 
+// HTML = starts with a tag, or contains a tag an editor writes. A plain note that
+// merely mentions "<tag>" must stay plain text, or its line breaks are lost.
+const HTML_TAG = /<\/?(p|div|span|br|b|i|u|s|strong|em|a|ul|ol|li|blockquote|pre|code|h[1-6]|hr|img|mark|sub|sup|table|tr|td|th)(\s[^>]*)?\/?>/i;
+const looksLikeHtml = (text) => /^\s*<[a-z!]/i.test(text) || HTML_TAG.test(text);
+
 const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /**
@@ -38,7 +43,7 @@ const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace
 export function toRichHtml(value) {
   if (!value) return '';
   const text = String(value);
-  if (/<[a-z][^>]*>/i.test(text)) return text;
+  if (looksLikeHtml(text)) return text;
   return text
     .split(/\n{2,}/)
     .map((block) => `<p>${escapeHtml(block).replace(/\n/g, '<br>')}</p>`)

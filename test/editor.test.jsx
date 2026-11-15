@@ -232,6 +232,9 @@ describe('value helpers', () => {
     expect(toRichHtml('<p>x</p>')).toBe('<p>x</p>');
     expect(toRichHtml('a & b')).toBe('<p>a &amp; b</p>');
     expect(toRichHtml(null)).toBe('');
+    expect(toRichHtml('line1\nline2\n\npara2 <tag> & x')).toBe('<p>line1<br>line2</p><p>para2 &lt;tag&gt; &amp; x</p>');
+    expect(toRichHtml('see <b>this</b>')).toBe('see <b>this</b>');
+    expect(toRichHtml('<div>x</div>')).toBe('<div>x</div>');
   });
   it('htmlToText flattens', () => {
     expect(htmlToText('<h2>T</h2><p>a&amp;b<br>c</p><ul><li><p>d</p></li></ul>')).toBe('T a&b c d');
