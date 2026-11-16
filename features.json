@@ -1,5 +1,6 @@
 {
   "project": {
+    "prefix": "BLK",
     "name": "Blocks",
     "summary": "Blocks (formerly mn-kit, @mn/blocks): shared kit for all apps: React UI (tokens with dark mode, components, login page) and Express sign-in, email templates and rate limits, with a CATALOG.md of every export.",
     "kind": "library",
@@ -9,7 +10,7 @@
   },
   "features": [
     {
-      "id": "F-001",
+      "id": "BLK-001",
       "name": "Design tokens with dark mode",
       "area": "Foundation",
       "status": "live",
@@ -21,7 +22,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-002",
+      "id": "BLK-002",
       "name": "Button system",
       "area": "Components",
       "status": "live",
@@ -33,7 +34,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-003",
+      "id": "BLK-003",
       "name": "Layout components",
       "area": "Components",
       "status": "live",
@@ -45,7 +46,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-004",
+      "id": "BLK-004",
       "name": "Form inputs",
       "area": "Components",
       "status": "live",
@@ -57,7 +58,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-005",
+      "id": "BLK-005",
       "name": "Empty, loading and error states",
       "area": "Components",
       "status": "live",
@@ -69,7 +70,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-006",
+      "id": "BLK-006",
       "name": "Modal, confirm and toast",
       "area": "Overlays",
       "status": "live",
@@ -81,7 +82,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-007",
+      "id": "BLK-007",
       "name": "Search and URL state helpers",
       "area": "Helpers",
       "status": "live",
@@ -93,7 +94,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-008",
+      "id": "BLK-008",
       "name": "Sign-in server",
       "area": "Auth",
       "status": "live",
@@ -105,7 +106,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-009",
+      "id": "BLK-009",
       "name": "Login page",
       "area": "Auth",
       "status": "live",
@@ -117,7 +118,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-010",
+      "id": "BLK-010",
       "name": "Branded email",
       "area": "Email",
       "status": "live",
@@ -129,7 +130,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-011",
+      "id": "BLK-011",
       "name": "Sidebar layout",
       "area": "Layout",
       "status": "live",
@@ -141,7 +142,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-012",
+      "id": "BLK-012",
       "name": "Checklist filter menu",
       "area": "Components",
       "status": "live",
@@ -153,7 +154,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-013",
+      "id": "BLK-013",
       "name": "Grouped list with search highlight",
       "area": "Components",
       "status": "live",
@@ -165,7 +166,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-014",
+      "id": "BLK-014",
       "name": "DataTable",
       "area": "Components",
       "status": "live",
@@ -177,7 +178,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-015",
+      "id": "BLK-015",
       "name": "List filter pieces",
       "area": "Components",
       "status": "live",
@@ -189,7 +190,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-016",
+      "id": "BLK-016",
       "name": "Sign-up on the login page",
       "area": "Sign-in",
       "status": "live",
@@ -201,7 +202,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-017",
+      "id": "BLK-017",
       "name": "Rich text editor",
       "area": "Components",
       "status": "live",
@@ -213,7 +214,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-018",
+      "id": "BLK-018",
       "name": "Attachments",
       "area": "Components",
       "status": "live",
@@ -225,7 +226,7 @@
       "fromRequest": null
     },
     {
-      "id": "F-019",
+      "id": "BLK-019",
       "name": "Catalog (CATALOG.md)",
       "area": "Docs",
       "status": "live",
