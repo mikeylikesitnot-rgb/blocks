@@ -192,6 +192,7 @@ const auth = createAuth({
   brand: { appName: 'My App', color: '#1a56db', url: 'https://myapp.com', logoUrl: 'https://myapp.com/logo.png' },
   google: { clientId: process.env.GOOGLE_CLIENT_ID }, // optional
   // password: false,                             // Google-only: no password form, /login answers 404
+  // rateLimitKey: (req) => req.get('x-client-ip'), // behind a proxy chain that hides the client
 });
 
 app.use('/api/auth', auth.router);                  // /config /login /google /code /code/verify /password /logout /me

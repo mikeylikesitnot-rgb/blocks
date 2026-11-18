@@ -248,6 +248,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-021",
+      "name": "Sign-in rate limit per client behind proxies",
+      "area": "Auth",
+      "status": "live",
+      "since": "2026-11-18",
+      "description": "createAuth({ rateLimitKey }) counts sign-in attempts per client from a header your own proxy sets, so behind Tailscale serve one bad actor can't lock everyone out. IPv6 grouped by /56. First used by Project Hub.",
+      "branch": "auth-rate-key",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

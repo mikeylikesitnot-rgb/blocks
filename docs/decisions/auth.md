@@ -47,3 +47,7 @@ works locally with no setup.
 **Password sign-in can be turned off** (`password: false`, v0.12.0). For single-owner apps that sign in with
 Google only: `/login` and `/password` answer 404, `/config` reports `password: false`, and LoginPage shows just
 the Google button when email codes are off too.
+
+**Sign-in rate limits can key on a proxy's client-IP header** (`rateLimitKey: (req) => …`, v0.13.0). Without it the
+limiter keys on the socket address, which behind Tailscale serve is the same for everyone, so one bad actor
+could lock every user out. IPv6 keys are grouped by /56 (express-rate-limit's ipKeyGenerator).

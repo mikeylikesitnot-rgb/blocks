@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify, createRemoteJWKSet } from 'jose';
 import { createCodes, memoryCodeStore, CODE_TTL_MS } from './codes.js';
 import { createLimiter } from './rateLimit.js';
+import { ipKeyGenerator } from 'express-rate-limit';
 import { loginCodeEmail, passwordChangedEmail } from './email.js';
 
 /*
@@ -71,6 +72,10 @@ export function createAuth(options) {
     signup = false,
     minPasswordLength = 8,
     rateLimits = true,
+    // (req) => string | null: who a sign-in attempt counts against. Behind a proxy chain that hides the
+    // client (e.g. Tailscale serve, which rewrites X-Forwarded-For), return a client-IP header your own
+    // proxy sets. Null/empty falls back to the socket's address.
+    rateLimitKey = null,
     publicUser = (u) => ({ id: u.id, email: u.email, name: u.name ?? null, role: u.role ?? 'user' }),
     logger = console,
   } = options || {};
@@ -165,7 +170,10 @@ export function createAuth(options) {
   // ── routes ──
   const router = express.Router();
   router.use(express.json({ limit: '20kb' }));
-  const limit = (opts) => (rateLimits ? createLimiter(opts) : (_q, _s, n) => n());
+  const keyGenerator = rateLimitKey
+    ? (req) => `${ipKeyGenerator(String(rateLimitKey(req) || req.socket?.remoteAddress || 'unknown'))}`
+    : undefined;
+  const limit = (opts) => (rateLimits ? createLimiter(keyGenerator ? { ...opts, keyGenerator } : opts) : (_q, _s, n) => n());
   const loginLimiter = limit({ limit: 10, message: 'Too many sign-in attempts. Please try again later.' });
   const codeLimiter = limit({ limit: 8, message: 'Too many code requests from this device. Please try again later.' });
   const verifyLimiter = limit({ limit: 15, message: 'Too many sign-in attempts. Please try again later.' });

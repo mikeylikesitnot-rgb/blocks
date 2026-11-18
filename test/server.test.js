@@ -257,6 +257,19 @@ describe('password off (Google-only)', () => {
   });
 });
 
+describe('rateLimitKey', () => {
+  it('counts sign-in attempts per key, so one client can\'t lock out another behind the same proxy', async () => {
+    const ctx = await setup({ rateLimits: true, rateLimitKey: (req) => req.get('x-client-ip') });
+    const tryAs = (ip) => request(ctx.app).post('/api/auth/login').set('X-Client-IP', ip).send({ email: 'ana@example.com', password: 'wrong' });
+    for (let i = 0; i < 10; i++) expect((await tryAs('203.0.113.9')).status).toBe(401);
+    expect((await tryAs('203.0.113.9')).status).toBe(429);
+    expect((await tryAs('198.51.100.7')).status).toBe(401);
+    // IPv6 clients share a budget per /56, so rotating addresses doesn't buy more tries.
+    for (let i = 0; i < 10; i++) await tryAs(`2001:db8:0:1::${i + 1}`);
+    expect((await tryAs('2001:db8:0:1::ff')).status).toBe(429);
+  });
+});
+
 describe('config guards', () => {
   it('refuses a short secret and a store without the required methods', () => {
     expect(() => createAuth({ secret: 'short', users: memoryUserStore() })).toThrow(/32 characters/);
