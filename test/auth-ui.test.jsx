@@ -63,6 +63,15 @@ describe('LoginPage + AuthGate', () => {
     await waitFor(() => expect(calls.some(([u, b]) => u.endsWith('/code/verify') && b.code === '123456')).toBe(true));
   });
 
+  it('Google-only server: no email field, no password form, no divider', async () => {
+    mockServer({ password: false, code: false, google: null });
+    ui();
+    await screen.findByRole('heading', { name: 'Sign in to Test' });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByLabelText('Email')).toBeNull();
+    expect(screen.queryByText('or')).toBeNull();
+  });
+
   it('offers sign-up only when the server has signup and email codes on', async () => {
     for (const [config, shown] of [
       [{ password: true, code: true, signup: true }, true],

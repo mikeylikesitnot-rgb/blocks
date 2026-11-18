@@ -244,6 +244,19 @@ describe('google sign-in', () => {
   });
 });
 
+describe('password off (Google-only)', () => {
+  it('reports password: false, refuses /login and /password, still signs in with Google', async () => {
+    const verify = async (cred) => ({ email: cred, email_verified: true });
+    const ctx = await setup({ password: false, mailer: null, google: { clientId: 'cid', verify } });
+    expect((await request(ctx.app).get('/api/auth/config')).body).toEqual({ password: false, code: false, google: 'cid', signup: false });
+    expect((await request(ctx.app).post('/api/auth/login').send({ email: 'ana@example.com', password: 'correct horse' })).status).toBe(404);
+    const r = await request(ctx.app).post('/api/auth/google').send({ credential: 'ana@example.com' });
+    expect(r.status).toBe(200);
+    const pw = await request(ctx.app).post('/api/auth/password').set('Cookie', cookieOf(r)).send({ password: 'new password 1', currentPassword: 'correct horse' });
+    expect(pw.status).toBe(404);
+  });
+});
+
 describe('config guards', () => {
   it('refuses a short secret and a store without the required methods', () => {
     expect(() => createAuth({ secret: 'short', users: memoryUserStore() })).toThrow(/32 characters/);

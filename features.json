@@ -236,6 +236,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-020",
+      "name": "Google-only sign-in",
+      "area": "Auth",
+      "status": "live",
+      "since": "2026-11-18",
+      "description": "createAuth({ password: false }) turns off password sign-in: /login and /password answer 404, /config says so, and LoginPage shows only the Google button when email codes are off too. First used by Project Hub.",
+      "branch": "auth-password-off",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

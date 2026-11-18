@@ -116,7 +116,7 @@ const AREAS = [
     { name: 'isBlankHtml', also: ['sameHtml', 'htmlToText', 'toRichHtml'], does: 'Value helpers: blank check, equality, plain text, plain-text-to-HTML.', props: '(html)' },
   ] },
   { title: 'Server: auth', sub: '/server', items: [
-    { name: 'createAuth', does: 'Express sign-in: password, Google, email code, reset, sign-up, idle/hard timeouts, roles.', props: '{secret (32+), users, codeStore, mailer, brand, google:{clientId}, signup, idleMinutes 30, maxHours 8} -> {router, requireAuth, optionalAuth, requireRole, readSession, startSession}' },
+    { name: 'createAuth', does: 'Express sign-in: password, Google, email code, reset, sign-up, idle/hard timeouts, roles.', props: '{secret (32+), users, codeStore, mailer, brand, google:{clientId}, password (false = Google-only), signup, idleMinutes 30, maxHours 8} -> {router, requireAuth, optionalAuth, requireRole, readSession, startSession}' },
     { name: 'pgStores', also: ['authSchemaSql'], does: 'Postgres user and code stores, plus the idempotent CREATE TABLE SQL.', props: '(pool, {users, codes}) -> {userStore, codeStore}' },
     { name: 'memoryUserStore', does: 'In-memory users for tests and prototypes.', props: '(users[])' },
     { name: 'createCodes', also: ['memoryCodeStore'], does: 'One-time 6-digit codes: 10 min, 5 tries, 3 per 15 min, HMAC stored.', props: '(store, secret) -> {issue, verify}' },

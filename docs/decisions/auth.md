@@ -43,3 +43,7 @@ styles because that is what Gmail, Outlook and Apple Mail render alike. It
 escapes every value and drops any link that is not http(s). With no SMTP host
 outside production, the mailer prints the email to the console, so code sign-in
 works locally with no setup.
+
+**Password sign-in can be turned off** (`password: false`, v0.12.0). For single-owner apps that sign in with
+Google only: `/login` and `/password` answer 404, `/config` reports `password: false`, and LoginPage shows just
+the Google button when email codes are off too.

@@ -183,6 +183,8 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
 
   const goTo = (next) => { setStep(next); setError(null); };
   const canSignup = !!(config?.signup && config?.code);
+  // Google-only servers (password off, no email codes) show just the Google button.
+  const hasForm = !!config && (config.password !== false || !!config.code);
 
   const google = (credential) => run('google', async () => {
     const { user } = await post(`${apiBase}/google`, { credential });
@@ -208,10 +210,10 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
             {config.google && (
               <>
                 <GoogleButton clientId={config.google} onCredential={google} />
-                <div className="mk-auth-divider"><span>or</span></div>
+                {hasForm && <div className="mk-auth-divider"><span>or</span></div>}
               </>
             )}
-            <form onSubmit={signInPassword} noValidate>
+            {hasForm && <form onSubmit={signInPassword} noValidate>
               <Field label="Email">
                 <Input type="email" autoComplete="username" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </Field>
@@ -233,7 +235,7 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
               {config.code && config.password !== false && (
                 <p className="mk-auth-hint">Forgot your password? Sign in with an emailed code, then set a new one.</p>
               )}
-            </form>
+            </form>}
             {canSignup && (
               <p className="mk-auth-switch">
                 New here? <button type="button" className="mk-link-btn" onClick={() => goTo('signup')}>Create an account</button>

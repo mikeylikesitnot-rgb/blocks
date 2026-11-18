@@ -63,6 +63,8 @@ export function createAuth(options) {
     maxHours = 8,
     secureCookie = process.env.NODE_ENV === 'production',
     google = null,
+    // false = no password sign-in (e.g. Google-only): /login and /password answer 404, the login page hides the form.
+    password: passwordOn = true,
     mailer = null,
     brand = {},
     codeStore = memoryCodeStore(),
@@ -178,10 +180,11 @@ export function createAuth(options) {
 
   // Which sign-in methods the login page should show.
   router.get('/config', (_req, res) => {
-    res.json({ password: true, code: Boolean(mailer), google: google?.clientId || null, signup });
+    res.json({ password: Boolean(passwordOn), code: Boolean(mailer), google: google?.clientId || null, signup });
   });
 
   router.post('/login', loginLimiter, wrap(async (req, res) => {
+    if (!passwordOn) return res.status(404).json({ error: 'Password sign-in is not set up' });
     const email = normEmail(req.body?.email);
     const password = String(req.body?.password ?? '');
     const user = email && password ? await users.findUser(email) : null;
@@ -240,7 +243,7 @@ export function createAuth(options) {
   // Set or change the password. The old one is required, except within 15
   // minutes of an email-code sign-in (the "forgot password" path).
   router.post('/password', requireAuth, wrap(async (req, res) => {
-    if (!users.setPassword) return res.status(404).json({ error: 'Passwords can’t be changed here' });
+    if (!passwordOn || !users.setPassword) return res.status(404).json({ error: 'Passwords can’t be changed here' });
     const password = String(req.body?.password ?? '');
     if (password.length < minPasswordLength) return res.status(400).json({ error: `Use at least ${minPasswordLength} characters` });
     const user = await users.findUser(req.user.email);
