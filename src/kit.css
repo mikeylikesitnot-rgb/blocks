@@ -579,3 +579,29 @@ a.mk-att-name:hover { text-decoration: underline; }
 .mk-att-meta { flex-shrink: 0; font-size: var(--mk-text-xs); color: var(--mk-muted); font-variant-numeric: tabular-nums; }
 .mk-lightbox .mk-modal-body { display: grid; place-items: center; background: var(--mk-surface-2); }
 .mk-lightbox-img { display: block; max-width: 100%; max-height: 75dvh; object-fit: contain; border-radius: var(--mk-radius-sm); }
+
+/* ───────── NavMenu ─────────
+   NavList plus search, a Favorites group and an edit mode (drag, ↑ ↓, hide). */
+.mk-navmenu { display: flex; flex-direction: column; gap: var(--mk-space-2); min-height: 100%; }
+.mk-navmenu-search .mk-input { height: var(--mk-h-sm); font-size: var(--mk-text-base); }
+.mk-nav-group { display: flex; flex-direction: column; gap: 2px; }
+.mk-nav-row { display: flex; align-items: center; gap: 2px; border-radius: var(--mk-radius-sm); }
+.mk-nav-row .mk-nav-item { flex: 1; min-width: 0; }
+.mk-nav-via { color: var(--mk-muted); font-weight: 400; font-size: var(--mk-text-xs); }
+.mk-nav-star { flex: none; color: var(--mk-subtle); opacity: 0; }
+.mk-nav-row:hover .mk-nav-star, .mk-nav-star:focus-visible, .mk-nav-star[aria-pressed='true'] { opacity: 1; }
+.mk-nav-star[aria-pressed='true'] { color: var(--mk-accent); }
+.mk-nav-star[aria-pressed='true'] .mk-icon { fill: currentColor; }
+@media (hover: none) { .mk-nav-star { opacity: 1; } }
+.mk-nav-tools { display: flex; flex: none; }
+/* Editing: the arrows and eye need the room; counts and stars come back on Done. */
+.mk-navmenu-editing .mk-nav-count, .mk-navmenu-editing .mk-nav-star { display: none; }
+.mk-nav-tool:disabled { opacity: 0.35; }
+.mk-nav-grip { flex: none; font-size: 14px; color: var(--mk-subtle); cursor: grab; }
+.mk-navmenu-editing .mk-nav-row { cursor: grab; }
+.mk-nav-row-hidden .mk-nav-item { opacity: 0.45; text-decoration: line-through; }
+.mk-nav-row-dragging { opacity: 0.4; }
+.mk-nav-row-over { box-shadow: inset 0 2px 0 var(--mk-primary); }
+.mk-nav-empty, .mk-nav-hint { margin: 0; padding: var(--mk-space-2); font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-navmenu-edit { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mk-space-2); margin-top: auto; padding-top: var(--mk-space-2); border-top: 1px solid var(--mk-border); }
+.mk-navmenu-edit .mk-nav-hint { width: 100%; padding: 0; }

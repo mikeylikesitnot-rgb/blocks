@@ -13,6 +13,7 @@ export { SortTh, useSort, sortRows } from './SortTh.jsx';
 export { ColumnOrder, useColumnOrder, orderColumns } from './ColumnOrder.jsx';
 export { highlight } from './highlight.jsx';
 export { SidebarLayout, NavList, InitialIcon, ThemeSwitch, initials } from './Shell.jsx';
+export { NavMenu, useNavMenu, arrangeNav, searchNav, navGroups, orderKeys, SHELL_OPEN_EVENT } from './NavMenu.jsx';
 export { FilterMenu, filterSummary } from './FilterMenu.jsx';
 export { GroupedList } from './GroupedList.jsx';
 export { useTheme } from './theme.js';

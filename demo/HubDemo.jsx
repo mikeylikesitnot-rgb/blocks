@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import {
-  SidebarLayout, NavList, InitialIcon, ThemeSwitch, FilterMenu, GroupedList, Badge, Button, EmptyState,
+  SidebarLayout, NavMenu, InitialIcon, ThemeSwitch, FilterMenu, GroupedList, Badge, Button, EmptyState,
   SearchInput, Toolbar, StatCard, StatGrid, PageHeader, matchesQuery, useUrlState, useUrlList,
 } from '../src/index.js';
 
@@ -62,7 +62,7 @@ export function HubDemo() {
   const current = PROJECTS.find((p) => p.slug === project);
   const nav = [
     { value: '', label: 'All projects', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: FEATURES.length },
-    { value: 'requests', label: 'Requests', icon: <InitialIcon tone="outline">R</InitialIcon>, count: 3, hot: true, onClick: () => {} },
+    { value: 'requests', label: 'Requests', keywords: 'ideas asks', icon: <InitialIcon tone="outline">R</InitialIcon>, count: 3, hot: true, onClick: () => {} },
     { section: 'Projects', count: PROJECTS.length },
     ...PROJECTS.map((p, i) => {
       const building = FEATURES.filter((f) => f.project === p.slug && f.status === 'progress').length;
@@ -78,7 +78,7 @@ export function HubDemo() {
     <SidebarLayout
       brand="Project Hub"
       style={{ '--mk-shell-h': '760px' }}
-      sidebar={<NavList label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }} />}
+      sidebar={<NavMenu prefKey="demo.hub.menu" label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }} />}
       footer={<ThemeSwitch />}
     >
       <div style={{ padding: '24px 16px 48px', display: 'grid', gap: 20, maxWidth: 1040 }}>

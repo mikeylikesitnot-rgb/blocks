@@ -4,6 +4,8 @@ import { Segmented } from './Layout.jsx';
 import { useTheme } from './theme.js';
 import { MenuIcon, XIcon, SunIcon, MoonIcon } from './icons.jsx';
 
+const SHELL_OPEN = 'mk:shell-open'; // same string as NavMenu's SHELL_OPEN_EVENT
+
 /**
  * App frame with a sidebar on the left (desktop) that becomes a slide-out
  * menu behind a top bar on phones. Picking a nav item closes the menu.
@@ -26,7 +28,8 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
     // Set as a DOM attribute: React 18 and 19 disagree on the `inert` prop.
     const behind = [barRef.current, mainRef.current].filter(Boolean);
     behind.forEach((el) => el.setAttribute('inert', ''));
-    sideRef.current?.focus();
+    // Focus the drawer unless something inside it (NavMenu's search) is about to take focus.
+    if (!sideRef.current?.contains(document.activeElement)) sideRef.current?.focus();
     const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('keydown', onKey);
     return () => {
@@ -37,6 +40,13 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
       if (!a || a === document.body || sideRef.current?.contains(a)) menuBtn.current?.focus();
     };
   }, [open]);
+
+  // NavMenu's ⌘K / "/" shortcut asks for the phone menu so its search can take focus.
+  useEffect(() => {
+    const onOpen = () => { if (window.matchMedia?.('(max-width: 859px)').matches) setOpen(true); };
+    window.addEventListener(SHELL_OPEN, onOpen);
+    return () => window.removeEventListener(SHELL_OPEN, onOpen);
+  }, []);
 
   // Any nav item click closes the phone menu; on desktop `open` is ignored.
   const onSideClick = (e) => { if (open && e.target.closest?.('.mk-nav-item')) setOpen(false); };
