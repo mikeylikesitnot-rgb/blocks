@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.18.2 Modal: with modals stacked, Esc closes (and Tab stays in) only the top one, so "Edit options…" or a confirm over an edit form no longer closes the form too and loses its edits. Found in TuroApp's task window
 - 2026-11-20: v0.18.1 SidebarLayout: no gap under the top bar when the sidebar is a slide-out (phones, hidden desktop); the bar's grid row no longer shares the leftover height
 - 2026-11-20: v0.18.0 SidebarLayout `collapsible` (BLK-025): Hide menu on desktop turns the sidebar into the slide-out menu (☰ opens it, picking a page closes it, the NavMenu shortcut opens it); Keep menu open pins it again; `pinned`/`defaultPinned`/`onPinnedChange` to save the choice. First used by AutoDealer admin
 - 2026-11-20: v0.17.0 backup script from TuroApp's: staged in one fixed folder and `forget --group-by host` (v0.14.0's dated folder meant the keep rules never deleted anything), `DB_FILE`, `DB_CHECK_TABLE`, `COPY_FILES` path:name, and a weekly restore test (`RESTORE_TEST_TABLES`, or `RESTORE_TEST=1` now). Tested on the VPS against TuroApp's Drive repo

@@ -45,6 +45,7 @@ function Demo() {
   const [tableLoading, setTableLoading] = useState(false);
   const trips = TRIPS.filter((t) => matchesQuery(tq, [t.guest, t.car, t.status]));
   const [open, setOpen] = useState(false);
+  const [innerOpen, setInnerOpen] = useState(false);
   const [email, setEmail] = useState('');
   const confirm = useConfirm();
   const toast = useToast();
@@ -221,6 +222,11 @@ function Demo() {
         footer={<><Button variant="secondary" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={() => { setOpen(false); toast('Saved'); }}>Save</Button></>}>
         <Field label="Name"><Input defaultValue="Ana Lopez" /></Field>
         <Field label="Phone"><Input defaultValue="(214) 555-2415" /></Field>
+        <Button variant="ghost" size="sm" onClick={() => setInnerOpen(true)}>Edit options… (a modal on top; Esc closes only it)</Button>
+      </Modal>
+      <Modal open={innerOpen} onClose={() => setInnerOpen(false)} title="Edit options" size="sm"
+        footer={<Button onClick={() => setInnerOpen(false)}>Done</Button>}>
+        <Field label="New option"><Input defaultValue="VIP" /></Field>
       </Modal>
     </main>
   );

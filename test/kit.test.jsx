@@ -118,6 +118,23 @@ describe('Modal', () => {
     rerender(<Modal open={false} title="Hi" onClose={() => {}}>Body</Modal>);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
+
+  it('with two modals open, Escape closes only the top one, then the next', () => {
+    const closed = [];
+    const view = (inner) => (
+      <>
+        <Modal open title="Outer" onClose={() => closed.push('outer')}>Form</Modal>
+        <Modal open={inner} title="Inner" onClose={() => closed.push('inner')}>Options</Modal>
+      </>
+    );
+    const { rerender } = render(view(false));
+    rerender(view(true));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(closed).toEqual(['inner']);
+    rerender(view(false));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(closed).toEqual(['inner', 'outer']);
+  });
 });
 
 describe('OverlayProvider', () => {

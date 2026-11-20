@@ -6,9 +6,14 @@ import { XIcon, CheckCircleIcon, AlertIcon, InfoIcon } from './icons.jsx';
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+// Open modals, oldest first. Only the last one answers Esc and traps Tab, so a
+// modal opened over another (e.g. "Edit options…" over an edit form) closes alone.
+const openModals = [];
+
 /**
  * Centered dialog on desktop, bottom sheet on phones. Esc and backdrop
- * close it; focus is trapped inside and returned to the trigger.
+ * close it; focus is trapped inside and returned to the trigger. With modals
+ * stacked, Esc closes only the top one.
  *   <Modal open={open} onClose={close} title="Edit task" footer={<>…buttons…</>}>…</Modal>
  */
 export function Modal({ open, onClose, title, subtitle, children, footer, size = 'md', className = '' }) {
@@ -25,8 +30,16 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
       const el = panel.current?.querySelector('[autofocus], [data-autofocus], input:not([type=hidden]), textarea, select, button:not([data-close])');
       (el || panel.current)?.focus();
     }, 0);
+    const me = {};
+    openModals.push(me);
     const onKey = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onCloseRef.current?.(); }
+      if (openModals[openModals.length - 1] !== me) return;
+      if (e.key === 'Escape') {
+        if (e.defaultPrevented) return; // already handled (another modal, a menu)
+        e.preventDefault();
+        e.stopPropagation();
+        onCloseRef.current?.();
+      }
       if (e.key === 'Tab' && panel.current) {
         const f = panel.current.querySelectorAll(FOCUSABLE);
         if (!f.length) return;
@@ -39,6 +52,8 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
     document.addEventListener('keydown', onKey);
     return () => {
       clearTimeout(t);
+      const i = openModals.indexOf(me);
+      if (i >= 0) openModals.splice(i, 1);
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
       lastFocus?.focus?.();
