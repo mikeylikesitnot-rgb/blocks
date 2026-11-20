@@ -332,7 +332,9 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-shell-bar, .mk-shell-backdrop, .mk-shell-close { display: none; }
 
 @media (max-width: 859px) {
-  .mk-shell { grid-template-columns: minmax(0, 1fr); }
+  /* Rows: the bar at its own height, the page takes the rest (an auto row
+     would share the leftover height and open a gap under the bar). */
+  .mk-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   .mk-shell-bar {
     position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: var(--mk-space-2);
     height: 56px; padding: 0 var(--mk-space-2);
@@ -350,7 +352,7 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 }
 /* collapsible + hidden on desktop: the same slide-out menu as on phones. */
 @media (min-width: 860px) {
-  .mk-shell-unpinned { grid-template-columns: minmax(0, 1fr); }
+  .mk-shell-unpinned { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
   .mk-shell-unpinned .mk-shell-bar {
     position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: var(--mk-space-2);
     height: 56px; padding: 0 var(--mk-space-2);
