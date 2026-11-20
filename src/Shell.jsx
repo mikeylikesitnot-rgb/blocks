@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { cx } from './cx.js';
 import { Segmented } from './Layout.jsx';
 import { useTheme } from './theme.js';
-import { MenuIcon, XIcon, SunIcon, MoonIcon } from './icons.jsx';
+import { MenuIcon, XIcon, SunIcon, MoonIcon, PanelLeftIcon } from './icons.jsx';
 
 import { SHELL_OPEN_EVENT as SHELL_OPEN } from './NavMenu.jsx';
 
@@ -13,9 +13,35 @@ import { SHELL_OPEN_EVENT as SHELL_OPEN } from './NavMenu.jsx';
  *     …page…
  *   </SidebarLayout>
  * Height defaults to the viewport; set --mk-shell-h to embed it in a box.
+ *
+ * `collapsible` adds a Hide menu button on desktop: the sidebar then works
+ * like the phone menu (☰ opens it over the page, picking a page closes it),
+ * and Keep menu open pins it again. Pass `pinned` + `onPinnedChange` to save
+ * the choice; otherwise it starts at `defaultPinned`. Like the phone menu, the
+ * slide-out covers the window, so it suits a layout that fills the window.
  */
-export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main', className = '', style }) {
+export function SidebarLayout({
+  brand, sidebar, footer, children, label = 'Main', className = '', style,
+  collapsible = false, pinned: pinnedProp, defaultPinned = true, onPinnedChange,
+}) {
   const [open, setOpen] = useState(false);
+  const [pinnedState, setPinnedState] = useState(defaultPinned);
+  const pinned = !collapsible || (pinnedProp ?? pinnedState);
+  const setPinned = (next) => {
+    if (pinnedProp === undefined) setPinnedState(next);
+    onPinnedChange?.(next);
+    setOpen(false);
+    // Hiding takes the sidebar away: hand focus to ☰. Pinning keeps the button where it is.
+    if (!next) setTimeout(() => menuBtn.current?.focus(), 0);
+  };
+  // `pinned` turned true from outside while the slide-out was open (a saved
+  // choice arriving late): close it, or inert would stay on the page.
+  const [prevPinned, setPrevPinned] = useState(pinned);
+  if (prevPinned !== pinned) {
+    setPrevPinned(pinned);
+    if (pinned && open && !window.matchMedia?.('(max-width: 859px)').matches) setOpen(false);
+  }
+  const isDrawer = () => !pinned || window.matchMedia?.('(max-width: 859px)').matches;
   const sideRef = useRef(null);
   const menuBtn = useRef(null);
 
@@ -42,18 +68,28 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
     };
   }, [open]);
 
+  // Widening a phone-size window past 860px with the menu open would leave a
+  // pinned sidebar next to an inert page: close the slide-out instead.
+  useEffect(() => {
+    const mq = window.matchMedia?.('(max-width: 859px)');
+    if (!mq || !pinned) return undefined;
+    const onChange = (e) => { if (!e.matches) setOpen(false); };
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, [pinned]);
+
   // NavMenu's ⌘K / "/" shortcut asks for the phone menu so its search can take focus.
   useEffect(() => {
-    const onOpen = () => { if (window.matchMedia?.('(max-width: 859px)').matches) setOpen(true); };
+    const onOpen = () => { if (isDrawer()) setOpen(true); };
     window.addEventListener(SHELL_OPEN, onOpen);
     return () => window.removeEventListener(SHELL_OPEN, onOpen);
-  }, []);
+  }, [pinned]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Any nav item click closes the phone menu; on desktop `open` is ignored.
+  // Any nav item click closes the slide-out menu; a pinned desktop sidebar ignores `open`.
   const onSideClick = (e) => { if (open && e.target.closest?.('.mk-nav-item')) setOpen(false); };
 
   return (
-    <div className={cx('mk-shell', open && 'mk-shell-open', className)} style={style}>
+    <div className={cx('mk-shell', open && 'mk-shell-open', !pinned && 'mk-shell-unpinned', className)} style={style}>
       <div ref={barRef} className="mk-shell-bar">
         <button ref={menuBtn} type="button" className="mk-shell-menu" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>
           <MenuIcon />
@@ -64,6 +100,17 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
       <aside ref={sideRef} tabIndex={-1} className="mk-shell-side" aria-label={label} onClick={onSideClick}>
         <div className="mk-shell-side-head">
           {brand && <div className="mk-shell-brand">{brand}</div>}
+          {collapsible && (
+            <button
+              type="button"
+              className="mk-shell-pin"
+              aria-label={pinned ? 'Hide menu' : 'Keep menu open'}
+              title={pinned ? 'Hide menu' : 'Keep menu open'}
+              onClick={() => setPinned(!pinned)}
+            >
+              <PanelLeftIcon />
+            </button>
+          )}
           <button type="button" className="mk-shell-close" aria-label="Close menu" onClick={() => setOpen(false)}>
             <XIcon />
           </button>

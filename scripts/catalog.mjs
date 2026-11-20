@@ -40,7 +40,7 @@ const ENTRIES = [
  */
 const AREAS = [
   { title: 'Layout & shell', sub: '', items: [
-    { name: 'SidebarLayout', does: 'App frame: sidebar on desktop, slide-out menu behind a top bar on phones.', props: 'brand, sidebar, footer, label' },
+    { name: 'SidebarLayout', does: 'App frame: sidebar on desktop, slide-out menu behind a top bar on phones; collapsible lets people hide it on desktop too (☰ opens it, picking a page closes it).', props: 'brand, sidebar, footer, label, collapsible, pinned, defaultPinned, onPinnedChange' },
     { name: 'NavList', does: 'Sidebar nav list; `section` items are headings, selected item gets aria-current.', props: 'items [{value,label,icon,count,hot,href} | {section}], value, onChange' },
     { name: 'NavMenu', also: ['useNavMenu', 'arrangeNav', 'searchNav', 'navGroups', 'orderKeys', 'SHELL_OPEN_EVENT'], does: 'NavList people can search (⌘K or /, Enter opens the first match), star into a Favorites group, and rearrange or hide in Edit menu; choices saved per browser or account.', props: 'items (NavList items + keywords), value, onChange, prefKey, load, save, label, placeholder, favoritesLabel, shortcut (true: ⌘K and /; a key: ⌘ or Ctrl + that key; false: none)' },
     { name: 'InitialIcon', also: ['initials'], does: 'Coloured square with a name\'s initials (or any child) for nav rows.', props: 'name, color 0-n, tone, size' },

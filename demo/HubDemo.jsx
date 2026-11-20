@@ -77,6 +77,7 @@ export function HubDemo() {
   return (
     <SidebarLayout
       brand="Project Hub"
+      collapsible
       style={{ '--mk-shell-h': '760px' }}
       sidebar={<NavMenu prefKey="demo.hub.menu" label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }} />}
       footer={<ThemeSwitch />}

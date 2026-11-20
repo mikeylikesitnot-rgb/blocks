@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import {
   SidebarLayout, NavList, InitialIcon, ThemeSwitch, initials, FilterMenu, filterSummary,
-  GroupedList, highlight, useUrlList, useTheme,
+  GroupedList, highlight, useUrlList, useTheme, SHELL_OPEN_EVENT,
 } from '../src/index.js';
 
 afterEach(() => { cleanup(); window.history.replaceState(null, '', '/'); try { localStorage.clear(); } catch { /* */ } });
@@ -143,6 +143,54 @@ describe('SidebarLayout', () => {
     expect(shell.className).not.toContain('mk-shell-open');
     expect(document.activeElement).toBe(menu);
     expect(screen.getByRole('main').textContent).toBe('Page');
+  });
+
+  it('has no Hide menu button unless collapsible', () => {
+    render(<SidebarLayout sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(screen.queryByRole('button', { name: 'Hide menu' })).toBeNull();
+  });
+
+  it('collapsible: Hide menu turns the desktop sidebar into the slide-out menu, Keep menu open pins it', () => {
+    const changes = [];
+    const { container } = render(
+      <SidebarLayout collapsible onPinnedChange={(p) => changes.push(p)} brand="Hub"
+        sidebar={<NavList items={[{ value: 'a', label: 'Alpha' }]} onChange={() => {}} />}>
+        <p>Page</p>
+      </SidebarLayout>,
+    );
+    const shell = container.querySelector('.mk-shell');
+    expect(shell.className).not.toContain('mk-shell-unpinned');
+    fireEvent.click(screen.getByRole('button', { name: 'Hide menu' }));
+    expect(shell.className).toContain('mk-shell-unpinned');
+    expect(changes).toEqual([false]);
+    // ☰ opens it over the page; picking a page closes it.
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(shell.className).toContain('mk-shell-open');
+    fireEvent.click(screen.getByRole('button', { name: 'Alpha' }));
+    expect(shell.className).not.toContain('mk-shell-open');
+    // The shortcut event opens it on desktop too while it is hidden.
+    act(() => { window.dispatchEvent(new Event(SHELL_OPEN_EVENT)); });
+    expect(shell.className).toContain('mk-shell-open');
+    fireEvent.click(screen.getByRole('button', { name: 'Keep menu open' }));
+    expect(shell.className).not.toContain('mk-shell-unpinned');
+    expect(shell.className).not.toContain('mk-shell-open');
+    expect(changes).toEqual([false, true]);
+  });
+
+  it('collapsible follows a controlled `pinned`', () => {
+    const { container, rerender } = render(<SidebarLayout collapsible pinned={false} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(container.querySelector('.mk-shell').className).toContain('mk-shell-unpinned');
+    rerender(<SidebarLayout collapsible pinned sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(container.querySelector('.mk-shell').className).not.toContain('mk-shell-unpinned');
+  });
+
+  it('closes the slide-out when `pinned` turns true from outside, so the page is not left inert', () => {
+    const { container, rerender } = render(<SidebarLayout collapsible pinned={false} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(container.querySelector('main').hasAttribute('inert')).toBe(true);
+    rerender(<SidebarLayout collapsible pinned sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(container.querySelector('.mk-shell').className).not.toContain('mk-shell-open');
+    expect(container.querySelector('main').hasAttribute('inert')).toBe(false);
   });
 });
 

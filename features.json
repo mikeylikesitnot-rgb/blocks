@@ -296,6 +296,18 @@
       "spec": null,
       "mockup": "https://claude.ai/artifact/89e4XNqo8pAe8P9xDFw259",
       "fromRequest": null
+    },
+    {
+      "id": "BLK-025",
+      "name": "Hide the sidebar on desktop",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "SidebarLayout collapsible: a Hide menu button turns the desktop sidebar into the slide-out menu (☰ opens it, picking a page closes it); Keep menu open pins it. pinned + onPinnedChange to save it. First used by AutoDealer admin.",
+      "branch": "desktop-drawer",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
