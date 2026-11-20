@@ -236,7 +236,9 @@ Why it works this way: [docs/decisions/auth.md](docs/decisions/auth.md).
 its container, copies of files like `.env`, and folders like `uploads/`, all in
 one restic snapshot (so the database and its files always restore as a pair).
 restic encrypts it on the VPS and rclone stores it in Google Drive; a
-healthchecks.io check emails on a failed or missed night.
+healthchecks.io check emails on a failed or missed night. Once a week it
+prunes, runs `restic check`, and restores the dump from Drive into a scratch
+database, comparing row counts of `RESTORE_TEST_TABLES` with live.
 
 Set up an app once, on the VPS:
 
@@ -248,10 +250,13 @@ Set up an app once, on the VPS:
 3. `set -a; . ~/.config/<app>-backup/env; set +a; restic init` once.
    rclone's `gdrive` remote (scope `drive.file`) is shared by every app.
 4. Create a healthchecks.io check (daily, 1 h grace) and set `HC_PING_URL`.
-5. Add the cron line from the header, run it once by hand, and read the log.
+5. Add the cron line from the header, then run it once by hand with
+   `RESTORE_TEST=1` and read the log: it should end `restore test ok` and
+   `backup done`.
 
 Restore: `restic snapshots --host <NAME>` then
-`restic restore latest --host <NAME> --target /tmp/restore`.
+`restic restore latest --host <NAME> --target /tmp/restore`; the dump is under
+`/tmp/restore<LOCAL_DIR>/current/`.
 
 ## Work on the kit
 

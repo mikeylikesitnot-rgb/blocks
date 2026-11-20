@@ -145,7 +145,7 @@ const AREAS = [
 
 // Shell scripts under ops/: not imports, so listed by hand. Each file must exist.
 const OPS = [
-  { file: 'ops/backup.sh', does: 'Nightly VPS backup: Postgres dump + files + folders in one restic snapshot, encrypted to Google Drive via rclone, healthchecks.io pings, retries, local copies.', use: 'deploy copies it to the VPS; cron runs `backup.sh <config>` (config keys in the header: NAME, RESTIC_REPOSITORY, RESTIC_PASSWORD_FILE, HC_PING_URL, DB_CONTAINER, DB_FORMAT, COPY_FILES, BACKUP_PATHS, KEEP_*)' },
+  { file: 'ops/backup.sh', does: 'Nightly VPS backup: Postgres dump + files + folders in one restic snapshot, encrypted to Google Drive via rclone, healthchecks.io pings, retries, keep rules that really delete, weekly restore test into a scratch database, local copies.', use: 'deploy copies it to the VPS; cron runs `backup.sh <config>` (config keys in the header: NAME, RESTIC_REPOSITORY, RESTIC_PASSWORD_FILE, HC_PING_URL, DB_CONTAINER, DB_FORMAT, DB_FILE, DB_CHECK_TABLE, RESTORE_TEST_TABLES, COPY_FILES, BACKUP_PATHS, KEEP_*); `RESTORE_TEST=1` runs the restore test now' },
 ];
 for (const o of OPS) {
   try { readFileSync(join(ROOT, o.file)); } catch { console.error(`catalog: ${o.file} is listed in OPS but missing`); process.exit(1); }

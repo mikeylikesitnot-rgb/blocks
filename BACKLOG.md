@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.17.0 backup script from TuroApp's: staged in one fixed folder and `forget --group-by host` (v0.14.0's dated folder meant the keep rules never deleted anything), `DB_FILE`, `DB_CHECK_TABLE`, `COPY_FILES` path:name, and a weekly restore test (`RESTORE_TEST_TABLES`, or `RESTORE_TEST=1` now). Tested on the VPS against TuroApp's Drive repo
 - 2026-11-20: v0.16.0 CopyButton (BLK-024): small icon button that copies text (check icon + toast, clicks don't bubble) and `copyText` with an execCommand fallback. First used by TuroApp to copy car info on the vehicle page and Fleet rows
 - 2026-11-20: v0.15.0 NavMenu (BLK-023): NavList with search (⌘K or /, keywords, Enter opens the first match), a Favorites group, and Edit menu to move pages within their group or hide them; saved per browser or account via useNavMenu. SidebarLayout opens its phone menu for the shortcut. First used by AutoDealer admin
 - 2026-11-20: v0.14.0 nightly VPS backup (BLK-022): `ops/backup.sh`, AutoDealer's restic + rclone + healthchecks script made config-driven (one config file per app), with the success ping fixed for `set -u`. TuroApp adopts it first, then AutoDealer

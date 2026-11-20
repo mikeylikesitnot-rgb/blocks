@@ -267,7 +267,7 @@
       "area": "Ops",
       "status": "live",
       "since": "2026-11-20",
-      "description": "ops/backup.sh: one restic snapshot per night of an app's Postgres dump, .env files and upload folders, encrypted to Google Drive through rclone, with healthchecks.io pings, three upload tries and the last 7 local copies. One config file per app on the VPS.",
+      "description": "ops/backup.sh: one restic snapshot per night of an app's Postgres dump, .env files and upload folders, encrypted to Google Drive through rclone, with healthchecks.io pings, three upload tries, keep rules grouped by host, a weekly restore test into a scratch database and the last 7 local copies. One config file per app on the VPS.",
       "branch": "vps-backup",
       "spec": null,
       "mockup": null,

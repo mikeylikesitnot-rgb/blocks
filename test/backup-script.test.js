@@ -5,10 +5,11 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // ops/backup.sh run against stub docker / restic / curl on PATH. The stubs log
-// their arguments; RESTIC_FAIL makes the first N `restic backup` calls fail.
+// their arguments. Knobs: dump ('ok' | 'bad'), resticFail (first N `restic
+// backup` calls fail), counts {live, restored} for the restore test.
 const SCRIPT = resolve('ops/backup.sh');
 
-function setup({ dump = 'ok', resticFail = 0, config = {} } = {}) {
+function setup({ dump = 'ok', resticFail = 0, counts = { live: 10, restored: 10 }, config = {} } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'blocks-backup-'));
   const bin = join(root, 'bin');
   const app = join(root, 'app');
@@ -23,15 +24,31 @@ function setup({ dump = 'ok', resticFail = 0, config = {} } = {}) {
     writeFileSync(join(bin, name), `#!/bin/sh\necho "${name} $*" >> "${log}"\n${body}\n`);
     chmodSync(join(bin, name), 0o755);
   };
-  stub('docker', dump === 'ok'
-    ? 'echo "-- PostgreSQL database dump complete"'
-    : 'echo "-- half a dump"');
+  const good = dump === 'ok';
+  stub('docker', `
+shift 3   # exec -i <container>
+case "$*" in
+  *pg_dump*-Fc*) echo ${good ? 'CUSTOM-DUMP' : 'BROKEN'} ;;
+  *pg_dump*) printf '%s\\n' ${good ? `'COPY public."Turo" (id) FROM stdin;' '-- PostgreSQL database dump complete'` : `'-- half a dump'`} ;;
+  "pg_restore --list") cat > /dev/null; ${good ? `echo "215; 0 16390 TABLE DATA public Turo turo"` : 'exit 1'} ;;
+  pg_restore*) cat > /dev/null ;;
+  "printenv POSTGRES_USER") echo turo ;;
+  "printenv POSTGRES_DB") echo turo ;;
+  *"-d restore_check -c SELECT"*) echo ${counts.restored} ;;
+  *"-d turo -c SELECT"*) echo ${counts.live} ;;
+  *"-d restore_check") cat > /dev/null ;;
+esac
+exit 0`);
   stub('restic', `
-if [ "$1" = backup ]; then
-  n=$(cat "${root}/tries" 2>/dev/null || echo 0); n=$((n + 1)); echo $n > "${root}/tries"
-  [ "$n" -le ${resticFail} ] && exit 1
-fi
-[ "$1" = snapshots ] && echo "abcd1234 2026-11-20 host"
+case "$1" in
+  backup)
+    n=$(cat "${root}/tries" 2>/dev/null || echo 0); n=$((n + 1)); echo $n > "${root}/tries"
+    [ "$n" -le ${resticFail} ] && exit 1 ;;
+  restore)
+    while [ $# -gt 0 ]; do case "$1" in --include) inc=$2 ;; --target) tgt=$2 ;; esac; shift; done
+    mkdir -p "$tgt$(dirname "$inc")" && echo restored > "$tgt$inc" ;;
+  snapshots) echo "abcd1234 2026-11-20 host" ;;
+esac
 exit 0`);
   stub('curl', 'exit 0');
   const cfg = {
@@ -40,7 +57,7 @@ exit 0`);
     RESTIC_PASSWORD_FILE: join(root, 'pw'),
     HC_PING_URL: 'https://hc.example/uuid',
     DB_CONTAINER: 'test-db',
-    COPY_FILES: `${join(app, '.env')} ${join(app, 'server', '.env')}`,
+    COPY_FILES: `${join(app, '.env')} ${join(app, 'server', '.env')}:server.env`,
     BACKUP_PATHS: join(app, 'uploads'),
     LOCAL_DIR: join(root, 'backups'),
     RETRY_WAIT: '0',
@@ -49,12 +66,13 @@ exit 0`);
   };
   const conf = join(root, 'env');
   writeFileSync(conf, Object.entries(cfg).map(([k, v]) => `${k}="${v}"`).join('\n') + '\n');
-  const run = () => spawnSync('sh', [SCRIPT, conf], {
+  const run = (env = {}) => spawnSync('sh', [SCRIPT, conf], {
     encoding: 'utf8',
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: root },
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, HOME: root, RESTORE_TEST: '', ...env },
   });
   const calls = () => (existsSync(log) ? readFileSync(log, 'utf8') : '');
-  return { root, app, cfg, run, calls };
+  const days = () => readdirSync(cfg.LOCAL_DIR).filter((d) => /^20/.test(d)).sort();
+  return { root, app, cfg, run, calls, days };
 }
 
 describe.skipIf(process.platform === 'win32')('ops/backup.sh', () => {
@@ -62,21 +80,39 @@ describe.skipIf(process.platform === 'win32')('ops/backup.sh', () => {
     execFileSync('sh', ['-n', SCRIPT]);
   });
 
-  it('dumps, copies files, snapshots everything once and pings success', () => {
+  it('stages in one fixed folder, snapshots it with the folders, keeps a dated copy and pings success', () => {
     const t = setup();
     const r = t.run();
     expect(r.status, r.stdout + r.stderr).toBe(0);
-    const [day] = readdirSync(t.cfg.LOCAL_DIR).filter((d) => /^20/.test(d));
-    const dir = join(t.cfg.LOCAL_DIR, day);
-    expect(readdirSync(dir).sort()).toEqual(['app-env', 'db.sql.gz', 'server-env']);
+    const cur = join(t.cfg.LOCAL_DIR, 'current');
+    expect(readdirSync(cur).sort()).toEqual(['app-env', 'db.sql.gz', 'server.env']);
+    expect(t.days()).toHaveLength(1);
+    expect(readdirSync(join(t.cfg.LOCAL_DIR, t.days()[0])).sort()).toEqual(['app-env', 'db.sql.gz', 'server.env']);
     const calls = t.calls();
-    expect(calls).toMatch(`restic backup --quiet --host testapp --tag nightly ${dir} ${t.app}/uploads`);
-    expect(calls).toMatch('restic forget --quiet --host testapp --keep-daily 14 --keep-weekly 8');
+    expect(calls).toMatch(`restic backup --quiet --host testapp --tag nightly ${cur} ${t.app}/uploads`);
+    // grouped by host: a changing path would stop the keep rules from ever deleting
+    expect(calls).toMatch('restic forget --quiet --host testapp --tag nightly --group-by host --keep-daily 14 --keep-weekly 8');
     expect(calls).not.toMatch('restic prune');
     expect(calls).toMatch('curl -fsS -m 10 --retry 3 -o /dev/null https://hc.example/uuid/start');
     expect(calls.trim().split('\n').pop()).toBe('curl -fsS -m 10 --retry 3 -o /dev/null https://hc.example/uuid');
     expect(r.stdout).toMatch('testapp backup done');
     expect(r.stdout).toMatch('snapshot abcd1234');
+  });
+
+  it('custom format: names the file, checks the table is in the dump', () => {
+    const t = setup({ config: { DB_FORMAT: 'custom', DB_FILE: 'turo.dump', DB_CHECK_TABLE: 'Turo' } });
+    const r = t.run();
+    expect(r.status, r.stdout + r.stderr).toBe(0);
+    expect(readdirSync(join(t.cfg.LOCAL_DIR, 'current'))).toContain('turo.dump');
+    expect(t.calls()).toMatch('pg_restore --list');
+  });
+
+  it('fails when the checked table is missing from the dump', () => {
+    const t = setup({ config: { DB_CHECK_TABLE: 'Nope' } });
+    const r = t.run();
+    expect(r.status).not.toBe(0);
+    expect(r.stdout).toMatch('pg_dump has no data for table Nope');
+    expect(t.calls()).not.toMatch('restic backup');
   });
 
   it('fails and pings /fail when the dump is incomplete, before uploading', () => {
@@ -112,14 +148,36 @@ describe.skipIf(process.platform === 'win32')('ops/backup.sh', () => {
     expect(t.calls()).not.toMatch('restic backup');
   });
 
+  it('restore test: prunes, checks, restores into a scratch database and compares counts', () => {
+    for (const fmt of ['plain', 'custom']) {
+      const t = setup({ counts: { live: 12, restored: 10 }, config: { DB_FORMAT: fmt, RESTORE_TEST_TABLES: 'Turo Car' } });
+      const r = t.run({ RESTORE_TEST: '1' });
+      expect(r.status, r.stdout + r.stderr).toBe(0);
+      const calls = t.calls();
+      expect(calls).toMatch('restic prune');
+      expect(calls).toMatch('restic check');
+      expect(calls).toMatch(/restic restore latest --host testapp --include \S+\/current\/db\./);
+      expect(calls).toMatch('CREATE DATABASE restore_check');
+      expect(calls).toMatch('DROP DATABASE restore_check');
+      expect(r.stdout).toMatch('restore test ok: restored Turo=10 Car=10, live Turo=12 Car=12');
+    }
+  });
+
+  it('restore test fails on an empty restore and pings /fail', () => {
+    const t = setup({ counts: { live: 12, restored: 0 }, config: { RESTORE_TEST_TABLES: 'Turo' } });
+    const r = t.run({ RESTORE_TEST: '1' });
+    expect(r.status).not.toBe(0);
+    expect(r.stdout).toMatch('restore test FAILED');
+    expect(t.calls()).toMatch('/uuid/fail');
+  });
+
   it('keeps only the newest KEEP_LOCAL dated folders', () => {
     const t = setup({ config: { KEEP_LOCAL: '2' } });
     for (const d of ['2020-01-01', '2020-01-02', '2020-01-03']) mkdirSync(join(t.cfg.LOCAL_DIR, d), { recursive: true });
     const r = t.run();
     expect(r.status, r.stdout + r.stderr).toBe(0);
-    const left = readdirSync(t.cfg.LOCAL_DIR).filter((d) => /^20/.test(d)).sort();
-    expect(left).toHaveLength(2);
-    expect(left[0]).toBe('2020-01-03');
+    expect(t.days()).toHaveLength(2);
+    expect(t.days()[0]).toBe('2020-01-03');
   });
 
   it('works without a database or a healthcheck', () => {
