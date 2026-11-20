@@ -230,6 +230,29 @@ mailer.sendQuietly({ to: 'me@x.com', ...notificationEmail({ brand, title: 'New l
 Try it all: `npm run example` (API + email previews at http://localhost:3009/emails), then `npm run dev` → Login tab.
 Why it works this way: [docs/decisions/auth.md](docs/decisions/auth.md).
 
+## Nightly VPS backup
+
+`ops/backup.sh` backs up one app on the VPS each night: a Postgres dump from
+its container, copies of files like `.env`, and folders like `uploads/`, all in
+one restic snapshot (so the database and its files always restore as a pair).
+restic encrypts it on the VPS and rclone stores it in Google Drive; a
+healthchecks.io check emails on a failed or missed night.
+
+Set up an app once, on the VPS:
+
+1. Have the app's deploy copy `node_modules/@mn/blocks/ops/backup.sh` to
+   `~/<app>/scripts/backup.sh`, so a Blocks bump updates it.
+2. Write `~/.config/<app>-backup/env` (keys and defaults are in the script
+   header) and a random `restic-password` next to it (`chmod 600` both). Put the
+   password in the password manager too: it is the only key to the Drive copy.
+3. `set -a; . ~/.config/<app>-backup/env; set +a; restic init` once.
+   rclone's `gdrive` remote (scope `drive.file`) is shared by every app.
+4. Create a healthchecks.io check (daily, 1 h grace) and set `HC_PING_URL`.
+5. Add the cron line from the header, run it once by hand, and read the log.
+
+Restore: `restic snapshots --host <NAME>` then
+`restic restore latest --host <NAME> --target /tmp/restore`.
+
 ## Work on the kit
 
 ```bash

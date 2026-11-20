@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.14.0 nightly VPS backup (BLK-022): `ops/backup.sh`, AutoDealer's restic + rclone + healthchecks script made config-driven (one config file per app), with the success ping fixed for `set -u`. TuroApp adopts it first, then AutoDealer
 - 2026-11-15: v0.11.0 DataTable `singleLayout`: renders only the phone cards or the table for the current width (matchMedia), so controls in cells exist once (no duplicate ids, labels, tab stops or effects). First used by BigLoveInstall
 - 2026-11-15: v0.10.0 RangeFilter `unit` ("$40–$90/day", "Up to $90/day"; also a `unit` option on rangeSummary), `listValue` (joins checklist ticks, escaping commas inside values; listParam undoes it) and `URL_EVENT` exported, so a router app (TuroApp) can tell the URL hooks about its own navigations; first used by TuroApp list filters
 - 2026-11-15: v0.9.0 renamed mn-kit to Blocks (`@mn/blocks`, repo `mikeylikesitnot-rgb/blocks`); apps switch their imports and dependency to `github:mikeylikesitnot-rgb/blocks#v0.9.0`. Catalog (F-019): CATALOG.md, one generated line per export, checked by `npm run verify`
