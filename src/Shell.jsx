@@ -4,7 +4,7 @@ import { Segmented } from './Layout.jsx';
 import { useTheme } from './theme.js';
 import { MenuIcon, XIcon, SunIcon, MoonIcon } from './icons.jsx';
 
-const SHELL_OPEN = 'mk:shell-open'; // same string as NavMenu's SHELL_OPEN_EVENT
+import { SHELL_OPEN_EVENT as SHELL_OPEN } from './NavMenu.jsx';
 
 /**
  * App frame with a sidebar on the left (desktop) that becomes a slide-out
@@ -28,9 +28,10 @@ export function SidebarLayout({ brand, sidebar, footer, children, label = 'Main'
     // Set as a DOM attribute: React 18 and 19 disagree on the `inert` prop.
     const behind = [barRef.current, mainRef.current].filter(Boolean);
     behind.forEach((el) => el.setAttribute('inert', ''));
-    // Focus the drawer unless something inside it (NavMenu's search) is about to take focus.
+    // Focus the drawer (NavMenu's shortcut moves focus on to its search a moment later).
     if (!sideRef.current?.contains(document.activeElement)) sideRef.current?.focus();
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    // Esc the search box already used (to clear it) doesn't also close the menu.
+    const onKey = (e) => { if (e.key === 'Escape' && !e.defaultPrevented) setOpen(false); };
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);

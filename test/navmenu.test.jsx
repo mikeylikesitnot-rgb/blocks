@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { useState } from 'react';
-import { render, screen, fireEvent, cleanup, act, within } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import { NavMenu, SidebarLayout, arrangeNav, searchNav, navGroups, orderKeys, SHELL_OPEN_EVENT } from '../src/index.js';
 
 afterEach(() => { cleanup(); try { localStorage.clear(); } catch { /* */ } });
@@ -36,7 +36,7 @@ describe('NavMenu helpers', () => {
     const prefs = { fav: ['financing', 'gone'], order: { Sales: ['customers', 'leads'] }, hidden: ['tasks'] };
     const out = arrangeNav(ITEMS, prefs);
     expect(out.map((g) => [g.key, g.items.map((i) => i.value)])).toEqual([
-      ['__fav', ['financing']], ['Daily', ['today']], ['Sales', ['customers', 'leads']], ['Financing', ['financing']],
+      ['\u0000fav', ['financing']], ['Daily', ['today']], ['Sales', ['customers', 'leads']], ['Financing', ['financing']],
     ]);
     expect(arrangeNav(ITEMS, prefs, { editing: true })[1].items.map((i) => i.value)).toEqual(['today', 'tasks']);
     expect(arrangeNav(ITEMS, 'garbage').length).toBe(3);
@@ -65,13 +65,13 @@ describe('NavMenu', () => {
   it('stars a page into Favorites and saves it', async () => {
     const save = vi.fn();
     const { container } = render(<Harness save={save} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add Leads to favorites' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Favorite Leads', pressed: false }));
     expect(sections(container)[0]).toBe('Favorites');
     expect(labels(container).filter((l) => l === 'Leads').length).toBe(2);
     await act(async () => {});
     expect(save).toHaveBeenCalledWith('t.menu', { fav: ['leads'], order: {}, hidden: [] });
     expect(JSON.parse(localStorage.getItem('t.menu')).fav).toEqual(['leads']);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove Leads from favorites' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Favorite Leads', pressed: true })[0]);
     expect(sections(container)).not.toContain('Favorites');
   });
 
@@ -82,7 +82,7 @@ describe('NavMenu', () => {
     expect(labels(container)).toEqual(['Today', 'Tasks', 'Customers', 'Leads', 'Contracts']);
     expect(screen.getByRole('button', { name: 'Move Today up' }).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Hide Tasks' }));
-    expect(screen.getByRole('button', { name: 'Show Tasks' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Hide Tasks' }).getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(labels(container)).toEqual(['Today', 'Customers', 'Leads', 'Contracts']);
     // a hidden page is still found by search
@@ -102,7 +102,7 @@ describe('NavMenu', () => {
     await act(async () => {});
     expect(load).toHaveBeenCalledWith('t.menu');
     expect(labels(container).slice(0, 1)).toEqual(['Customers']);
-    expect(within(container.querySelector('[aria-label="Sales"]')).getAllByRole('button', { name: /^(Leads|Customers)/ }).map((b) => b.textContent)).toEqual(['Customers', 'Leads']);
+    expect([...container.querySelectorAll('[aria-label="Sales"] .mk-nav-item')].map((b) => b.textContent)).toEqual(['Customers', 'Leads']);
   });
 
   it('⌘K and "/" focus the search and ask the shell to open', async () => {
@@ -120,5 +120,82 @@ describe('NavMenu', () => {
     expect(opened).toHaveBeenCalledTimes(2);
     window.removeEventListener(SHELL_OPEN_EVENT, opened);
     vi.useRealTimers();
+  });
+
+  it('a string shortcut uses only ⌘/Ctrl + that key, leaving ⌘K and "/" to the app', () => {
+    const opened = vi.fn();
+    window.addEventListener(SHELL_OPEN_EVENT, opened);
+    render(<Harness shortcut="/" />);
+    fireEvent.keyDown(document, { key: 'k', metaKey: true });
+    fireEvent.keyDown(document, { key: '/' });
+    expect(opened).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: '/', ctrlKey: true });
+    expect(opened).toHaveBeenCalledTimes(1);
+    window.removeEventListener(SHELL_OPEN_EVENT, opened);
+  });
+
+  it('shows an item with no value (an action) without crashing, and never stars it', () => {
+    const signOut = vi.fn();
+    render(<NavMenu prefKey="t.act" items={[...ITEMS, { label: 'Sign out', onClick: signOut }]} value="today" onChange={() => {}} />);
+    expect(screen.queryByRole('button', { name: 'Favorite Sign out' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(signOut).toHaveBeenCalled();
+  });
+
+  it('searches `text` when the label is not a string', () => {
+    const { container } = render(<NavMenu prefKey="t.txt" value="" onChange={() => {}} items={[{ value: 'x', label: <b>Fancy</b>, text: 'Fancy page' }]} />);
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'obj' } });
+    expect(screen.getByText(/No page matches/)).toBeTruthy();
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'fan' } });
+    expect(container.querySelector('.mk-nav-item b').textContent).toBe('Fancy');
+    expect(screen.getByRole('status').textContent).toBe('1 page');
+  });
+
+  it('Enter clicks the first result: follows links and closes the phone menu', () => {
+    const clicked = vi.fn((e) => e.preventDefault());
+    const { container } = render(
+      <SidebarLayout sidebar={<NavMenu prefKey="t.href" value="" items={[{ value: 'docs', label: 'Docs', href: '/docs' }]} />}><p>Page</p></SidebarLayout>,
+    );
+    container.querySelector('a.mk-nav-item').addEventListener('click', clicked);
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    const box = screen.getByRole('searchbox');
+    fireEvent.change(box, { target: { value: 'doc' } });
+    container.querySelector('a.mk-nav-item').addEventListener('click', clicked);
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(clicked).toHaveBeenCalled();
+    expect(container.querySelector('.mk-shell').className).not.toContain('mk-shell-open');
+  });
+
+  it('Esc in the search clears it without closing the phone menu', () => {
+    const { container } = render(<SidebarLayout sidebar={<Harness />}><p>Page</p></SidebarLayout>);
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    const box = screen.getByRole('searchbox');
+    fireEvent.change(box, { target: { value: 'lea' } });
+    fireEvent.keyDown(box, { key: 'Escape' });
+    expect(box.value).toBe('');
+    expect(container.querySelector('.mk-shell').className).toContain('mk-shell-open');
+  });
+
+  it('keeps focus on the arrow after a move, and on the other arrow at the end', async () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit menu' }));
+    const down = screen.getByRole('button', { name: 'Move Leads down' });
+    down.focus();
+    fireEvent.click(down);
+    await act(async () => { await new Promise((r) => requestAnimationFrame(r)); });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Move Leads up' }));
+  });
+
+  it('moving favorites keeps starred pages that are not on screen', async () => {
+    localStorage.setItem('t.menu', JSON.stringify({ fav: ['leads', 'secret', 'today'] }));
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit menu' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Move Today up' })[0]);
+    expect(JSON.parse(localStorage.getItem('t.menu')).fav).toEqual(['today', 'leads', 'secret']);
+  });
+
+  it('a keydown with no key (autofill) does not throw', () => {
+    render(<Harness />);
+    expect(() => fireEvent.keyDown(document, {})).not.toThrow();
   });
 });
