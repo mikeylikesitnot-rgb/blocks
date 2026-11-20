@@ -284,6 +284,18 @@
       "spec": "https://docs.google.com/document/d/1bvcy2GTqGWvQL1jwqiYJYZA5pQdF3JaLn-zj2pVYBt8/edit",
       "mockup": "https://claude.ai/artifact/JEHZjfP4rRSyq3z2ndibVu",
       "fromRequest": null
+    },
+    {
+      "id": "BLK-024",
+      "name": "Copy button",
+      "area": "Controls",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "CopyButton: a small icon button that copies text to the clipboard, shows a check for a moment and a toast; safe inside clickable rows. copyText helper falls back to execCommand on http. First used by TuroApp to copy car info.",
+      "branch": "copy-button",
+      "spec": null,
+      "mockup": "https://claude.ai/artifact/89e4XNqo8pAe8P9xDFw259",
+      "fromRequest": null
     }
   ]
 }

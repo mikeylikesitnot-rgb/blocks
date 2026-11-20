@@ -67,6 +67,7 @@
 .mk-btn-lg { height: var(--mk-h-lg); padding: 0 var(--mk-space-5); font-size: var(--mk-text-base); }
 .mk-btn-lg .mk-icon { font-size: 20px; }
 .mk-btn-icon { padding: 0; aspect-ratio: 1; }
+.mk-copy-done, .mk-copy-done:hover { color: var(--mk-success); }
 .mk-btn-block { display: flex; width: 100%; }
 
 .mk-btn-primary { background: var(--mk-primary); color: var(--mk-primary-fg); }

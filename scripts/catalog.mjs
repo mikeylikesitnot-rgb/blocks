@@ -54,6 +54,7 @@ const AREAS = [
     { name: 'Segmented', does: 'Segmented control for 2-5 options.', props: 'items, value, onChange, label' },
     { name: 'Toolbar', does: 'Filter/action bar that wraps on phones.', props: 'children, right' },
     { name: 'Button', also: ['BUTTON_VARIANTS'], does: 'The one button: 7 variants, 4 sizes, loading, icon-only, or a link with href.', props: 'variant primary|accent|danger|secondary|soft|soft-danger|ghost, size, icon, iconRight, loading, label, block, href; type defaults to "button"' },
+    { name: 'CopyButton', also: ['copyText'], does: 'Small icon button that copies text: check icon for 1.5s plus a toast; clicks don\'t bubble (safe in clickable rows); copyText falls back to execCommand on http.', props: 'text (string or () => string), label (tooltip/aria, "Copy"), toast (true | "Copied car info" | false), variant (ghost), size (sm), onCopied(text), children for a text button' },
     { name: 'Badge', also: ['toneFor', 'TONES', 'STATUS_TONE'], does: 'Status pill; picks a tone from common status words.', props: 'text, tone, tones (extra word->tone), dot, size' },
     { name: 'Icons', icons: true, does: 'Inline SVG icons, 1em square, currentColor; any `icon` prop also takes a lucide-react icon.', props: 'className, any svg prop' },
     { name: 'cx', does: 'Join class names, skipping falsy ones.' },

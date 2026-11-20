@@ -2,7 +2,7 @@ import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../src/kit.css';
 import {
-  Button, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
+  Button, CopyButton, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
   DataTable, Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
   PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
@@ -89,6 +89,8 @@ function Demo() {
               <Button variant="ghost" icon={XIcon} label="Close" />
               <Button loading>Saving…</Button>
               <Button disabled>Disabled</Button>
+              <CopyButton text="37 | CHEVROLET SILVERADO 2500HD LS 2003 | XLC6117 | 1GCHC23U23F258963" label="Copy car info" toast="Copied car info" />
+              <CopyButton variant="secondary" text="Hello">Copy</CopyButton>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 12 }}>
               <Button size="xs">xs</Button><Button size="sm">sm</Button><Button>md</Button><Button size="lg">lg</Button>

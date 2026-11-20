@@ -1,4 +1,5 @@
 export { Button, BUTTON_VARIANTS } from './Button.jsx';
+export { CopyButton, copyText } from './CopyButton.jsx';
 export { Badge, toneFor, TONES, STATUS_TONE } from './Badge.jsx';
 export { PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar } from './Layout.jsx';
 export { Input, Textarea, SearchInput, Select, Field } from './Inputs.jsx';
