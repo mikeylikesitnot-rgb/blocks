@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   SidebarLayout, NavMenu, InitialIcon, ThemeSwitch, FilterMenu, GroupedList, Badge, Button, EmptyState,
   SearchInput, Toolbar, StatCard, StatGrid, PageHeader, matchesQuery, useUrlState, useUrlList,
@@ -58,6 +58,7 @@ export function HubDemo() {
     };
   }), [shown]);
 
+  const [editingMenu, setEditingMenu] = useState(false);
   const count = (s) => inProject.filter((f) => f.status === s).length;
   const current = PROJECTS.find((p) => p.slug === project);
   const nav = [
@@ -80,8 +81,13 @@ export function HubDemo() {
       collapsible
       resizable
       style={{ '--mk-shell-h': '760px' }}
-      sidebar={<NavMenu prefKey="demo.hub.menu" label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }} />}
-      footer={<ThemeSwitch />}
+      sidebar={<NavMenu prefKey="demo.hub.menu" label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }}
+        editing={editingMenu} onEditingChange={setEditingMenu} editButton={false} hint={false} />}
+      footer={<div style={{ display: 'grid', gap: 4 }}>
+        {/* Edit menu lives in the footer here: editing + onEditingChange + editButton={false} */}
+        <Button variant="ghost" size="sm" onClick={() => setEditingMenu(true)} disabled={editingMenu}>Edit menu</Button>
+        <ThemeSwitch />
+      </div>}
     >
       <div style={{ padding: '24px 16px 48px', display: 'grid', gap: 20, maxWidth: 1040 }}>
         <PageHeader

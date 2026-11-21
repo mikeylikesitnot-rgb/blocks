@@ -7,6 +7,7 @@
 ## Done
 
 - 2026-11-21: v0.26.0 useAutosave `adopt(values)` (a stamped date or derived flag the server set on a save becomes the saved value, no save or undo step); ⌘Z/⌘S also stay off under a native `<dialog open>` (AutoDealer's Modal), and work with focus on a select or checkbox. Found by AutoDealer's Edit Vehicle review
+- 2026-11-21: v0.27.0 NavMenu `editing` + `onEditingChange` (drive Edit menu from outside), `editButton={false}` (no built-in Edit menu button; Done / Reset menu still show while editing), `hint={false}` (no star tip). Defaults unchanged. First used by TuroApp, which puts Edit menu in its account footer
 - 2026-11-21: v0.25.0 SaveStatus `revertTone="danger"`: Revert all in the danger colour behind a divider, so it isn't mistaken for Undo (default unchanged). First used by TuroApp's car page
 - 2026-11-21: v0.24.1 changelogCommits also reads merge commits: an entry written while resolving a merge (TuroApp's TA-067) gets its Commit link; an entry merged in from another branch keeps the commit that added it there. Oldest first in topo order, first hit wins
 - 2026-11-21: v0.24.0 SidebarLayout `resizable` (BLK-031): drag the desktop sidebar's edge (minWidth–maxWidth, default 200–400px), ← / → / Home / End from the keyboard, double-click or Enter resets; `sidebarWidth` + `onSidebarWidthChange` save it, reported once per drag. First used by TuroApp

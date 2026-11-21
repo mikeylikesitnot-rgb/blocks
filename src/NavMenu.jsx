@@ -147,14 +147,22 @@ const typing = (el) => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el
  *   } />
  * ⌘K / Ctrl+K or "/" focuses the search (and opens the phone menu); Enter opens the first match.
  * shortcut="/" makes it ⌘/ / Ctrl+/ only (any key works); shortcut={false} turns it off.
+ * editing + onEditingChange drive edit mode from outside; editButton={false} drops the
+ * built-in "Edit menu" button (Done / Reset menu still show while editing); hint={false}
+ * drops the "Tip: star a page" line.
  */
 export function NavMenu({
   items, value, onChange, prefKey, load, save, label = 'Menu',
   placeholder = 'Search menu', favoritesLabel = 'Favorites', shortcut = true, className = '',
+  editing: editingProp, onEditingChange, editButton = true, hint = true,
 }) {
   const nav = useNavMenu(prefKey, { load, save });
   const [query, setQuery] = useState('');
-  const [editing, setEditing] = useState(false);
+  // Edit mode can be driven from outside (editing + onEditingChange), e.g. an
+  // "Edit menu" link in the app's account footer with editButton={false}.
+  const [editingOwn, setEditingOwn] = useState(false);
+  const editing = editingProp ?? editingOwn;
+  const setEditing = (on) => { if (editingProp === undefined) setEditingOwn(on); onEditingChange?.(on); };
   const [drag, setDrag] = useState(null); // { group, key, index }
   const [over, setOver] = useState(null); // { group, key, after }
   const inputRef = useRef(null);
@@ -183,6 +191,8 @@ export function NavMenu({
   const groups = useMemo(() => arrangeNav(items, nav.prefs, { editing }), [items, nav.prefs, editing]);
   const hits = useMemo(() => searchNav(items, query), [items, query]);
   const searching = query.trim() !== '';
+
+  useEffect(() => { if (editing) setQuery(''); }, [editing]);
 
   const pick = (it, e) => {
     it.onClick?.(e);
@@ -313,11 +323,11 @@ export function NavMenu({
             </div>
           );
         })}
-        {!searching && !editing && !nav.prefs.fav.length && (
+        {hint && !searching && !editing && !nav.prefs.fav.length && (
           <p className="mk-nav-hint">Tip: star a page to pin it to the top.</p>
         )}
       </nav>
-      <div className="mk-navmenu-edit">
+      {(editing || editButton) && <div className="mk-navmenu-edit">
         {editing ? (
           <>
             <Button size="sm" onClick={() => setEditing(false)}>Done</Button>
@@ -325,9 +335,9 @@ export function NavMenu({
             <p className="mk-nav-hint">Drag, or use the arrows, to move a page within its group. The eye hides a page; search still finds it.</p>
           </>
         ) : (
-          <Button variant="ghost" size="sm" onClick={() => { setQuery(''); setEditing(true); }}>Edit menu</Button>
+          <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>Edit menu</Button>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

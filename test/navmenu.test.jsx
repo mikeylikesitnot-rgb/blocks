@@ -95,6 +95,30 @@ describe('NavMenu', () => {
     expect(localStorage.getItem('t.menu')).toBeNull();
   });
 
+  it('edit mode can be driven from outside; editButton and hint can be turned off', () => {
+    function Outside() {
+      const [on, setOn] = useState(false);
+      return (<>
+        <Harness editing={on} onEditingChange={setOn} editButton={false} hint={false} />
+        <button type="button" onClick={() => setOn(true)}>Outside edit</button>
+      </>);
+    }
+    const { container } = render(<Outside />);
+    expect(screen.queryByRole('button', { name: 'Edit menu' })).toBeNull();
+    expect(container.textContent).not.toMatch(/Tip: star/);
+    fireEvent.click(screen.getByRole('button', { name: 'Outside edit' }));
+    expect(screen.getByRole('button', { name: 'Move Customers up' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Move Customers up' })).toBeNull();
+  });
+
+  it('shows the Edit menu button and star tip by default', () => {
+    const { container } = render(<Harness />);
+    expect(screen.getByRole('button', { name: 'Edit menu' })).toBeTruthy();
+    expect(container.textContent).toMatch(/Tip: star a page/);
+  });
+
   it('loads the account copy over the browser copy', async () => {
     localStorage.setItem('t.menu', JSON.stringify({ fav: ['tasks'] }));
     const load = vi.fn().mockResolvedValue({ fav: ['customers'], order: { Sales: ['customers', 'leads'] } });
