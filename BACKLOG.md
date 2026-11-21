@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.20.0 useSavedPref (BLK-027): one saved UI choice in the browser and on the account (browser copy first, account wins on load, browser copy sent up once, set(null) resets). useNavMenu now uses it. First used by AutoDealer and TuroApp for the sidebar's hidden/pinned choice
 - 2026-11-20: v0.20.0 Changelog (BLK-027): `Changelog` lists what changed by day (New / Fixed / Improved, F-id, Open page / Commit / PR links, type filter + search) and `CompareImages` shows before/after screenshots (drag slider or side by side, full size in a Lightbox); `normalizeChangelog` cleans a committed changelog.json. AutoDealer adopts it next, with a devflow screenshot step
 - 2026-11-20: v0.19.1 fixes: CopyButton's check turns green (the ghost variant's colour beat it); PageHeader keeps its actions on one line beside a long title. package.json was still 0.18.2 after v0.19.0
 - 2026-11-20: v0.19.0 NavList/NavMenu item `note` (BLK-026): explains a count ("3 waiting over 2 hours") as a tooltip and screen-reader text. First used by AutoDealer admin's urgent counts

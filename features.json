@@ -332,6 +332,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-027",
+      "name": "Saved choice hook",
+      "area": "Helpers",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "useSavedPref keeps one UI choice in the browser and on the account: the browser copy first, the account's value once it loads, the browser copy sent up when the account has none. NavMenu uses it; AutoDealer and TuroApp use it for the sidebar.",
+      "branch": "saved-pref",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

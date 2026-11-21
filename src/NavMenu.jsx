@@ -5,7 +5,7 @@ import { SearchInput } from './Inputs.jsx';
 import { matchesQuery } from './search.js';
 import { highlight } from './highlight.jsx';
 import { NavCount } from './NavCount.jsx';
-import { readPref, writePref } from './prefs.js';
+import { useSavedPref } from './savedPref.js';
 import { orderColumns } from './ColumnOrder.jsx';
 import { ArrowUpIcon, ArrowDownIcon, GripIcon, StarIcon, EyeIcon, EyeOffIcon } from './icons.jsx';
 
@@ -103,41 +103,13 @@ export function searchNav(items, query) {
  *   const nav = useNavMenu('admin.menu', { load: getUiPref, save: saveUiPref });
  */
 export function useNavMenu(prefKey, { load, save } = {}) {
-  const [prefs, setPrefs] = useState(() => cleanNavPrefs(readPref(prefKey)));
-  const touched = useRef(false);
-  const io = useRef({ load, save });
-  io.current = { load, save };
-
-  useEffect(() => {
-    touched.current = false;
-    const local = cleanNavPrefs(readPref(prefKey));
-    setPrefs(local);
-    const { load: loadFn, save: saveFn } = io.current;
-    if (!loadFn) return undefined;
-    let live = true;
-    Promise.resolve().then(() => loadFn(prefKey)).then((saved) => {
-      if (!live || touched.current) return;
-      if (!saved || typeof saved !== 'object') {
-        // Nothing on the account yet: send up what this browser has, so the
-        // menu follows the person to the next browser.
-        if (saveFn && !isEmpty(local)) Promise.resolve().then(() => saveFn(prefKey, local)).catch(() => {});
-        return;
-      }
-      const next = cleanNavPrefs(saved);
-      setPrefs(next);
-      writePref(prefKey, next);
-    }).catch(() => { /* the local copy stands */ });
-    return () => { live = false; };
-  }, [prefKey]);
-
-  const commit = (next) => {
-    touched.current = true;
-    setPrefs(next);
-    const value = isEmpty(next) ? null : next;
-    writePref(prefKey, value);
-    const { save: saveFn } = io.current;
-    if (saveFn) Promise.resolve().then(() => saveFn(prefKey, value)).catch(() => {});
-  };
+  // Browser copy + account copy, shared with every other saved choice (useSavedPref).
+  // An empty choice counts as none, so it is never sent up over another browser's.
+  const [prefs, setSaved] = useSavedPref(prefKey, {
+    load, save, fallback: EMPTY,
+    clean: (v) => { const p = cleanNavPrefs(v); return isEmpty(p) ? null : p; },
+  });
+  const commit = (next) => setSaved(isEmpty(next) ? null : next);
   const flip = (list, k) => (list.includes(k) ? list.filter((x) => x !== k) : [...list, k]);
 
   return {
