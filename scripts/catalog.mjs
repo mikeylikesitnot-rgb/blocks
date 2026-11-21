@@ -92,6 +92,10 @@ const AREAS = [
     { name: 'Lightbox', does: 'Full-size image in a modal (bottom sheet on phones).', props: 'open, onClose, src, alt, title, footer' },
     { name: 'checkFiles', also: ['fileAccepted', 'formatBytes', 'isImage'], does: 'File helpers: split into ok/rejected by type and size, match an accept list, "1.4 MB" sizes, image mime check.', props: '(files, {accept, maxSize}) -> {ok, rejected}' },
   ] },
+  { title: 'Changelog', sub: '', items: [
+    { name: 'Changelog', also: ['normalizeChangelog', 'changelogDay', 'CHANGE_TYPES'], does: 'What changed, newest first and grouped by day: New / Fixed / Improved badges, F-id, Open page / Commit / PR links and before/after screenshots, with a type filter and search; normalizeChangelog cleans a changelog.json (bad entries dropped, hashes and PR numbers become links, image paths resolved).', props: 'entries (raw file or normalized), baseUrl (image folder), repoUrl, loading, error, onRetry, query/onQueryChange, types/onTypesChange, empty, toolbarRight' },
+    { name: 'CompareImages', does: 'Before/after screenshots: drag slider (touch and arrow keys) or side by side; either opens full size in a Lightbox; one image shows alone.', props: 'before, after, label, beforeLabel, afterLabel, defaultMode slider|side' },
+  ] },
   { title: 'States & overlays', sub: '', items: [
     { name: 'EmptyState', does: 'Empty, no-results or error message with the right icon and action.', props: 'variant empty|filtered|error, title, body, action, onClear, onRetry, compact' },
     { name: 'Skeleton', does: 'One grey loading block.', props: 'className, style' },

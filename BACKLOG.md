@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.20.0 Changelog (BLK-027): `Changelog` lists what changed by day (New / Fixed / Improved, F-id, Open page / Commit / PR links, type filter + search) and `CompareImages` shows before/after screenshots (drag slider or side by side, full size in a Lightbox); `normalizeChangelog` cleans a committed changelog.json. AutoDealer adopts it next, with a devflow screenshot step
 - 2026-11-20: v0.19.1 fixes: CopyButton's check turns green (the ghost variant's colour beat it); PageHeader keeps its actions on one line beside a long title. package.json was still 0.18.2 after v0.19.0
 - 2026-11-20: v0.19.0 NavList/NavMenu item `note` (BLK-026): explains a count ("3 waiting over 2 hours") as a tooltip and screen-reader text. First used by AutoDealer admin's urgent counts
 - 2026-11-20: v0.18.2 Modal: with modals stacked, Esc closes (and Tab stays in) only the top one, so "Edit options…" or a confirm over an edit form no longer closes the form too and loses its edits. Found in TuroApp's task window

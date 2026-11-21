@@ -22,3 +22,4 @@ export { cx } from './cx.js';
 export * from './icons.jsx';
 export { SessionProvider, useSession, AuthGate, LoginPage } from './auth.jsx';
 export { FileDrop, AttachmentGrid, Lightbox, usePasteFiles, filesFromPaste, checkFiles, fileAccepted, formatBytes, isImage, nameClipboardFile } from './Attachments.jsx';
+export { Changelog, CompareImages, normalizeChangelog, changelogDay, CHANGE_TYPES } from './Changelog.jsx';

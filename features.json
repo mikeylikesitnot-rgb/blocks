@@ -320,6 +320,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-027",
+      "name": "Changelog block",
+      "area": "Lists",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "Changelog and CompareImages: what changed, newest first by day, with New/Fixed/Improved badges, F-id, Open page/Commit/PR links, before/after screenshots (slider or side by side, full size in a Lightbox), type filter and search; normalizeChangelog cleans a committed changelog.json.",
+      "branch": "changelog-block",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
