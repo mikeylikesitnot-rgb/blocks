@@ -6,3 +6,4 @@ export { createMailer } from './mailer.js';
 export { renderEmail, loginCodeEmail, passwordChangedEmail, inviteEmail, notificationEmail } from './email.js';
 export { createLimiter, createFormLimiter, createCostLimiter } from './rateLimit.js';
 export { encrypt, decrypt } from './crypto.js';
+export { readChangelog, changelogCommits, CHANGELOG_ID, CHANGELOG_IMAGE } from './changelog.js';

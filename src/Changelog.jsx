@@ -242,11 +242,11 @@ export function CompareImages({ before, after, label = '', beforeLabel = 'Before
   );
 }
 
-function Entry({ e, query }) {
+function Entry({ e, query, anchor }) {
   const t = CHANGE_TYPES[e.type];
   const { page, commit, pr } = e.links;
   return (
-    <article className="mk-cl-entry">
+    <article className="mk-cl-entry" id={anchor}>
       <div className="mk-cl-meta">
         <Badge tone={t.tone}>{t.label}</Badge>
         {e.feature && <span className="mk-cl-id">{highlight(e.feature, query)}</span>}
@@ -276,11 +276,13 @@ function Entry({ e, query }) {
  * `entries` is the raw file (normalized here) or normalizeChangelog's output.
  * Filters are internal unless you pass query/onQueryChange and
  * types/onTypesChange (e.g. from useSavedFilters or useUrlList).
+ * toolbar={false} hides the built-in search + Type filter so the app can use
+ * its own filter row (still pass query/types so the list follows it).
  */
 export function Changelog({
   entries, baseUrl, repoUrl, loading = false, error = null, onRetry,
   query: queryProp, onQueryChange, types: typesProp, onTypesChange,
-  empty, toolbarRight, className = '',
+  empty, toolbar = true, toolbarRight, anchorPrefix, className = '',
 }) {
   const [qState, setQState] = useState('');
   const [tState, setTState] = useState([]);
@@ -310,17 +312,19 @@ export function Changelog({
     body = days.map(([day, list]) => (
       <section key={day} className="mk-cl-day" aria-label={changelogDay(day)}>
         <h2 className="mk-eyebrow mk-cl-day-title"><time dateTime={day}>{changelogDay(day)}</time></h2>
-        <div className="mk-cl-list">{list.map((e) => <Entry key={e.id} e={e} query={query} />)}</div>
+        <div className="mk-cl-list">{list.map((e) => <Entry key={e.id} e={e} query={query} anchor={anchorPrefix ? `${anchorPrefix}${e.id}` : undefined} />)}</div>
       </section>
     ));
   }
 
   return (
     <div className={cx('mk-cl', className)}>
-      <Toolbar right={toolbarRight ?? (all.length ? `${shown.length} of ${all.length}` : null)}>
-        <SearchInput value={query} onChange={setQuery} placeholder="Search changes" />
-        <FilterMenu label="Type" allLabel="All types" options={options} value={types} onChange={setTypes} />
-      </Toolbar>
+      {toolbar && (
+        <Toolbar right={toolbarRight ?? (all.length ? `${shown.length} of ${all.length}` : null)}>
+          <SearchInput value={query} onChange={setQuery} placeholder="Search changes" />
+          <FilterMenu label="Type" allLabel="All types" options={options} value={types} onChange={setTypes} />
+        </Toolbar>
+      )}
       {body}
     </div>
   );

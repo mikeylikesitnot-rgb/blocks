@@ -344,6 +344,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-029",
+      "name": "Changelog screenshots",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "ops/changelog-shot.mjs signs in to the local app and saves before/after screenshots (1280px, --phone 390px, JPEG q80) into changelog/<id>/, refusing any non-local address; readChangelog reads the entry folders and changelogCommits finds each entry's commit; Changelog gets toolbar={false} for an app's own filter row. Devflow takes the shots on every story.",
+      "branch": "changelog-shots",
+      "spec": "https://docs.google.com/document/d/15WW_yOU3l09s83aUwWWZU2za7eG7vOScXbAQtA7wTKk/edit",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@mn/blocks",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",
@@ -16,6 +16,7 @@
     "./editor.css": "./src/editor/editor.css",
     "./package.json": "./package.json",
     "./server": "./server/index.js",
+    "./server/changelog": "./server/changelog.js",
     "./email": "./server/email.js"
   },
   "files": [

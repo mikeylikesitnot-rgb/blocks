@@ -28,6 +28,8 @@ const ENTRIES = [
   { sub: '/editor/lite', file: 'src/editor/lite.js', subsetOf: '/editor',
     note: 'RichText, RichTextField and the value helpers without loading Tiptap up front (use in bundles customers download).' },
   { sub: '/server', file: 'server/index.js' },
+  { sub: '/server/changelog', file: 'server/changelog.js', subsetOf: '/server',
+    note: 'readChangelog and changelogCommits alone, for a build or deploy script (no Express, jose or bcrypt needed).' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
     note: 'just the email templates, no Express or nodemailer needed.' },
 ];
@@ -94,7 +96,7 @@ const AREAS = [
     { name: 'checkFiles', also: ['fileAccepted', 'formatBytes', 'isImage'], does: 'File helpers: split into ok/rejected by type and size, match an accept list, "1.4 MB" sizes, image mime check.', props: '(files, {accept, maxSize}) -> {ok, rejected}' },
   ] },
   { title: 'Changelog', sub: '', items: [
-    { name: 'Changelog', also: ['normalizeChangelog', 'changelogDay', 'CHANGE_TYPES'], does: 'What changed, newest first and grouped by day: New / Fixed / Improved badges, F-id, Open page / Commit / PR links and before/after screenshots, with a type filter and search; normalizeChangelog cleans a changelog.json (bad entries dropped, hashes and PR numbers become links, image paths resolved).', props: 'entries (raw file or normalized), baseUrl (image folder), repoUrl, loading, error, onRetry, query/onQueryChange, types/onTypesChange, empty, toolbarRight' },
+    { name: 'Changelog', also: ['normalizeChangelog', 'changelogDay', 'CHANGE_TYPES'], does: 'What changed, newest first and grouped by day: New / Fixed / Improved badges, F-id, Open page / Commit / PR links and before/after screenshots, with a type filter and search; normalizeChangelog cleans a changelog.json (bad entries dropped, hashes and PR numbers become links, image paths resolved).', props: 'entries (raw file or normalized), baseUrl (image folder), repoUrl, loading, error, onRetry, query/onQueryChange, types/onTypesChange, empty, anchorPrefix (each entry gets id=prefix+entry id, to link or scroll to it), toolbar (false: no built-in search/Type row, for an app\'s own filters), toolbarRight' },
     { name: 'CompareImages', does: 'Before/after screenshots: drag slider (touch and arrow keys) or side by side; either opens full size in a Lightbox; one image shows alone.', props: 'before, after, label, beforeLabel, afterLabel, defaultMode slider|side' },
   ] },
   { title: 'States & overlays', sub: '', items: [
@@ -143,6 +145,10 @@ const AREAS = [
     { name: 'createFormLimiter', does: 'Public form posts: 5 per 15 min.', props: 'same as createLimiter' },
     { name: 'createCostLimiter', does: 'Endpoints that cost money per call: 20 per hour.', props: 'same as createLimiter' },
   ] },
+  { title: 'Server: changelog', sub: '/server', items: [
+    { name: 'readChangelog', also: ['CHANGELOG_ID', 'CHANGELOG_IMAGE'], does: 'Reads changelog/<id>/entry.json folders into one list for Changelog: id = folder, images become "<id>/before-1.jpg", broken folders and missing images skipped.', props: '(dir, {commits}) — commits from changelogCommits fill links.commit' },
+    { name: 'changelogCommits', does: 'The commit that added each changelog/<id>/entry.json ({id: hash}); {} without git, so run it at deploy and ship the result.', props: '(repoDir, {dir "changelog"})' },
+  ] },
   { title: 'Server: crypto', sub: '/server', items: [
     { name: 'encrypt', also: ['decrypt'], does: 'AES-256-GCM for small stored secrets, keyed from an existing secret.', props: '(text, secret, salt)' },
   ] },
@@ -151,6 +157,7 @@ const AREAS = [
 // Shell scripts under ops/: not imports, so listed by hand. Each file must exist.
 const OPS = [
   { file: 'ops/backup.sh', does: 'Nightly VPS backup: Postgres dump + files + folders in one restic snapshot, encrypted to Google Drive via rclone, healthchecks.io pings, retries, keep rules that really delete, weekly restore test into a scratch database, local copies.', use: 'deploy copies it to the VPS; cron runs `backup.sh <config>` (config keys in the header: NAME, RESTIC_REPOSITORY, RESTIC_PASSWORD_FILE, HC_PING_URL, DB_CONTAINER, DB_FORMAT, DB_FILE, DB_CHECK_TABLE, RESTORE_TEST_TABLES, COPY_FILES, BACKUP_PATHS, KEEP_*); `RESTORE_TEST=1` runs the restore test now' },
+  { file: 'ops/changelog-shot.mjs', does: 'Before/after screenshots for a changelog entry: signs in to the LOCAL app (refuses any other address), opens each page at 1280px (and 390px with --phone), saves <name>-N.jpg (JPEG q80) and writes them into <out>/entry.json shots.', use: '`node node_modules/@mn/blocks/ops/changelog-shot.mjs --base http://localhost:5173 --out changelog/<id> --name before|after [--login \'POST /api/auth/dev-login {"role":"admin"}\'] [--phone] [--hide <css>] [--wait <css>] [--full] /page ...`; needs Playwright in the app' },
 ];
 for (const o of OPS) {
   try { readFileSync(join(ROOT, o.file)); } catch { console.error(`catalog: ${o.file} is listed in OPS but missing`); process.exit(1); }

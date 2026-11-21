@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Changelog, Panel, Segmented, Button } from '../src/index.js';
+import { Changelog, CHANGE_TYPES, Panel, Segmented, Button, SearchInput, FilterMenu } from '../src/index.js';
 
 /* Fake screenshots: a little admin list drawn as SVG, so the demo needs no image files. */
 function shot({ rows, accent = '#1a56db', extra = false, title = 'Leads' }) {
@@ -60,6 +60,26 @@ export function ChangelogDemo() {
         />
       </Panel>
       {state !== 'data' && <Button variant="secondary" size="sm" onClick={() => setState('data')}>Back to data</Button>}
+      <OwnFilters />
     </div>
+  );
+}
+
+// toolbar={false}: the app draws its own filter row (search on its own line) and passes query/types in.
+function OwnFilters() {
+  const [query, setQuery] = useState('');
+  const [types, setTypes] = useState([]);
+  const options = Object.entries(CHANGE_TYPES).map(([value, t]) => ({ value, label: t.label }));
+  return (
+    <Panel title="toolbar={false}" subtitle="The app's own filter row: search on its own line, then the Type checklist and Reset filters.">
+      <div style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
+        <SearchInput value={query} onChange={setQuery} placeholder="Search what's new" />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <FilterMenu label="Type" allLabel="All types" options={options} value={types} onChange={setTypes} />
+          {(query || types.length > 0) && <Button variant="ghost" size="sm" onClick={() => { setQuery(''); setTypes([]); }}>Reset filters</Button>}
+        </div>
+      </div>
+      <Changelog entries={ENTRIES} repoUrl="https://github.com/example/app" toolbar={false} query={query} types={types} />
+    </Panel>
   );
 }

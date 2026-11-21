@@ -155,6 +155,18 @@ describe('Changelog', () => {
     fireEvent.change(screen.getByPlaceholderText('Search changes'), { target: { value: 'x' } });
     expect(q).toBe('x');
   });
+
+  it('toolbar={false} drops the built-in search and Type filter but still follows query/types', () => {
+    view({ toolbar: false, types: ['fix'] });
+    expect(screen.queryByPlaceholderText('Search changes')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Type/ })).toBeNull();
+    expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual(['Deploy deletes old files']);
+  });
+
+  it('anchorPrefix gives each entry an id to link to', () => {
+    const { container } = view({ anchorPrefix: 'whats-new-' });
+    expect([...container.querySelectorAll('article')].map((a) => a.id)).toEqual(['whats-new-b', 'whats-new-c', 'whats-new-a']);
+  });
 });
 
 describe('CompareImages', () => {
