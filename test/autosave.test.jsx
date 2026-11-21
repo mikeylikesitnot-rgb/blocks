@@ -143,6 +143,45 @@ describe('useAutosave', () => {
   });
 });
 
+describe('useAutosave v0.26.0', () => {
+  it('a native <dialog open> also turns the keys off; a closed one does not', async () => {
+    const { a } = setup();
+    act(() => a().setField('color', 'White'));
+    await act(async () => { await a().flush(); });
+    const dlg = document.createElement('dialog');
+    document.body.appendChild(dlg);
+    await act(async () => { fireEvent.keyDown(document.body, { key: 'z', metaKey: true }); await new Promise((r) => setTimeout(r, 0)); });
+    expect(a().form.color).toBe('Black'); // closed dialog: undo ran
+    act(() => a().setField('color', 'White'));
+    await act(async () => { await a().flush(); });
+    dlg.setAttribute('open', '');
+    await act(async () => { fireEvent.keyDown(document.body, { key: 'z', metaKey: true }); await new Promise((r) => setTimeout(r, 0)); });
+    expect(a().form.color).toBe('White'); // open dialog: ignored
+    dlg.remove();
+  });
+
+  it('⌘Z works with focus on a select (it has no undo of its own)', async () => {
+    const { a } = setup();
+    act(() => a().setField('color', 'White'));
+    await act(async () => { await a().flush(); });
+    const sel = document.createElement('select');
+    document.body.appendChild(sel);
+    await act(async () => { fireEvent.keyDown(sel, { key: 'z', metaKey: true }); await new Promise((r) => setTimeout(r, 0)); });
+    expect(a().form.color).toBe('Black');
+    sel.remove();
+  });
+
+  it('adopt() takes server-set values as saved, without a save, and keeps a pending edit', async () => {
+    const { a, calls } = setup();
+    act(() => a().setField('notes', 'typing'));
+    act(() => a().adopt({ vin: 'B', notes: 'server' }));
+    expect(a().form.vin).toBe('B');
+    expect(a().form.notes).toBe('typing');
+    await act(async () => { await a().flush(); });
+    expect(calls).toEqual([{ notes: 'typing' }]); // vin not re-sent
+  });
+});
+
 describe('SaveStatus', () => {
   it('shows each state', () => {
     const base = { status: 'idle', savedAt: null, dirty: false, canUndo: false, canRevert: false, undo() {}, revertAll() {}, flush: vi.fn() };

@@ -63,6 +63,20 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
     setErrors({});
   }, []);
 
+  // Values the server set itself on a save (a stamped date, a derived flag): they become
+  // the saved values without a save or an undo step. A field with an edit still pending
+  // keeps the edit on screen.
+  const adopt = useCallback((values) => {
+    if (!savedRef.current) return;
+    const next = { ...formRef.current };
+    for (const [k, v] of Object.entries(values)) {
+      if (same(next[k], savedRef.current[k])) next[k] = v;
+      savedRef.current[k] = v;
+    }
+    formRef.current = next;
+    setForm(next);
+  }, []);
+
   // mode: 'edit' (a new undo step, clears redo), 'undo' (goes on the redo stack), 'redo' (back on the undo stack).
   // trusted: the keys being put back (undo, revert, apply): validate is skipped for those only,
   // so another field held back by validate stays held back. Resolves to { ok, invalid }.
@@ -182,13 +196,17 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
       if (!keys.current.enabled || !(e.metaKey || e.ctrlKey)) return;
       const k = e.key.toLowerCase();
       if (k !== 's' && k !== 'z' && k !== 'y') return;
-      const dialogs = document.querySelectorAll('[role="dialog"]');
+      // [role=dialog] and native <dialog open> (a closed <dialog> stays in the DOM and doesn't count)
+      const dialogs = document.querySelectorAll('[role="dialog"], dialog[open]');
       const top = dialogs[dialogs.length - 1];
       const root = keys.current.scope?.current;
       if (top && !(root && top.contains(root))) return; // a dialog over this form (or this page)
       if (k === 's') { e.preventDefault(); keys.current.flush(); return; }
       const t = e.target;
-      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; // the field's own undo
+      // A text box keeps its own undo; a select, checkbox or button has none, so ⌘Z is ours there.
+      const typing = t && (t.isContentEditable || t.tagName === 'TEXTAREA'
+        || (t.tagName === 'INPUT' && !/^(checkbox|radio|button|submit|reset|range|color|file|image)$/i.test(t.type)));
+      if (typing) return;
       e.preventDefault();
       if (k === 'y' || e.shiftKey) keys.current.redo(); else keys.current.undo();
     };
@@ -212,7 +230,7 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
   }, [flush]);
 
   return {
-    form, setField, flush, reset, apply, undo, redo, revertAll,
+    form, setField, flush, reset, adopt, apply, undo, redo, revertAll,
     status, savedAt, error, errors, dirty, canRevert,
     canUndo: undoStack.current.length > 0, canRedo: redoStack.current.length > 0,
   };
