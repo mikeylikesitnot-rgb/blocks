@@ -28,6 +28,7 @@ export function FilterMenu({ label, allLabel, options = [], value = [], onChange
   const [query, setQuery] = useState('');
   const root = useRef(null);
   const btn = useRef(null);
+  const searchBox = useRef(null);
   const menuId = useId();
 
   useEffect(() => {
@@ -54,6 +55,8 @@ export function FilterMenu({ label, allLabel, options = [], value = [], onChange
   const active = value.length > 0;
   const showSearch = options.length > 0 && (search === true || (typeof search === 'number' && options.length > search));
   const q = query.trim().toLowerCase();
+  // Focus without scrolling: a menu near the window's edge must not shift the page.
+  useEffect(() => { if (open && showSearch) searchBox.current?.focus({ preventScroll: true }); }, [open, showSearch]);
   const shown = showSearch && q ? options.filter((o) => String(o.label ?? o.value).toLowerCase().includes(q)) : options;
 
   return (
@@ -78,8 +81,8 @@ export function FilterMenu({ label, allLabel, options = [], value = [], onChange
               className="mk-filter-search"
               placeholder={searchPlaceholder}
               aria-label={`Search ${label}`}
+              ref={searchBox}
               value={query}
-              autoFocus
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (q && shown.length === 1) toggle(shown[0].value); } }}
             />

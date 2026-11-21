@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-21: v0.29.1 FilterMenu search box takes focus without scrolling the page (a menu near the right edge shifted the page sideways in TuroApp)
 - 2026-11-21: v0.29.0 FilterMenu `search` (search box at the top of the open menu; true, or a number = only past that many options; Enter ticks the only match) + `searchPlaceholder`; SortTh without `sort` is a plain header with the same look (for drag-only columns). Defaults unchanged. First used by TuroApp's Dashboard (car filter, Earnings table)
 - 2026-11-21: v0.28.0 NavMenu `editing` + `onEditingChange` (drive Edit menu from outside), `editButton={false}` (no built-in Edit menu button; Done / Reset menu still show while editing), `hint={false}` (no star tip). Defaults unchanged. First used by TuroApp, which puts Edit menu in its account footer
 - 2026-11-21: v0.27.0 accessibility fixes from a Web Interface Guidelines audit of AutoDealer and TuroApp: Esc in a FilterMenu or ColumnOrder inside a Modal closes only the menu; Tabs have one Tab stop with ← / → / Home / End; toasts pause on hover or focus, have a × and are announced once; Modal is named by its title (any ReactNode) and stacked modals unlock page scroll in any order; DataTable rows open with Space; sign-in errors are tied to their fields (Field keeps an existing aria-describedby, Banner `id`); SidebarLayout "Skip to content" link (`skipLabel`); 44px hit areas on touch screens for small controls; touch-action and overscroll-behavior; loading skeletons are role=status; the search clear and nav star use --mk-muted (3:1)
