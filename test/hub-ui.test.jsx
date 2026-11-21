@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
 import {
@@ -122,6 +122,12 @@ describe('InitialIcon', () => {
 });
 
 describe('SidebarLayout', () => {
+    // jsdom has no PointerEvent: without one, fireEvent.pointer* drops clientX.
+    if (!window.PointerEvent) {
+      window.PointerEvent = class extends MouseEvent {
+        constructor(type, init = {}) { super(type, init); this.pointerId = init.pointerId ?? 1; }
+      };
+    }
   it('opens the phone menu, closes on a nav pick and on Esc', () => {
     const { container } = render(
       <SidebarLayout brand="Hub" sidebar={<NavList items={[{ value: 'a', label: 'Alpha' }]} onChange={() => {}} />}>
@@ -175,6 +181,78 @@ describe('SidebarLayout', () => {
     expect(shell.className).not.toContain('mk-shell-unpinned');
     expect(shell.className).not.toContain('mk-shell-open');
     expect(changes).toEqual([false, true]);
+  });
+
+  it('has no resize handle unless resizable', () => {
+    render(<SidebarLayout sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(screen.queryByRole('separator', { name: 'Resize menu' })).toBeNull();
+  });
+
+  it('resizable: arrow keys, Home/End and Enter set the width within min/max; reset reports null', () => {
+    const changes = [];
+    const { container } = render(
+      <SidebarLayout resizable defaultSidebarWidth={260} minWidth={200} maxWidth={400}
+        onSidebarWidthChange={(w) => changes.push(w)} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>,
+    );
+    const shell = container.querySelector('.mk-shell');
+    const handle = screen.getByRole('separator', { name: 'Resize menu' });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('260px');
+    expect(handle.getAttribute('aria-valuenow')).toBe('260');
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('276px');
+    fireEvent.keyDown(handle, { key: 'ArrowLeft', shiftKey: true });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('228px');
+    fireEvent.keyDown(handle, { key: 'End' });
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('400px');
+    fireEvent.keyDown(handle, { key: 'Home' });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('200px');
+    fireEvent.keyDown(handle, { key: 'Enter' });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('');
+    expect(changes).toEqual([276, 228, 400, 400, 200, null]);
+  });
+
+  it('resizable: dragging the handle reports the width once, when the drag ends; double-click resets', () => {
+    const changes = [];
+    const { container, rerender } = render(
+      <SidebarLayout resizable sidebarWidth={250} onSidebarWidthChange={(w) => changes.push(w)} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>,
+    );
+    const shell = container.querySelector('.mk-shell');
+    const handle = screen.getByRole('separator', { name: 'Resize menu' });
+    fireEvent.pointerDown(handle, { button: 0, clientX: 250, pointerId: 1 });
+    fireEvent.pointerMove(handle, { clientX: 300, pointerId: 1 });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('300px');
+    fireEvent.pointerMove(handle, { clientX: 900, pointerId: 1 });
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('400px');
+    expect(changes).toEqual([]);
+    fireEvent.pointerUp(handle, { clientX: 900, pointerId: 1 });
+    expect(changes).toEqual([400]);
+    // Controlled: shows the saved value until the parent passes the new one.
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('250px');
+    rerender(<SidebarLayout resizable sidebarWidth={400} onSidebarWidthChange={(w) => changes.push(w)} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(shell.style.getPropertyValue('--mk-sidebar-w')).toBe('400px');
+    // A double-click right after a drag that moved the edge is the second drag, not a reset.
+    fireEvent.doubleClick(handle);
+    expect(changes).toEqual([400]);
+    const now = Date.now();
+    const spy = vi.spyOn(Date, 'now').mockReturnValue(now + 1000);
+    fireEvent.doubleClick(handle);
+    spy.mockRestore();
+    expect(changes).toEqual([400, null]);
+  });
+
+  it('resizable: unmounting mid-drag clears the page-wide resize cursor', () => {
+    const { unmount } = render(<SidebarLayout resizable sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    const handle = screen.getByRole('separator', { name: 'Resize menu' });
+    fireEvent.pointerDown(handle, { button: 0, clientX: 200, pointerId: 1 });
+    expect(document.documentElement.classList.contains('mk-shell-resizing')).toBe(true);
+    unmount();
+    expect(document.documentElement.classList.contains('mk-shell-resizing')).toBe(false);
+  });
+
+  it('resizable: no handle while a collapsible sidebar is hidden', () => {
+    render(<SidebarLayout resizable collapsible pinned={false} sidebar={<p>Nav</p>}><p>Page</p></SidebarLayout>);
+    expect(screen.queryByRole('separator', { name: 'Resize menu' })).toBeNull();
   });
 
   it('collapsible follows a controlled `pinned`', () => {

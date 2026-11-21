@@ -342,6 +342,17 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-shell-menu:hover, .mk-shell-close:hover, .mk-shell-pin:hover { background: var(--mk-sidebar-hover); }
 .mk-shell-pin { margin-left: auto; color: var(--mk-muted); }
 .mk-shell-bar, .mk-shell-backdrop, .mk-shell-close { display: none; }
+.mk-shell-resizable { position: relative; }
+/* The handle spans the whole shell at the sidebar's edge, so it stays under the edge as the page scrolls. */
+.mk-shell-resize {
+  position: absolute; top: 0; bottom: 0; left: calc(var(--mk-sidebar-w) - 3px); width: 7px; z-index: 20;
+  cursor: col-resize; touch-action: none; outline: none;
+}
+.mk-shell-resize::after { content: ''; position: absolute; top: 0; bottom: 0; left: 2px; width: 3px; background: transparent; transition: background 0.15s; }
+.mk-shell-resize:hover::after, .mk-shell-resize:focus-visible::after { background: var(--mk-primary); }
+/* Touch: a finger-sized grab area (24px) centred on the edge. */
+@media (pointer: coarse) { .mk-shell-resize { left: calc(var(--mk-sidebar-w) - 12px); width: 24px; } .mk-shell-resize::after { left: 10px; } }
+.mk-shell-resizing, .mk-shell-resizing * { cursor: col-resize !important; user-select: none !important; }
 
 @media (max-width: 859px) {
   /* Rows: the bar at its own height, the page takes the rest (an auto row
@@ -354,6 +365,7 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
     background: var(--mk-sidebar-bg); border-bottom: 1px solid var(--mk-border);
   }
   .mk-shell-close { display: grid; }
+  .mk-shell-resize { display: none; }
   .mk-shell-side {
     position: fixed; inset: 0 auto 0 0; z-index: 50; height: 100dvh; width: min(300px, 85vw);
     transform: translateX(-100%); visibility: hidden; box-shadow: var(--mk-shadow-lg);

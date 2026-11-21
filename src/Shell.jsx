@@ -20,11 +20,29 @@ import { NavCount } from './NavCount.jsx';
  * and Keep menu open pins it again. Pass `pinned` + `onPinnedChange` to save
  * the choice; otherwise it starts at `defaultPinned`. Like the phone menu, the
  * slide-out covers the window, so it suits a layout that fills the window.
+ *
+ * `resizable` adds a handle on the desktop sidebar's right edge: drag it (or
+ * focus it and press ← / →) to set the width between `minWidth` and
+ * `maxWidth`; double-click or Enter goes back to the default. Pass
+ * `sidebarWidth` + `onSidebarWidthChange` to save it (null = the default
+ * --mk-sidebar-w); it is reported once per drag, when the drag ends.
  */
 export function SidebarLayout({
   brand, sidebar, footer, children, label = 'Main', className = '', style,
   collapsible = false, pinned: pinnedProp, defaultPinned = true, onPinnedChange,
+  resizable = false, sidebarWidth: widthProp, defaultSidebarWidth = null, onSidebarWidthChange,
+  minWidth = 200, maxWidth = 400,
 }) {
+  const [widthState, setWidthState] = useState(defaultSidebarWidth);
+  const [dragWidth, setDragWidth] = useState(null); // live width while dragging
+  const savedWidth = widthProp === undefined ? widthState : widthProp;
+  const clampW = (w) => Math.round(Math.min(maxWidth, Math.max(minWidth, w)));
+  const width = resizable ? (dragWidth ?? (Number.isFinite(savedWidth) ? clampW(savedWidth) : null)) : null;
+  const commitWidth = (w) => {
+    const next = w == null ? null : clampW(w);
+    if (widthProp === undefined) setWidthState(next);
+    onSidebarWidthChange?.(next);
+  };
   const [open, setOpen] = useState(false);
   const [pinnedState, setPinnedState] = useState(defaultPinned);
   const pinned = !collapsible || (pinnedProp ?? pinnedState);
@@ -86,11 +104,72 @@ export function SidebarLayout({
     return () => window.removeEventListener(SHELL_OPEN, onOpen);
   }, [pinned]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const currentWidth = () => width ?? sideRef.current?.getBoundingClientRect().width ?? minWidth;
+  // The drag reads the latest props (a parent re-rendering mid-drag with a new
+  // callback or bounds must not get the stale one at drag end).
+  const latest = useRef({});
+  latest.current = { clampW, commitWidth };
+  const endDrag = useRef(null); // set while a drag is in progress
+  const movedAt = useRef(0);    // when the last drag that moved the edge ended
+  useEffect(() => () => endDrag.current?.(true), []); // unmounted mid-drag: undo the page-wide cursor
+  const startResize = (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    endDrag.current?.(true);
+    const handle = e.currentTarget;
+    const startX = e.clientX;
+    const startW = currentWidth();
+    let last = startW;
+    handle.setPointerCapture?.(e.pointerId);
+    document.documentElement.classList.add('mk-shell-resizing');
+    const move = (ev) => { last = latest.current.clampW(startW + ev.clientX - startX); setDragWidth(last); };
+    const end = (unmounting) => {
+      endDrag.current = null;
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', onEnd);
+      handle.removeEventListener('pointercancel', onEnd);
+      handle.removeEventListener('lostpointercapture', onEnd);
+      document.documentElement.classList.remove('mk-shell-resizing');
+      if (unmounting === true) return;
+      setDragWidth(null);
+      if (last !== startW) { movedAt.current = Date.now(); latest.current.commitWidth(last); }
+    };
+    const onEnd = () => end(false);
+    endDrag.current = end;
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', onEnd);
+    handle.addEventListener('pointercancel', onEnd);
+    handle.addEventListener('lostpointercapture', onEnd);
+  };
+  // A quick second drag fires dblclick too: only reset when the edge didn't just move.
+  const onResizeDoubleClick = () => { if (Date.now() - movedAt.current > 600) commitWidth(null); };
+  const onResizeKey = (e) => {
+    const step = e.shiftKey ? 48 : 16;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      commitWidth(currentWidth() + (e.key === 'ArrowRight' ? step : -step));
+    } else if (e.key === 'Home' || e.key === 'End') {
+      e.preventDefault();
+      commitWidth(e.key === 'Home' ? minWidth : maxWidth);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      commitWidth(null);
+    }
+  };
+  // With no width set, the separator still reports the width shown (the CSS default).
+  const [shownWidth, setShownWidth] = useState(null);
+  useEffect(() => {
+    if (!resizable || width != null) return;
+    const w = sideRef.current?.getBoundingClientRect().width;
+    if (w) setShownWidth(Math.round(w));
+  }, [resizable, width, pinned]);
+  const shellStyle = width != null ? { ...style, '--mk-sidebar-w': `${width}px` } : style;
+
   // Any nav item click closes the slide-out menu; a pinned desktop sidebar ignores `open`.
   const onSideClick = (e) => { if (open && e.target.closest?.('.mk-nav-item')) setOpen(false); };
 
   return (
-    <div className={cx('mk-shell', open && 'mk-shell-open', !pinned && 'mk-shell-unpinned', className)} style={style}>
+    <div className={cx('mk-shell', open && 'mk-shell-open', !pinned && 'mk-shell-unpinned', resizable && 'mk-shell-resizable', className)} style={shellStyle}>
       <div ref={barRef} className="mk-shell-bar">
         <button ref={menuBtn} type="button" className="mk-shell-menu" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>
           <MenuIcon />
@@ -119,6 +198,22 @@ export function SidebarLayout({
         <div className="mk-shell-nav">{sidebar}</div>
         {footer && <div className="mk-shell-foot">{footer}</div>}
       </aside>
+      {resizable && pinned && (
+        <div
+          className="mk-shell-resize"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize menu"
+          title="Drag to resize · double-click to reset"
+          aria-valuemin={minWidth}
+          aria-valuemax={maxWidth}
+          aria-valuenow={Math.round(width ?? shownWidth ?? minWidth)}
+          tabIndex={0}
+          onPointerDown={startResize}
+          onDoubleClick={onResizeDoubleClick}
+          onKeyDown={onResizeKey}
+        />
+      )}
       <main ref={mainRef} className="mk-shell-main">{children}</main>
     </div>
   );

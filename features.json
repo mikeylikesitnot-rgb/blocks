@@ -368,6 +368,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-031",
+      "name": "Resize the sidebar",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "SidebarLayout resizable: drag the desktop sidebar's right edge (200–400px by default), ← / → to resize from the keyboard, double-click or Enter to reset. sidebarWidth + onSidebarWidthChange to save it (reported once per drag). First used by TuroApp so Edit menu names fit.",
+      "branch": "sidebar-resize",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

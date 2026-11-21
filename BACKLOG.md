@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-21: v0.24.0 SidebarLayout `resizable` (BLK-031): drag the desktop sidebar's edge (minWidth–maxWidth, default 200–400px), ← / → / Home / End from the keyboard, double-click or Enter resets; `sidebarWidth` + `onSidebarWidthChange` save it, reported once per drag. First used by TuroApp
 - 2026-11-21: v0.23.1 useAutosave fixes: undo/revert/apply skip validation only for the fields they put back (a held-back value, e.g. a blank task description, is no longer saved by Undo); a save queued behind one in flight keeps keepalive when the page is closing; onSaved also fires for a save that finishes after another record loaded. Found by TuroApp's task-window review
 - 2026-11-21: v0.23.0 Autosave (BLK-030): `useAutosave` (changed fields only, debounce per field, blur/⌘S/hidden/unload flush with keepalive, one save in flight, undo/redo per save, revertAll, validate, failed saves kept for Retry, `scope` for a Modal) and `SaveStatus`. Lifted from TuroApp's Car edit page (TA-064); TuroApp's task window adopts it first
 - 2026-11-20: v0.22.0 Changelog screenshots (BLK-029): `ops/changelog-shot.mjs` takes before/after screenshots of the local app only (sign-in, 1280px + optional 390px, JPEG q80, writes entry.json `shots`); `readChangelog` / `changelogCommits` in `@mn/blocks/server` read changelog/<id>/ folders and find each entry's commit; `Changelog toolbar={false}`. Devflow takes the shots on every story; AutoDealer's What's new (F-092) uses it first
