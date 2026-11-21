@@ -472,6 +472,13 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-filter-option input { width: 16px; height: 16px; margin: 0; accent-color: var(--mk-primary); flex: none; }
 .mk-filter-option-label { flex: 1; min-width: 0; }
 .mk-filter-option-count { font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-filter-search {
+  display: block; width: 100%; height: var(--mk-h-sm); margin: 0 0 var(--mk-space-1); position: sticky; top: 0; z-index: 1; padding: 0 var(--mk-space-2);
+  background: var(--mk-surface); color: var(--mk-text); border: 1px solid var(--mk-border-strong); border-radius: var(--mk-radius);
+  font: inherit; font-size: var(--mk-text-base); /* 16px: stops iOS zooming on focus */
+}
+.mk-filter-search::placeholder { color: var(--mk-subtle); }
+.mk-filter-search:focus-visible { outline: 2px solid var(--mk-focus); outline-offset: 1px; }
 .mk-filter-none { margin: 0; padding: var(--mk-space-2); font-size: var(--mk-text-sm); color: var(--mk-muted); }
 .mk-filter-foot { display: flex; justify-content: flex-end; padding: var(--mk-space-1) var(--mk-space-2); border-top: 1px solid var(--mk-border); margin-top: var(--mk-space-1); font-size: var(--mk-text-sm); color: var(--mk-primary); }
 

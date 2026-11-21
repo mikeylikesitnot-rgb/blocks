@@ -348,6 +348,17 @@ describe('SortTh + useSort', () => {
     expect(names()).toBe('abc');
     expect(th.getAttribute('aria-sort')).toBeNull();
   });
+
+  it('without sort is a plain header: no button, no aria-sort, props on the th', () => {
+    render(<table><thead><tr><SortTh col="x" align="right" prefix={<i>g</i>} draggable data-x="1">Share</SortTh></tr></thead></table>);
+    const th = screen.getByRole('columnheader', { name: /Share/ });
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(th.getAttribute('aria-sort')).toBeNull();
+    expect(th.getAttribute('draggable')).toBe('true');
+    expect(th.dataset.x).toBe('1');
+    expect(th.className).toContain('mk-dt-right');
+    expect(th.querySelector('.mk-dt-th').textContent).toBe('gShare');
+  });
 });
 
 describe('useSort memo', () => {
