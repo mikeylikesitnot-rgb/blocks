@@ -60,6 +60,31 @@ describe('FilterMenu', () => {
     expect(screen.queryByRole('group')).toBeNull();
   });
 
+  it('search: filters by label, Enter ticks the only match, clears on close; number = threshold', () => {
+    function S({ search }) {
+      const [v, setV] = useState([]);
+      return <><FilterMenu label="Status" allLabel="All statuses" options={OPTS} value={v} onChange={setV} search={search} /><output>{v.join(',')}</output></>;
+    }
+    const { unmount } = render(<S search />);
+    const btn = screen.getByRole('button', { name: 'All statuses' });
+    fireEvent.click(btn);
+    const box = screen.getByRole('searchbox', { name: 'Search Status' });
+    expect(document.activeElement).toBe(box);
+    fireEvent.change(box, { target: { value: 'PLAN' } });
+    expect(screen.queryByLabelText('Live')).toBeNull();
+    expect(screen.getByLabelText('Planned')).toBeTruthy();
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(document.querySelector('output').textContent).toBe('planned');
+    fireEvent.change(box, { target: { value: 'zzz' } });
+    expect(screen.getByText('No matches')).toBeTruthy();
+    fireEvent.click(btn); fireEvent.click(btn);
+    expect(screen.getByRole('searchbox').value).toBe('');
+    unmount();
+    render(<S search={3} />);
+    fireEvent.click(screen.getByRole('button', { name: 'All statuses' }));
+    expect(screen.queryByRole('searchbox')).toBeNull();
+  });
+
   it('says so when there is nothing to filter', () => {
     render(<FilterMenu label="Area" options={[]} value={[]} onChange={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Area' }));

@@ -15,10 +15,12 @@ import { ArrowUpIcon, ArrowDownIcon, ChevronsUpDownIcon } from './icons.jsx';
  *
  * `sort` is { sortBy, sortDir, onSort(key, nextDir) }: useSort's result, or
  * your own for server-side sorting. Other props go on the <th>.
+ * Without `sort` it is a plain header with the same look (no button, no
+ * aria-sort), e.g. a drag-to-reorder column that doesn't sort.
  */
 export function SortTh({ col, sort, align, prefix, className, children, ...rest }) {
-  const active = sort.sortBy === col;
-  const dir = sort.sortDir === 'desc' ? 'desc' : 'asc';
+  const active = !!sort && sort.sortBy === col;
+  const dir = sort?.sortDir === 'desc' ? 'desc' : 'asc';
   const Icon = active ? (dir === 'asc' ? ArrowUpIcon : ArrowDownIcon) : ChevronsUpDownIcon;
   return (
     <th
@@ -29,14 +31,14 @@ export function SortTh({ col, sort, align, prefix, className, children, ...rest 
     >
       <span className="mk-dt-th">
         {prefix}
-        <button
+        {sort ? (<button
           type="button"
           className={cx('mk-dt-sort', active && 'mk-dt-sort-active')}
           onClick={() => sort.onSort(col, active && dir === 'asc' ? 'desc' : 'asc')}
         >
           {children}
           <Icon className="mk-dt-sort-icon" />
-        </button>
+        </button>) : children}
       </span>
     </th>
   );

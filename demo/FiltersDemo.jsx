@@ -45,7 +45,7 @@ export function FiltersDemo() {
     <div style={{ display: 'grid', gap: 16 }}>
       <Toolbar right={`${shown.length} of ${CARS.length} cars`}>
         <SearchInput value={q} onChange={setQ} placeholder="Make, model, year" />
-        <FilterMenu label="Make" allLabel="All makes" value={make} onChange={(v) => setFilters({ make: listValue(v) })}
+        <FilterMenu label="Make" allLabel="All makes" search value={make} onChange={(v) => setFilters({ make: listValue(v) })}
           options={MAKES.map((m) => ({ value: m, label: m, count: CARS.filter((c) => c.make === m).length }))} />
         <RangeFilter label="Price" allLabel="Any price" value={price} step={500}
           bounds={rangeBounds(CARS.map((c) => c.price), 500, price)}
@@ -63,19 +63,20 @@ export function FiltersDemo() {
         ?make=Ford and it shows as is without overwriting your saved set. Cars with no price drop out once a price range is set.
       </p>
 
-      <Panel title="SortTh" subtitle="A sortable header cell for a hand-built table." flush>
+      <Panel title="SortTh" subtitle="A sortable header cell for a hand-built table. Without sort (Miles) it's a plain header." flush>
         <div className="mk-dt-scroll">
           <table className="mk-dt-table" aria-label="Top five">
             <thead>
               <tr>
                 <SortTh col="model" sort={small}>Model</SortTh>
                 <SortTh col="year" sort={small}>Year</SortTh>
+                <SortTh col="miles" align="right">Miles</SortTh>
                 <SortTh col="price" sort={small} align="right">Price</SortTh>
               </tr>
             </thead>
             <tbody>
               {small.rows.map((c) => (
-                <tr key={c.id}><td>{c.make} {c.model}</td><td>{c.year}</td><td className="mk-dt-right">{c.price ? money(c.price) : '—'}</td></tr>
+                <tr key={c.id}><td>{c.make} {c.model}</td><td>{c.year}</td><td className="mk-dt-right mk-tabular">{c.miles != null ? c.miles.toLocaleString() : '—'}</td><td className="mk-dt-right">{c.price ? money(c.price) : '—'}</td></tr>
               ))}
             </tbody>
           </table>

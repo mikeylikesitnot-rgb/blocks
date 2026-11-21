@@ -391,6 +391,18 @@
     },
     {
       "id": "BLK-033",
+      "name": "Filter search and plain headers",
+      "area": "Lists",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "FilterMenu search: a search box at the top of the open checklist (true, or only past N options); Enter ticks the only match. SortTh without sort renders a plain header with the same look, for drag-to-reorder columns that don't sort. First used by TuroApp's Dashboard.",
+      "branch": "filter-search-dragonly",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "BLK-034",
       "name": "Server rich-text cleaning",
       "area": "Server",
       "status": "live",
@@ -402,7 +414,7 @@
       "fromRequest": null
     },
     {
-      "id": "BLK-034",
+      "id": "BLK-035",
       "name": "Saved UI choices on the server",
       "area": "Server",
       "status": "live",
