@@ -356,6 +356,18 @@
       "spec": "https://docs.google.com/document/d/15WW_yOU3l09s83aUwWWZU2za7eG7vOScXbAQtA7wTKk/edit",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-030",
+      "name": "Autosave (useAutosave + SaveStatus)",
+      "area": "Inputs",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "useAutosave saves an edit form or window with no Save button: only changed fields, picks at once and typing after a pause, blur/⌘S/leaving save sooner, one save at a time, undo/redo per save (⌘Z/⌘⇧Z), Revert all, validation and Retry after a failed save; scope keeps the keys inside a Modal. SaveStatus shows Saving… / Saved just now · Undo / Couldn’t save · Retry. From TuroApp's Car edit page; its task window uses it next.",
+      "branch": "autosave",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

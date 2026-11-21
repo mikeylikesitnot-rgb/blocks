@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-21: v0.23.0 Autosave (BLK-030): `useAutosave` (changed fields only, debounce per field, blur/⌘S/hidden/unload flush with keepalive, one save in flight, undo/redo per save, revertAll, validate, failed saves kept for Retry, `scope` for a Modal) and `SaveStatus`. Lifted from TuroApp's Car edit page (TA-064); TuroApp's task window adopts it first
 - 2026-11-20: v0.22.0 Changelog screenshots (BLK-029): `ops/changelog-shot.mjs` takes before/after screenshots of the local app only (sign-in, 1280px + optional 390px, JPEG q80, writes entry.json `shots`); `readChangelog` / `changelogCommits` in `@mn/blocks/server` read changelog/<id>/ folders and find each entry's commit; `Changelog toolbar={false}`. Devflow takes the shots on every story; AutoDealer's What's new (F-092) uses it first
 - 2026-11-20: v0.21.0 useSavedPref (BLK-028): one saved UI choice in the browser and on the account (browser copy first, account wins on load, browser copy sent up once, set(null) resets). useNavMenu now uses it. First used by AutoDealer and TuroApp for the sidebar's hidden/pinned choice
 - 2026-11-20: v0.20.0 Changelog (BLK-027): `Changelog` lists what changed by day (New / Fixed / Improved, F-id, Open page / Commit / PR links, type filter + search) and `CompareImages` shows before/after screenshots (drag slider or side by side, full size in a Lightbox); `normalizeChangelog` cleans a committed changelog.json. AutoDealer adopts it next, with a devflow screenshot step

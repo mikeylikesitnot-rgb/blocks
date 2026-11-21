@@ -288,6 +288,15 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-toast-info > .mk-icon { color: var(--mk-primary); }
 @media (min-width: 1024px) { .mk-toasts { bottom: var(--mk-space-6); align-items: flex-end; padding-right: var(--mk-space-6); } }
 
+/* ───────── Save status (useAutosave) ───────── */
+.mk-save-status { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--mk-space-2); font-size: var(--mk-text-sm); color: var(--mk-muted); }
+.mk-save-status > span > span, .mk-save-status > span > .mk-save-error { display: inline-flex; align-items: center; gap: 6px; }
+.mk-save-status .mk-icon { font-size: 16px; flex-shrink: 0; }
+.mk-save-status .mk-link-btn { color: var(--mk-primary); }
+.mk-save-ok { color: var(--mk-success); }
+.mk-save-error { color: var(--mk-danger); }
+.mk-save-dot { width: 8px; height: 8px; border-radius: var(--mk-radius-full); background: var(--mk-tint-warning-fg); }
+
 /* ───────── Login page ───────── */
 .mk-auth { min-height: 100dvh; display: flex; align-items: flex-start; justify-content: center; padding: var(--mk-space-12) var(--mk-space-4); background: var(--mk-bg); }
 .mk-auth-card { width: 100%; max-width: 400px; padding: var(--mk-space-8) var(--mk-space-6); background: var(--mk-surface); border: 1px solid var(--mk-border); border-radius: var(--mk-radius-lg); }
