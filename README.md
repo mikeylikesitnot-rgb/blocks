@@ -25,8 +25,8 @@ modals, a login screen, sign-in sessions or emails again.
 - **Sign-in:** `createAuth()` covers password, Google and email-code login, password reset, logout on every device, 30-minute idle and 8-hour hard timeouts, and roles.
 - **Users:** `pgStores(pool)` + `authSchemaSql()` for a new Postgres app, `memoryUserStore()` for prototypes, or three functions over an existing users table.
 - **Email:** `createMailer()` (SMTP; prints to the console in dev) and branded templates: `loginCodeEmail`, `passwordChangedEmail`, `inviteEmail`, `notificationEmail`, `renderEmail`.
-- **Rich text:** `sanitizeRich` / `cleanRich` clean editor HTML before it is stored (needs `sanitize-html`; `@mn/blocks/server/richtext` alone needs nothing else).
-- **Saved UI choices:** `uiPrefsRouter({ store })` serves GET/PUT `/:key` for `useSavedPref` and `useSavedFilters`; pass the app's own `{get, set}` or `pgUiPrefStore(pool)` (`@mn/blocks/server/ui-prefs` alone needs only Express).
+- **Rich text (`@mn/blocks/server/richtext`):** `sanitizeRich` / `cleanRich` clean editor HTML before it is stored (needs `sanitize-html`; kept off the main `/server` entry so that one never needs it).
+- **Saved UI choices:** `uiPrefsRouter({ store })` serves GET/PUT `/:key` (mount after `express.json()`) for `useSavedPref` and `useSavedFilters`; pass the app's own `{get, set}` or `pgUiPrefStore(pool)` (`@mn/blocks/server/ui-prefs` alone needs only Express).
 - **Also:** `createLimiter` / `createFormLimiter` / `createCostLimiter`, `encrypt` / `decrypt` for stored secrets.
 
 Plain CSS with `mk-` prefixed classes and `--mk-` variables. No Tailwind,

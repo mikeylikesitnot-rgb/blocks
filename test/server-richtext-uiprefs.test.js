@@ -3,8 +3,12 @@ import express from 'express';
 import request from 'supertest';
 import {
   sanitizeRich, cleanRich, isBlankRich, richToPlain, NOTE_TAGS, MAX_RICH_LENGTH,
+} from '../server/richText.js';
+import { toRichHtml } from '../src/editor/value.js';
+import * as serverEntry from '../server/index.js';
+import {
   uiPrefsRouter, memoryUiPrefStore, pgUiPrefStore, uiPrefSchemaSql,
-} from '../server/index.js';
+} from "../server/index.js";
 import * as richtextOnly from '../server/richText.js';
 import * as prefsOnly from '../server/uiPrefs.js';
 
@@ -31,6 +35,15 @@ describe('sanitizeRich', () => {
     expect(sanitizeRich('Tom & Jerry, Price<a lot', { plainText: 'keep' })).toBe('Tom & Jerry, Price<a lot');
     expect(sanitizeRich('<p>x</p><script>y</script>', { plainText: 'keep' })).toBe('<p>x</p>');
     expect(sanitizeRich('Tom & Jerry')).toBe('Tom &amp; Jerry');
+  });
+  it("text kept raw is exactly what toRichHtml escapes (pins the HTML test)", () => {
+    const sneaky = 'x<img/src=x onerror=alert(1)>';
+    expect(sanitizeRich(sneaky, { plainText: 'keep' })).toBe(sneaky);
+    expect(toRichHtml(sneaky)).toBe('<p>x&lt;img/src=x onerror=alert(1)&gt;</p>');
+  });
+  it('the main /server entry does not load sanitize-html', () => {
+    expect(serverEntry.sanitizeRich).toBeUndefined();
+    expect(serverEntry.uiPrefsRouter).toBe(uiPrefsRouter);
   });
   it('null and undefined pass through', () => {
     expect(sanitizeRich(null)).toBe(null);
@@ -99,6 +112,11 @@ describe('uiPrefsRouter', () => {
     expect(g.status).toBe(500);
     expect(g.body.error).not.toContain('db down');
     expect(onError).toHaveBeenCalledOnce();
+  });
+  it('a throwing onError still answers 500', async () => {
+    const store = { get: async () => { throw new Error('x'); }, set: async () => {} };
+    const { a } = app({ store, onError: () => { throw new Error('logger down'); } });
+    await request(a).get('/api/ui-prefs/x').set('x-user', '1').expect(500);
   });
   it('custom userId', async () => {
     const store = memoryUiPrefStore();

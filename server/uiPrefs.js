@@ -7,7 +7,7 @@
  *   GET /:key -> { key, value }   value null when nothing is saved
  *   PUT /:key { value }           value null deletes
  *
- * Each person only reads and writes their own (userId(req)); no userId -> 401.
+ * Mount it after express.json(). Each person only reads and writes their own (userId(req)); no userId -> 401.
  * Values are layout, never data. A store is any object with:
  *   get(userId, key)         -> value | null
  *   set(userId, key, value)  -> void      value null deletes
@@ -24,7 +24,7 @@ export const UI_PREF_KEY = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
  * Express router for saved UI choices.
  *   store        { get, set } (required)
  *   userId       (req) -> id of the signed-in person (default req.user?.id)
- *   keyPattern   RegExp a key must match (UI_PREF_KEY)
+ *   keyPattern   RegExp (or anything with test(key)) a key must match (UI_PREF_KEY)
  *   maxBytes     largest stored JSON per key (16 KB)
  *   objectsOnly  refuse strings, numbers and booleans (false)
  *   onError      (err, req) -> void, for logging 500s (console.error)
@@ -43,7 +43,7 @@ export function uiPrefsRouter({
   const router = express.Router();
   const fail = (err, req, res) => {
     if (err?.status === 400) return res.status(400).json({ error: err.message });
-    onError(err, req);
+    try { onError(err, req); } catch { /* a broken logger must not hang the request */ }
     res.status(500).json({ error: 'Could not reach saved settings' });
   };
 

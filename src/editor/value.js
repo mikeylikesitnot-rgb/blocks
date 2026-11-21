@@ -28,6 +28,9 @@ export function htmlToText(html) {
     .trim();
 }
 
+// NEVER LOOSEN THIS TEST. Servers store tag-less text raw (sanitizeRich plainText 'keep')
+// and it is safe only because toRichHtml escapes it by this same test: a wider test
+// would turn rows already stored raw into live HTML.
 // HTML = starts with a tag, or contains a tag an editor writes. A plain note that
 // merely mentions "<tag>" must stay plain text, or its line breaks are lost.
 export const HTML_TAG = /<\/?(p|div|span|br|b|i|u|s|strong|em|a|ul|ol|li|blockquote|pre|code|h[1-6]|hr|img|mark|sub|sup|table|tr|td|th)(\s[^>]*)?\/?>/i;

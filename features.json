@@ -407,7 +407,7 @@
       "area": "Server",
       "status": "live",
       "since": "2026-11-21",
-      "description": "sanitizeRich / cleanRich in @mn/blocks/server (and /server/richtext): editor HTML cleaned on the server before it is stored, one allowlist instead of a copy per app. NOTE_TAGS or EDITOR_TAGS, plainText \"keep\" for columns with old plain-text notes, blank to NULL with a length check. From AutoDealer and TuroApp, which both switch to it.",
+      "description": "sanitizeRich / cleanRich in @mn/blocks/server/richtext: editor HTML cleaned on the server before it is stored, one allowlist instead of a copy per app. NOTE_TAGS or EDITOR_TAGS, plainText \"keep\" for columns with old plain-text notes, blank to NULL with a length check. From AutoDealer and TuroApp, which both switch to it.",
       "branch": "server-richtext-uiprefs",
       "spec": null,
       "mockup": null,
