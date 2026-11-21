@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from 'react';
 import { Button } from './Button.jsx';
 import { Input, Field } from './Inputs.jsx';
 import { Banner } from './States.jsx';
@@ -127,6 +127,9 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
+  const errorId = useId();
+  // While a sign-in error shows, each field points at it so a screen reader reads it with the field.
+  const errProps = error ? { 'aria-invalid': true, 'aria-describedby': errorId } : {};
   const [notice, setNotice] = useState(null);
 
   useEffect(() => {
@@ -203,7 +206,7 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
           {step === 'code' && notice && <p className="mk-auth-sub">{notice}</p>}
         </div>
 
-        {error && <Banner className="mk-auth-error">{error}</Banner>}
+        {error && <Banner id={errorId} className="mk-auth-error">{error}</Banner>}
 
         {!config ? null : step === 'start' ? (
           <>
@@ -215,11 +218,11 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
             )}
             {hasForm && <form onSubmit={signInPassword} noValidate>
               <Field label="Email">
-                <Input type="email" autoComplete="username" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input {...errProps} type="email" autoComplete="username" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </Field>
               {config.password !== false && (
                 <Field label="Password">
-                  <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input {...errProps} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 </Field>
               )}
               <div className="mk-auth-actions">
@@ -245,10 +248,10 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
         ) : step === 'signup' && canSignup ? (
           <form onSubmit={sendSignupCode} noValidate>
             <Field label="Name">
-              <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required autoFocus />
+              <Input {...errProps} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} required autoFocus />
             </Field>
             <Field label="Email">
-              <Input type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input {...errProps} type="email" autoComplete="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </Field>
             <div className="mk-auth-actions">
               <Button type="submit" block loading={busy === 'signup'} disabled={!name.trim() || !email.trim() || !!busy}>Email me a code</Button>
@@ -262,6 +265,7 @@ export function LoginPage({ appName, logo, subtitle, apiBase: apiProp, onSignedI
           <form onSubmit={verifyCode} noValidate>
             <Field label="6-digit code">
               <Input
+                {...errProps}
                 className="mk-code-input"
                 inputMode="numeric"
                 autoComplete="one-time-code"

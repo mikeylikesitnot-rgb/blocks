@@ -33,7 +33,7 @@ export function Skeleton({ className = '', style }) {
 /** Table-shaped skeleton so the layout doesn't jump when rows arrive. */
 export function SkeletonRows({ rows = 6, cols = 5 }) {
   return (
-    <div aria-busy="true" aria-label="Loading">
+    <div role="status" aria-busy="true" aria-label="Loading">
       {Array.from({ length: rows }, (_, r) => (
         <div key={r} className="mk-skel-row">
           {Array.from({ length: cols }, (__, c) => (
@@ -48,7 +48,7 @@ export function SkeletonRows({ rows = 6, cols = 5 }) {
 /** Stat tile skeletons, same grid as StatGrid. */
 export function SkeletonStats({ count = 4 }) {
   return (
-    <div className="mk-stat-grid" style={{ '--mk-cols': count }} aria-busy="true" aria-label="Loading">
+    <div className="mk-stat-grid" style={{ '--mk-cols': count }} role="status" aria-busy="true" aria-label="Loading">
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="mk-stat">
           <Skeleton style={{ height: 12, width: 80 }} />
@@ -65,9 +65,9 @@ export function SkeletonStats({ count = 4 }) {
  * content visible; `tone` makes it an info/success/warning note.
  *   <Banner onRetry={load}>Couldn’t refresh. Showing data from 2 min ago.</Banner>
  */
-export function Banner({ children, tone = 'danger', onRetry, className = '' }) {
+export function Banner({ children, tone = 'danger', onRetry, className = '', id }) {
   return (
-    <div role={tone === 'danger' ? 'alert' : 'status'} className={cx('mk-banner', `mk-tone-${tone}`, className)}>
+    <div id={id} role={tone === 'danger' ? 'alert' : 'status'} className={cx('mk-banner', `mk-tone-${tone}`, className)}>
       <AlertIcon />
       <div className="mk-banner-body">{children}</div>
       {onRetry && <button type="button" className="mk-link-btn" onClick={onRetry}>Retry</button>}

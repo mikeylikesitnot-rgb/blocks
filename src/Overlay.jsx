@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cx } from './cx.js';
 import { Button } from './Button.jsx';
@@ -10,6 +10,17 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 // modal opened over another (e.g. "Edit options…" over an edit form) closes alone.
 const openModals = [];
 
+// Page scroll is locked while any modal is open. A count, not a saved value per modal,
+// so stacked modals closed in any order never leave the page stuck.
+let scrollLocks = 0;
+let savedOverflow = '';
+function lockScroll() {
+  if (scrollLocks++ === 0) { savedOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
+}
+function unlockScroll() {
+  if (scrollLocks > 0 && --scrollLocks === 0) document.body.style.overflow = savedOverflow;
+}
+
 /**
  * Centered dialog on desktop, bottom sheet on phones. Esc and backdrop
  * close it; focus is trapped inside and returned to the trigger. With modals
@@ -18,14 +29,14 @@ const openModals = [];
  */
 export function Modal({ open, onClose, title, subtitle, children, footer, size = 'md', className = '' }) {
   const panel = useRef(null);
+  const titleId = useId();
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return undefined;
     const lastFocus = document.activeElement;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     const t = setTimeout(() => {
       const el = panel.current?.querySelector('[autofocus], [data-autofocus], input:not([type=hidden]), textarea, select, button:not([data-close])');
       (el || panel.current)?.focus();
@@ -55,7 +66,7 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
       const i = openModals.indexOf(me);
       if (i >= 0) openModals.splice(i, 1);
       document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlockScroll();
       lastFocus?.focus?.();
     };
   }, [open]);
@@ -68,14 +79,14 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
         ref={panel}
         role="dialog"
         aria-modal="true"
-        aria-label={typeof title === 'string' ? title : undefined}
+        aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
         className={cx('mk-modal', `mk-modal-${size}`, className)}
       >
         {(title || onClose) && (
           <div className="mk-modal-head">
             <div style={{ minWidth: 0 }}>
-              {title && <h2 className="mk-modal-title">{title}</h2>}
+              {title && <h2 id={titleId} className="mk-modal-title">{title}</h2>}
               {subtitle && <p className="mk-modal-subtitle">{subtitle}</p>}
             </div>
             {onClose && <Button data-close variant="ghost" size="sm" icon={XIcon} label="Close" onClick={onClose} className="mk-modal-close" />}
@@ -107,10 +118,10 @@ export function OverlayProvider({ children }) {
     setDialog({ ...(typeof opts === 'string' ? { title: opts } : opts), resolve });
   }), []);
 
+  const dismiss = useCallback((id) => setToasts((t) => t.filter((x) => x.id !== id)), []);
   const push = useCallback((message, tone, ms) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts((t) => [...t, { id, message, tone }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ms);
+    setToasts((t) => [...t, { id, message, tone, ms }]);
   }, []);
 
   const value = useMemo(() => ({
@@ -144,16 +155,10 @@ export function OverlayProvider({ children }) {
         {dialog?.body && <div className="mk-confirm-body">{dialog.body}</div>}
       </Modal>
       {createPortal(
-        <div className="mk-toasts" aria-live="polite">
-          {toasts.map((t) => {
-            const Icon = TOAST_ICON[t.tone];
-            return (
-              <div key={t.id} className={`mk-toast mk-toast-${t.tone}`} role={t.tone === 'error' ? 'alert' : 'status'}>
-                <Icon />
-                <span style={{ minWidth: 0 }}>{t.message}</span>
-              </div>
-            );
-          })}
+        // One always-mounted live region; the toasts inside carry no role of their own,
+        // so each is announced once.
+        <div className="mk-toasts" role="status" aria-live="polite">
+          {toasts.map((t) => <Toast key={t.id} toast={t} onDismiss={dismiss} />)}
         </div>,
         document.body,
       )}
@@ -179,4 +184,32 @@ export function useAlert() {
 export function useToast() {
   const c = useContext(Ctx);
   return c ? c.toast : Object.assign((m) => console.info(m), { success: console.info, error: console.error, info: console.info });
+}
+
+/* One toast. Leaves after `ms`, but the clock stops while the pointer is over it or
+   focus is inside it (reading it, reaching for Undo), and its × closes it at once. */
+function Toast({ toast, onDismiss }) {
+  const { id, message, tone, ms } = toast;
+  const [paused, setPaused] = useState(false);
+  const left = useRef(ms);
+  useEffect(() => {
+    if (paused) return undefined;
+    const started = Date.now();
+    const t = setTimeout(() => onDismiss(id), left.current);
+    return () => { clearTimeout(t); left.current = Math.max(left.current - (Date.now() - started), 1000); };
+  }, [paused, id, onDismiss]);
+  const Icon = TOAST_ICON[tone];
+  return (
+    <div
+      className={`mk-toast mk-toast-${tone}`}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false); }}
+    >
+      <Icon />
+      <span style={{ minWidth: 0, flex: 1 }}>{message}</span>
+      <button type="button" className="mk-toast-close" aria-label="Dismiss" onClick={() => onDismiss(id)}><XIcon /></button>
+    </div>
+  );
 }

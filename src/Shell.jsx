@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { cx } from './cx.js';
 import { Segmented } from './Layout.jsx';
 import { useTheme } from './theme.js';
@@ -26,13 +26,17 @@ import { NavCount } from './NavCount.jsx';
  * `maxWidth`; double-click or Enter goes back to the default. Pass
  * `sidebarWidth` + `onSidebarWidthChange` to save it (null = the default
  * --mk-sidebar-w); it is reported once per drag, when the drag ends.
+ *
+ * A "Skip to content" link comes first in the tab order and jumps past the
+ * menu to the page. `skipLabel` renames it; `skipLabel={null}` removes it.
  */
 export function SidebarLayout({
   brand, sidebar, footer, children, label = 'Main', className = '', style,
   collapsible = false, pinned: pinnedProp, defaultPinned = true, onPinnedChange,
   resizable = false, sidebarWidth: widthProp, defaultSidebarWidth = null, onSidebarWidthChange,
-  minWidth = 200, maxWidth = 400,
+  minWidth = 200, maxWidth = 400, skipLabel = 'Skip to content',
 }) {
+  const mainId = useId();
   const [widthState, setWidthState] = useState(defaultSidebarWidth);
   const [dragWidth, setDragWidth] = useState(null); // live width while dragging
   const savedWidth = widthProp === undefined ? widthState : widthProp;
@@ -170,6 +174,15 @@ export function SidebarLayout({
 
   return (
     <div className={cx('mk-shell', open && 'mk-shell-open', !pinned && 'mk-shell-unpinned', resizable && 'mk-shell-resizable', className)} style={shellStyle}>
+      {skipLabel && (
+        <a
+          href={`#${mainId}`}
+          className="mk-skip-link"
+          onClick={(e) => { e.preventDefault(); mainRef.current?.focus(); }}
+        >
+          {skipLabel}
+        </a>
+      )}
       <div ref={barRef} className="mk-shell-bar">
         <button ref={menuBtn} type="button" className="mk-shell-menu" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>
           <MenuIcon />
@@ -214,7 +227,7 @@ export function SidebarLayout({
           onKeyDown={onResizeKey}
         />
       )}
-      <main ref={mainRef} className="mk-shell-main">{children}</main>
+      <main ref={mainRef} id={mainId} tabIndex={-1} className="mk-shell-main">{children}</main>
     </div>
   );
 }

@@ -214,6 +214,8 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
   background: none; border: 0; border-radius: var(--mk-radius-sm); color: var(--mk-subtle); cursor: pointer;
 }
 .mk-icon-btn:hover { background: var(--mk-surface-2); color: var(--mk-text); }
+/* A button you press needs 3:1 against the page; --mk-subtle is for decoration only. */
+.mk-icon-btn, .mk-nav-star { color: var(--mk-muted); }
 
 .mk-select-wrap { position: relative; display: inline-block; }
 .mk-select { appearance: none; padding-right: 32px; cursor: pointer; }
@@ -266,7 +268,7 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-modal-title { margin: 0; font-size: var(--mk-text-lg); font-weight: var(--mk-weight-label); color: var(--mk-heading); }
 .mk-modal-subtitle { margin: 2px 0 0; font-size: var(--mk-text-sm); color: var(--mk-muted); }
 .mk-modal-close { margin-right: -8px; }
-.mk-modal-body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--mk-space-4) var(--mk-space-5); }
+.mk-modal-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--mk-space-4) var(--mk-space-5); }
 .mk-modal-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--mk-space-2); padding: var(--mk-space-3) var(--mk-space-5) max(var(--mk-space-3), env(safe-area-inset-bottom)); border-top: 1px solid var(--mk-border); }
 .mk-confirm-body { font-size: var(--mk-text-sm); white-space: pre-line; color: var(--mk-muted); }
 @media (min-width: 640px) {
@@ -286,6 +288,13 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-toast-success > .mk-icon { color: var(--mk-success); }
 .mk-toast-error > .mk-icon { color: var(--mk-danger); }
 .mk-toast-info > .mk-icon { color: var(--mk-primary); }
+.mk-toast-close {
+  display: grid; place-items: center; flex: none; width: 24px; height: 24px; margin: -2px -6px -2px 0;
+  background: none; border: 0; border-radius: var(--mk-radius-sm); color: inherit; opacity: 0.7; cursor: pointer;
+}
+.mk-toast-close:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+.mk-toast-close:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; opacity: 1; }
+.mk-toast-close .mk-icon { font-size: 14px; }
 @media (min-width: 1024px) { .mk-toasts { bottom: var(--mk-space-6); align-items: flex-end; padding-right: var(--mk-space-6); } }
 
 /* ───────── Save status (useAutosave) ───────── */
@@ -337,6 +346,7 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-shell-nav { flex: 1 0 auto; } /* grows, never shrinks under the footer: a long menu scrolls the sidebar */
 .mk-shell-foot { padding-top: var(--mk-space-3); }
 .mk-shell-main { min-width: 0; }
+.mk-shell-main:focus { outline: none; } /* focused by the skip link, not a control */
 .mk-shell-menu, .mk-shell-close, .mk-shell-pin {
   display: grid; place-items: center; width: var(--mk-h-md); height: var(--mk-h-md); flex: none;
   background: none; border: 0; border-radius: var(--mk-radius); color: var(--mk-text); font-size: 20px; cursor: pointer;
@@ -693,3 +703,27 @@ a.mk-att-name:hover { text-decoration: underline; }
 .mk-compare-tag-r { left: auto; right: var(--mk-space-2); }
 .mk-compare-slider:has(.mk-compare-range:focus-visible) { outline: 2px solid var(--mk-focus); outline-offset: 2px; }
 .mk-compare-open { display: flex; flex-wrap: wrap; gap: var(--mk-space-2); }
+
+/* ───────── Touch ─────────
+   No double-tap zoom delay on controls; scrolling a menu or modal never scrolls the page
+   behind it. On touch screens, small controls get a 44px hit area (an invisible ::after,
+   so nothing moves): xs/sm buttons, the search clear, sort headers, link buttons, toast ×. */
+:where(.mk-btn, .mk-icon-btn, .mk-link-btn, .mk-tab, .mk-seg-btn, .mk-filter-btn, .mk-filter-option, .mk-dt-sort, .mk-nav-item, .mk-toast-close) { touch-action: manipulation; }
+.mk-filter-menu { overscroll-behavior: contain; }
+@media (pointer: coarse) {
+  .mk-btn-xs, .mk-btn-sm, .mk-dt-sort, .mk-link-btn, .mk-toast-close { position: relative; }
+  .mk-btn-xs::after, .mk-btn-sm::after, .mk-icon-btn::after, .mk-dt-sort::after, .mk-link-btn::after, .mk-toast-close::after {
+    content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: max(100%, 44px); height: max(100%, 44px);
+  }
+}
+
+/* Skip link (Shell): hidden until a keyboard user tabs to it. */
+.mk-skip-link {
+  position: fixed; top: var(--mk-space-2); left: var(--mk-space-2); z-index: 1200;
+  padding: var(--mk-space-2) var(--mk-space-3); border-radius: var(--mk-radius-sm);
+  background: var(--mk-surface); color: var(--mk-heading); box-shadow: var(--mk-shadow-lg);
+  font-size: var(--mk-text-sm); font-weight: var(--mk-weight-label); text-decoration: none;
+  transform: translateY(-200%);
+}
+.mk-skip-link:focus { transform: none; outline: 2px solid var(--mk-primary); outline-offset: 2px; }
