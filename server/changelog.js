@@ -48,7 +48,8 @@ export function readChangelog(dir, { commits = {} } = {}) {
  * changelog folder relative to the repo (default "changelog"). Returns {} when
  * git or the repo isn't there (e.g. on a server without git: run it at deploy
  * and ship the result), and in a shallow clone, where the oldest commit present
- * would be credited with every entry.
+ * would be credited with every entry. An entry first added in a merge commit
+ * (written while resolving it) is credited to that merge.
  */
 export function changelogCommits(repoDir, { dir = 'changelog' } = {}) {
   const rel = relative(resolve(repoDir), resolve(repoDir, dir)).split('\\').join('/') || '.';
@@ -58,7 +59,11 @@ export function changelogCommits(repoDir, { dir = 'changelog' } = {}) {
   let text;
   try {
     if (git(['rev-parse', '--is-shallow-repository']).trim() === 'true') return {};
-    text = git(['log', '--reverse', '--no-renames', '--diff-filter=A', '--format=%x00%H', '--name-only', '--', `${rel}/*/entry.json`]);
+    // -m: also show merge commits' changes (against each parent), so an entry
+    // first written while resolving a merge is found. Oldest first in topo
+    // order and first hit wins, so an entry merged in from another branch keeps
+    // the commit that added it there, not the merge that brought it over.
+    text = git(['log', '--reverse', '--topo-order', '-m', '--no-renames', '--diff-filter=A', '--format=%x00%H', '--name-only', '--', `${rel}/*/entry.json`]);
   } catch { return {}; }
   const map = {};
   for (const block of text.split('\0').slice(1)) {

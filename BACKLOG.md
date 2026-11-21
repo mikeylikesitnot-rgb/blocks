@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-21: v0.24.1 changelogCommits also reads merge commits: an entry written while resolving a merge (TuroApp's TA-067) gets its Commit link; an entry merged in from another branch keeps the commit that added it there. Oldest first in topo order, first hit wins
 - 2026-11-21: v0.24.0 SidebarLayout `resizable` (BLK-031): drag the desktop sidebar's edge (minWidth–maxWidth, default 200–400px), ← / → / Home / End from the keyboard, double-click or Enter resets; `sidebarWidth` + `onSidebarWidthChange` save it, reported once per drag. First used by TuroApp
 - 2026-11-21: v0.23.1 useAutosave fixes: undo/revert/apply skip validation only for the fields they put back (a held-back value, e.g. a blank task description, is no longer saved by Undo); a save queued behind one in flight keeps keepalive when the page is closing; onSaved also fires for a save that finishes after another record loaded. Found by TuroApp's task-window review
 - 2026-11-21: v0.23.0 Autosave (BLK-030): `useAutosave` (changed fields only, debounce per field, blur/⌘S/hidden/unload flush with keepalive, one save in flight, undo/redo per save, revertAll, validate, failed saves kept for Retry, `scope` for a Modal) and `SaveStatus`. Lifted from TuroApp's Car edit page (TA-064); TuroApp's task window adopts it first

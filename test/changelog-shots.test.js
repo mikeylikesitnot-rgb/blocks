@@ -137,6 +137,33 @@ describe('changelogCommits', () => {
     expect(changelogCommits(join(shallow, 'c'))).toEqual({});
   });
 
+  it('credits an entry added in a merge commit to that merge, and a merged-in entry to its own commit', () => {
+    const repo = tmp();
+    git(repo, 'init', '-q', '-b', 'main');
+    entryDir(join(repo, 'changelog'), 'a-1', { title: 'A', date: '2026-11-18' });
+    git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'a');
+    // Another session ships a-2 on main while this branch is open.
+    git(repo, 'checkout', '-qb', 'story');
+    writeFileSync(join(repo, 'code.txt'), 'story');
+    git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'story code');
+    git(repo, 'checkout', '-q', 'main');
+    entryDir(join(repo, 'changelog'), 'a-2', { title: 'Other', date: '2026-11-19' });
+    git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'other');
+    const other = git(repo, 'rev-parse', 'HEAD');
+    // The story merges main in and writes its entry while resolving the merge,
+    // then ships by fast-forward (as devflow's ship.sh does).
+    git(repo, 'checkout', '-q', 'story');
+    git(repo, 'merge', '-q', '--no-commit', '--no-ff', 'main');
+    entryDir(join(repo, 'changelog'), 'a-3', { title: 'Story', date: '2026-11-20' });
+    git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'merge main; add entry');
+    const merge = git(repo, 'rev-parse', 'HEAD');
+    git(repo, 'checkout', '-q', 'main'); git(repo, 'merge', '-q', '--ff-only', 'story');
+    const map = changelogCommits(repo);
+    expect(map['a-3']).toBe(merge);
+    expect(map['a-2']).toBe(other);
+    expect(Object.keys(map).sort()).toEqual(['a-1', 'a-2', 'a-3']);
+  });
+
   it('returns {} outside a git repo', () => {
     expect(changelogCommits(tmp())).toEqual({});
   });
