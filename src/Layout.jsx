@@ -84,13 +84,35 @@ export function StatGrid({ children, cols = 4, className = '' }) {
 /**
  * Underline tabs; scroll sideways on phones instead of wrapping.
  *   <Tabs value={tab} onChange={setTab} items={[{ value: 'a', label: 'All', count: 3 }]} />
+ * Keyboard: one Tab stop (the selected tab); ← / → move and select, Home / End jump.
  */
 export function Tabs({ items, value, onChange, className = '', label }) {
+  const selected = items.findIndex((it) => it.value === value);
+  const stop = selected >= 0 ? selected : 0;
+  const onKeyDown = (e) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+    let next = null;
+    if (step) next = (stop + step + items.length) % items.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = items.length - 1;
+    if (next == null) return;
+    e.preventDefault();
+    onChange(items[next].value);
+    e.currentTarget.querySelectorAll('[role="tab"]')[next]?.focus();
+  };
   return (
     <div className={cx('mk-tabs', className)}>
-      <div role="tablist" aria-label={label} className="mk-tablist">
-        {items.map((it) => (
-          <button key={it.value} role="tab" type="button" className="mk-tab" aria-selected={it.value === value} onClick={() => onChange(it.value)}>
+      <div role="tablist" aria-label={label} className="mk-tablist" onKeyDown={onKeyDown}>
+        {items.map((it, i) => (
+          <button
+            key={it.value}
+            role="tab"
+            type="button"
+            className="mk-tab"
+            aria-selected={it.value === value}
+            tabIndex={i === stop ? 0 : -1}
+            onClick={() => onChange(it.value)}
+          >
             {it.icon && <it.icon className="mk-icon" aria-hidden />}
             {it.label}
             {it.count != null && <span className="mk-count mk-tabular">{it.count}</span>}

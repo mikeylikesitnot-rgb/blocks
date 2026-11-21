@@ -78,7 +78,8 @@ export function Field({ label, hint, error, htmlFor, children, className = '' })
   const child = control
     ? cloneElement(children, {
         id: children.props.id || id,
-        'aria-describedby': error || hint ? msgId : undefined,
+        // Keeps an aria-describedby the control already has (e.g. a form-level error).
+        'aria-describedby': [children.props['aria-describedby'], error || hint ? msgId : null].filter(Boolean).join(' ') || undefined,
         ...(error ? { 'aria-invalid': true } : {}),
       })
     : children;

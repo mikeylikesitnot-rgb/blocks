@@ -380,6 +380,14 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-032",
+      "name": "Accessibility pass",
+      "area": "Accessibility",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "From a Web Interface Guidelines audit: Esc in a menu inside a Modal closes only the menu; Tabs keyboard (one Tab stop, arrows, Home/End); toasts pause on hover/focus with a close button; Modal named by its title; stacked-modal scroll lock; Space opens DataTable rows; sign-in errors tied to fields; Skip to content link; 44px touch targets on touch screens."
     }
   ]
 }

@@ -66,7 +66,7 @@ export function RangeFilter({
   useEffect(() => {
     if (!open) return undefined;
     const onDown = (e) => { if (!root.current?.contains(e.target)) closeRef.current(false); };
-    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); closeRef.current(true); } };
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeRef.current(true); } };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('touchstart', onDown);
     document.addEventListener('keydown', onKey, true);

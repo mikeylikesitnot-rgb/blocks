@@ -125,7 +125,8 @@ export function DataTable({
 
   const rowProps = (row) => (onRowClick ? {
     onClick: () => onRowClick(row),
-    onKeyDown: (e) => { if (e.key === 'Enter' && e.target === e.currentTarget) onRowClick(row); },
+    // Enter or Space opens it, like a button; keys pressed in a control inside the row are left alone.
+    onKeyDown: (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === e.currentTarget) { e.preventDefault(); onRowClick(row); } },
     tabIndex: 0,
   } : {});
 

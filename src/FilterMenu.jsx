@@ -29,14 +29,16 @@ export function FilterMenu({ label, allLabel, options = [], value = [], onChange
   useEffect(() => {
     if (!open) return undefined;
     const onDown = (e) => { if (!root.current?.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === 'Escape') { setOpen(false); btn.current?.focus(); } };
+    // Capture phase, and marked handled: a Modal around the menu listens on document
+    // too and would otherwise close along with the menu.
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setOpen(false); btn.current?.focus(); } };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('touchstart', onDown);
-    document.addEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('touchstart', onDown);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('keydown', onKey, true);
     };
   }, [open]);
 
