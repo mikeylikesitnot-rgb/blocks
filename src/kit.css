@@ -67,7 +67,8 @@
 .mk-btn-lg { height: var(--mk-h-lg); padding: 0 var(--mk-space-5); font-size: var(--mk-text-base); }
 .mk-btn-lg .mk-icon { font-size: 20px; }
 .mk-btn-icon { padding: 0; aspect-ratio: 1; }
-.mk-copy-done, .mk-copy-done:hover { color: var(--mk-success); }
+/* Two classes so it beats a variant's colour (.mk-btn-ghost comes later). */
+.mk-btn.mk-copy-done, .mk-btn.mk-copy-done:hover { color: var(--mk-success); }
 .mk-btn-block { display: flex; width: 100%; }
 
 .mk-btn-primary { background: var(--mk-primary); color: var(--mk-primary-fg); }
@@ -113,6 +114,8 @@
 .mk-page-title { margin: 0; font-size: var(--mk-text-h1); font-weight: var(--mk-weight-title); letter-spacing: -0.02em; line-height: 1.15; color: var(--mk-heading); }
 .mk-page-subtitle { margin: var(--mk-space-1) 0 0; font-size: var(--mk-text-sm); color: var(--mk-muted); }
 .mk-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mk-space-2); }
+/* Beside a long title the title wraps, not the actions (they stacked one per line). */
+.mk-page-header-row > .mk-actions { flex-shrink: 0; }
 .mk-page-header-extra { margin-top: var(--mk-space-4); }
 @media (min-width: 640px) {
   .mk-page-header-row { flex-direction: row; align-items: flex-end; justify-content: space-between; }
