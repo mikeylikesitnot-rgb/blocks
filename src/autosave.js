@@ -31,6 +31,7 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
   const timer = useRef(null);
   const inFlight = useRef(null);
   const queued = useRef(false);
+  const queuedUnloading = useRef(false);
   const undoStack = useRef([]);
   const redoStack = useRef([]);
   const [status, setStatus] = useState('idle'); // idle | saving | saved | error
@@ -63,16 +64,19 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
   }, []);
 
   // mode: 'edit' (a new undo step, clears redo), 'undo' (goes on the redo stack), 'redo' (back on the undo stack).
-  // trusted: values being put back, so validate is skipped. Resolves to { ok, invalid }.
-  const flush = useCallback((mode = 'edit', { trusted = false, unloading = false } = {}) => {
+  // trusted: the keys being put back (undo, revert, apply): validate is skipped for those only,
+  // so another field held back by validate stays held back. Resolves to { ok, invalid }.
+  const flush = useCallback((mode = 'edit', { trusted = [], unloading = false } = {}) => {
     clearTimeout(timer.current);
     if (!savedRef.current) return Promise.resolve({ ok: true });
     if (inFlight.current) {
       queued.current = true;
+      if (unloading) queuedUnloading.current = true; // the follow-up save must survive the page closing too
       return inFlight.current; // resolves after the save in flight and the queued one that follows it
     }
     const patch = pendingPatch();
-    const bad = !trusted && cfg.current.validate ? cfg.current.validate(patch) || {} : {};
+    const bad = cfg.current.validate ? { ...(cfg.current.validate(patch) || {}) } : {};
+    for (const k of trusted) delete bad[k];
     setErrors(bad);
     for (const k of Object.keys(bad)) delete patch[k];
     const invalid = Object.keys(bad).length > 0;
@@ -90,7 +94,7 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
         await cfg.current.save(patch, { unloading });
         ok = true;
         Object.assign(saved, patch);
-        if (saved !== savedRef.current) return { ok, invalid }; // another record was loaded meanwhile
+        if (saved !== savedRef.current) { cfg.current.onSaved?.(patch); return { ok, invalid }; } // another record was loaded meanwhile
         // Undo saved `patch` over `before`; redo puts `before` back (it applies step.after).
         if (mode === 'undo') redoStack.current.push({ before: patch, after: before });
         else {
@@ -112,8 +116,10 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
       }
       if (queued.current) {
         queued.current = false;
+        const unloadingNext = queuedUnloading.current;
+        queuedUnloading.current = false;
         if (Object.keys(pendingPatch()).length) {
-          const next = flush();
+          const next = flush('edit', { unloading: unloadingNext });
           return next.then((r) => ({ ok: ok && r.ok, invalid: invalid || r.invalid }));
         }
       }
@@ -137,7 +143,7 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
     if (!first.ok) return first;
     formRef.current = { ...formRef.current, ...values };
     setForm(formRef.current);
-    return flush(mode, { trusted: true });
+    return flush(mode, { trusted: Object.keys(values) });
   }, [flush]);
 
   // A failed undo/redo puts its step back, so Retry or another ⌘Z can try again.
@@ -147,9 +153,10 @@ export function useAutosave({ save, validate, onSaved, debounceMs = 1000, keysEn
     const s = from.current.pop();
     if (!s) return { ok: true };
     setVersion((v) => v + 1);
-    formRef.current = { ...formRef.current, ...pick(s) };
+    const back = pick(s);
+    formRef.current = { ...formRef.current, ...back };
     setForm(formRef.current);
-    const r = await flush(mode, { trusted: true });
+    const r = await flush(mode, { trusted: Object.keys(back) });
     if (!r.ok) {
       from.current.push(s);
       formRef.current = { ...formRef.current, ...(mode === 'undo' ? s.after : s.before) };

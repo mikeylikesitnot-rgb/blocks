@@ -90,6 +90,33 @@ describe('useAutosave', () => {
     expect(a().dirty).toBe(false);
   });
 
+  it('undo never sends another field that validate is holding back', async () => {
+    const validate = (patch) => ('notes' in patch && patch.notes === 'BAD' ? { notes: 'No' } : {});
+    const { a, calls } = setup({ validate });
+    act(() => a().setField('color', 'White'));
+    await act(async () => { await a().flush(); });
+    act(() => a().setField('notes', 'BAD'));
+    await act(async () => { await a().flush(); });
+    await act(async () => { await a().undo(); });
+    expect(calls).toEqual([{ color: 'White' }, { color: 'Black' }]); // notes never sent
+    expect(a().errors.notes).toBe('No');
+    expect(a().form.notes).toBe('BAD');
+  });
+
+  it('a save queued behind one in flight keeps keepalive when the page is closing', async () => {
+    let release;
+    const opts = [];
+    const save = vi.fn((patch, o) => { opts.push(o); return opts.length === 1 ? new Promise((r) => { release = r; }) : Promise.resolve(); });
+    const { a } = setup({ save });
+    act(() => a().setField('color', 'White'));
+    let p;
+    act(() => { p = a().flush(); });
+    act(() => a().setField('vin', 'B'));
+    const q = a().flush('edit', { unloading: true });
+    await act(async () => { release(); await p; await q; });
+    expect(opts.map((o) => o.unloading)).toEqual([false, true]);
+  });
+
   it('revertAll puts back the opening values', async () => {
     const { a, calls } = setup();
     act(() => a().setField('color', 'White'));
