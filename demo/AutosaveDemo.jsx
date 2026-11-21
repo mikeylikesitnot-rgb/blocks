@@ -48,7 +48,7 @@ export function AutosaveDemo() {
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      <PageHeader title="Autosave" subtitle="useAutosave + SaveStatus: no Save button" actions={<SaveStatus autosave={a} />} />
+      <PageHeader title="Autosave" subtitle="useAutosave + SaveStatus: no Save button" actions={<SaveStatus autosave={a} revertTone="danger" />} />
       <Panel title="Record" actions={<label style={{ fontSize: 13 }}><input type="checkbox" checked={server.failNext} onChange={(e) => server.setFailNext(e.target.checked)} /> Fail the next save</label>}>
         <Fields a={a} />
         <p style={{ marginTop: 12, fontSize: 13, color: 'var(--mk-muted)' }}>⌘Z / ⌘⇧Z (outside a text box) undo and redo saves; ⌘S saves now.</p>

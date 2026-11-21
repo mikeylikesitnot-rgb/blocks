@@ -3,7 +3,9 @@ import { AlertIcon, CheckIcon, SpinnerIcon } from './icons.jsx';
 import { cx } from './cx.js';
 
 /* "Saving…", "Saved just now · Undo", "Unsaved", "Couldn't save · Retry" and "Revert all"
-   for a form saved by useAutosave. Pass the hook's return value as `autosave`. */
+   for a form saved by useAutosave. Pass the hook's return value as `autosave`.
+   revertTone="danger" draws Revert all in the danger colour behind a divider, so it isn't
+   mistaken for Undo (it throws away every change since the form opened). */
 function ago(t, now) {
   const s = Math.round((now - t) / 1000);
   if (s < 45) return 'just now';
@@ -11,7 +13,7 @@ function ago(t, now) {
   return new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
-export function SaveStatus({ autosave, idleText = 'Changes save automatically', revert = true, className }) {
+export function SaveStatus({ autosave, idleText = 'Changes save automatically', revert = true, revertTone = 'link', className }) {
   const { status, savedAt, error, dirty, canUndo, canRevert, undo, revertAll, flush } = autosave;
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -52,8 +54,10 @@ export function SaveStatus({ autosave, idleText = 'Changes save automatically', 
       <span aria-live="polite">{body}</span>
       {revert && canRevert && status !== 'saving' && (
         <>
-          <span aria-hidden>·</span>
-          <button type="button" className="mk-link-btn" onClick={() => revertAll()} title="Put back every field as it was when you opened this">Revert all</button>
+          {revertTone === 'danger'
+            ? <span className="mk-save-divider" aria-hidden />
+            : <span aria-hidden>·</span>}
+          <button type="button" className={cx('mk-link-btn', revertTone === 'danger' && 'mk-save-revert-danger')} onClick={() => revertAll()} title="Put back every field as it was when you opened this">Revert all</button>
         </>
       )}
     </div>

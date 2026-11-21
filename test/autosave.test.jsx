@@ -154,6 +154,10 @@ describe('SaveStatus', () => {
     expect(screen.getByText(/Saved just now/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Undo' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Revert all' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Revert all' }).className).not.toContain('mk-save-revert-danger');
+    rerender(<SaveStatus autosave={{ ...base, status: 'saved', savedAt: Date.now(), canUndo: true, canRevert: true }} revertTone="danger" />);
+    expect(screen.getByRole('button', { name: 'Revert all' }).className).toContain('mk-save-revert-danger');
+    expect(document.querySelector('.mk-save-divider')).toBeTruthy();
     const flush = vi.fn();
     rerender(<SaveStatus autosave={{ ...base, status: 'error', error: 'offline', flush }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
