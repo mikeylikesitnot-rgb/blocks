@@ -30,8 +30,8 @@ export function htmlToText(html) {
 
 // HTML = starts with a tag, or contains a tag an editor writes. A plain note that
 // merely mentions "<tag>" must stay plain text, or its line breaks are lost.
-const HTML_TAG = /<\/?(p|div|span|br|b|i|u|s|strong|em|a|ul|ol|li|blockquote|pre|code|h[1-6]|hr|img|mark|sub|sup|table|tr|td|th)(\s[^>]*)?\/?>/i;
-const looksLikeHtml = (text) => /^\s*<[a-z!]/i.test(text) || HTML_TAG.test(text);
+export const HTML_TAG = /<\/?(p|div|span|br|b|i|u|s|strong|em|a|ul|ol|li|blockquote|pre|code|h[1-6]|hr|img|mark|sub|sup|table|tr|td|th)(\s[^>]*)?\/?>/i;
+export const looksLikeHtml = (text) => /^\s*<[a-z!]/i.test(text) || HTML_TAG.test(text);
 
 const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

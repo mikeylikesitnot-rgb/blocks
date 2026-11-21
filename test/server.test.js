@@ -267,7 +267,7 @@ describe('rateLimitKey', () => {
     // IPv6 clients share a budget per /56, so rotating addresses doesn't buy more tries.
     for (let i = 0; i < 10; i++) await tryAs(`2001:db8:0:1::${i + 1}`);
     expect((await tryAs('2001:db8:0:1::ff')).status).toBe(429);
-  });
+  }, 20000); // 22 bcrypt checks at cost 12: over 5s on a busy machine
 });
 
 describe('config guards', () => {

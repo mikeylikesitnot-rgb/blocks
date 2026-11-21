@@ -388,6 +388,30 @@
       "status": "live",
       "since": "2026-11-21",
       "description": "From a Web Interface Guidelines audit: Esc in a menu inside a Modal closes only the menu; Tabs keyboard (one Tab stop, arrows, Home/End); toasts pause on hover/focus with a close button; Modal named by its title; stacked-modal scroll lock; Space opens DataTable rows; sign-in errors tied to fields; Skip to content link; 44px touch targets on touch screens."
+    },
+    {
+      "id": "BLK-033",
+      "name": "Server rich-text cleaning",
+      "area": "Server",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "sanitizeRich / cleanRich in @mn/blocks/server (and /server/richtext): editor HTML cleaned on the server before it is stored, one allowlist instead of a copy per app. NOTE_TAGS or EDITOR_TAGS, plainText \"keep\" for columns with old plain-text notes, blank to NULL with a length check. From AutoDealer and TuroApp, which both switch to it.",
+      "branch": "server-richtext-uiprefs",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "BLK-034",
+      "name": "Saved UI choices on the server",
+      "area": "Server",
+      "status": "live",
+      "since": "2026-11-21",
+      "description": "uiPrefsRouter in @mn/blocks/server (and /server/ui-prefs): GET/PUT /:key for each person’s saved columns, filters and sidebar, the server half of useSavedPref and useSavedFilters. Takes the app’s own {get, set} store, or pgUiPrefStore / memoryUiPrefStore. From AutoDealer and TuroApp, which both switch to it.",
+      "branch": "server-richtext-uiprefs",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

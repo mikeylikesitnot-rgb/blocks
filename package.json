@@ -1,6 +1,6 @@
 {
   "name": "@mn/blocks",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",
@@ -17,6 +17,8 @@
     "./package.json": "./package.json",
     "./server": "./server/index.js",
     "./server/changelog": "./server/changelog.js",
+    "./server/richtext": "./server/richText.js",
+    "./server/ui-prefs": "./server/uiPrefs.js",
     "./email": "./server/email.js"
   },
   "files": [
@@ -48,7 +50,8 @@
     "jose": "^6.2.17",
     "nodemailer": "^7.0.13 || ^8.0.0 || ^9.0.0",
     "react": ">=18",
-    "react-dom": ">=18"
+    "react-dom": ">=18",
+    "sanitize-html": "^2.17.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.0",
@@ -64,6 +67,7 @@
     "nodemailer": "^7.0.13",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "sanitize-html": "^2.18.2",
     "supertest": "^7.3.2",
     "vite": "^6.3.5",
     "vitest": "^3.2.4"
@@ -97,6 +101,9 @@
       "optional": true
     },
     "react-dom": {
+      "optional": true
+    },
+    "sanitize-html": {
       "optional": true
     }
   }

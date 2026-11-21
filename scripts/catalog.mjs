@@ -30,6 +30,10 @@ const ENTRIES = [
   { sub: '/server', file: 'server/index.js' },
   { sub: '/server/changelog', file: 'server/changelog.js', subsetOf: '/server',
     note: 'readChangelog and changelogCommits alone, for a build or deploy script (no Express, jose or bcrypt needed).' },
+  { sub: '/server/richtext', file: 'server/richText.js', subsetOf: '/server',
+    note: 'sanitizeRich, cleanRich and the rich-text helpers alone (needs only sanitize-html; no Express, jose or bcrypt).' },
+  { sub: '/server/ui-prefs', file: 'server/uiPrefs.js', subsetOf: '/server',
+    note: 'uiPrefsRouter and its stores alone (needs only Express; no jose or bcrypt).' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
     note: 'just the email templates, no Express or nodemailer needed.' },
 ];
@@ -151,6 +155,15 @@ const AREAS = [
     { name: 'readChangelog', also: ['CHANGELOG_ID', 'CHANGELOG_IMAGE'], does: 'Reads changelog/<id>/entry.json folders into one list for Changelog: id = folder, images become "<id>/before-1.jpg", broken folders and missing images skipped.', props: '(dir, {commits}) — commits from changelogCommits fill links.commit' },
     { name: 'changelogCommits', does: 'The commit that added each changelog/<id>/entry.json ({id: hash}); {} without git, so run it at deploy and ship the result.', props: '(repoDir, {dir "changelog"})' },
   ] },
+  { title: 'Server: rich text', sub: '/server', items: [
+    { name: 'sanitizeRich', also: ['NOTE_TAGS', 'EDITOR_TAGS'], does: 'Cleans editor HTML on the server before it is stored: allowlisted tags only, links http/https/mailto/tel with rel=noopener, script/style text dropped, <div>/<b>/<i> become <p>/<strong>/<em>; needs the optional peer sanitize-html.', props: "(value, {tags EDITOR_TAGS | NOTE_TAGS | [...], plainText 'html' | 'keep' (no tags: stored as typed)}); null stays null" },
+    { name: 'cleanRich', also: ['MAX_RICH_LENGTH'], does: 'sanitizeRich for a column where no note is NULL: blank ("", "<p></p>", "&nbsp;") becomes null, else cleaned and trimmed, with a length check.', props: '(value, {tags, plainText, maxLength 20000}) -> {value, tooLong}' },
+    { name: 'isBlankRich', also: ['richToPlain', 'looksLikeHtml', 'HTML_TAG'], does: 'Server names for the editor value helpers: blank check, one-line plain text, and the "is this HTML or plain text" test RichText/toRichHtml use.', props: '(html)' },
+  ] },
+  { title: 'Server: saved UI choices', sub: '/server', items: [
+    { name: 'uiPrefsRouter', also: ['UI_PREF_KEY'], does: 'Express router for saved screen choices per signed-in person (the server half of useSavedPref, useSavedFilters, useColumnOrder): GET /:key -> {key, value}, PUT /:key {value} (null deletes); 401 without a user, 400 bad key, 413 too large.', props: '{store {get(userId,key), set(userId,key,value)}, userId (req) => req.user?.id, keyPattern, maxBytes 16 KB, objectsOnly, onError}' },
+    { name: 'pgUiPrefStore', also: ['uiPrefSchemaSql', 'memoryUiPrefStore'], does: 'Stores for uiPrefsRouter: Postgres (one JSONB row per person and key, plus the idempotent CREATE TABLE) and in-memory for tests; an app with its own table passes {get, set} instead.', props: "(pool, {table 'ui_prefs'}); uiPrefSchemaSql({table})" },
+  ] },
   { title: 'Server: crypto', sub: '/server', items: [
     { name: 'encrypt', also: ['decrypt'], does: 'AES-256-GCM for small stored secrets, keyed from an existing secret.', props: '(text, secret, salt)' },
   ] },
@@ -239,7 +252,7 @@ const out = [
   '## How apps use it',
   '',
   `- **Install (client):** \`npm install "${PKG}@${install}"\`. A client-only app needs nothing else.`,
-  `- **Server pieces** (\`${PKG}/server\`, \`${PKG}/email\`): the app also installs \`jose bcryptjs express-rate-limit nodemailer\` (optional peers).`,
+  `- **Server pieces** (\`${PKG}/server\`, \`${PKG}/email\`): the app also installs \`jose bcryptjs express-rate-limit nodemailer\` (optional peers); \`sanitizeRich\`/\`cleanRich\` also need \`sanitize-html\`.`,
   `- **Editor** (\`${PKG}/editor\`): the app also installs \`@tiptap/react @tiptap/pm @tiptap/starter-kit\`.`,
   `- **CSS:** \`import '${PKG}/kit.css'\` once (brings tokens.css), before the app's own CSS. With Tailwind, put it in the components layer (\`@import "${PKG}/kit.css" layer(components);\`) so utilities passed as \`className\` win. The editor imports its own \`editor.css\`.`,
   '- **Wrap** the app in `<OverlayProvider>` (confirm, alert, toasts); add `class="mk-root"` to `<body>` for base font and colours (optional).',
