@@ -308,6 +308,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-026",
+      "name": "Count notes in the sidebar",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-20",
+      "description": "NavList and NavMenu items take a note that explains their count (\"3 waiting over 2 hours\"): a tooltip on the count, read out by screen readers. First used by AutoDealer admin.",
+      "branch": "nav-note",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-20: v0.19.0 NavList/NavMenu item `note` (BLK-026): explains a count ("3 waiting over 2 hours") as a tooltip and screen-reader text. First used by AutoDealer admin's urgent counts
 - 2026-11-20: v0.18.2 Modal: with modals stacked, Esc closes (and Tab stays in) only the top one, so "Edit options…" or a confirm over an edit form no longer closes the form too and loses its edits. Found in TuroApp's task window
 - 2026-11-20: v0.18.1 SidebarLayout: no gap under the top bar when the sidebar is a slide-out (phones, hidden desktop); the bar's grid row no longer shares the leftover height
 - 2026-11-20: v0.18.0 SidebarLayout `collapsible` (BLK-025): Hide menu on desktop turns the sidebar into the slide-out menu (☰ opens it, picking a page closes it, the NavMenu shortcut opens it); Keep menu open pins it again; `pinned`/`defaultPinned`/`onPinnedChange` to save the choice. First used by AutoDealer admin

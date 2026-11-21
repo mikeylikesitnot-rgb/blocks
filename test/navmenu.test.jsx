@@ -198,4 +198,13 @@ describe('NavMenu', () => {
     render(<Harness />);
     expect(() => fireEvent.keyDown(document, {})).not.toThrow();
   });
+
+  it('a count with a note gets a tooltip and screen-reader text', () => {
+    const { container } = render(<NavMenu items={[{ value: 'a', label: 'Leads', count: 3, hot: true, note: '3 waiting over 2 hours' }]} value="a" onChange={() => {}} />);
+    const count = container.querySelector('.mk-nav-count');
+    expect(count.getAttribute('title')).toBe('3 waiting over 2 hours');
+    expect(count.className).toContain('mk-nav-count-hot');
+    expect(count.querySelector('.mk-sr-only').textContent).toBe(' (3 waiting over 2 hours)');
+    expect(screen.getByRole('button', { name: /Leads 3 \(3 waiting over 2 hours\)/ })).toBeTruthy();
+  });
 });

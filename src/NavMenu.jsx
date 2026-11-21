@@ -4,6 +4,7 @@ import { Button } from './Button.jsx';
 import { SearchInput } from './Inputs.jsx';
 import { matchesQuery } from './search.js';
 import { highlight } from './highlight.jsx';
+import { NavCount } from './NavCount.jsx';
 import { readPref, writePref } from './prefs.js';
 import { orderColumns } from './ColumnOrder.jsx';
 import { ArrowUpIcon, ArrowDownIcon, GripIcon, StarIcon, EyeIcon, EyeOffIcon } from './icons.jsx';
@@ -251,9 +252,7 @@ export function NavMenu({
           {searching && typeof it.label === 'string' ? highlight(it.label, query) : it.label}
           {via && <span className="mk-nav-via"> · {highlight(via, query)}</span>}
         </span>
-        {it.count != null && it.count !== '' && (
-          <span className={cx('mk-nav-count mk-tabular', it.hot && 'mk-nav-count-hot')}>{it.count}</span>
-        )}
+        <NavCount it={it} />
       </>
     );
     return (

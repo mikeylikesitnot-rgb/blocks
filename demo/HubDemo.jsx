@@ -62,7 +62,7 @@ export function HubDemo() {
   const current = PROJECTS.find((p) => p.slug === project);
   const nav = [
     { value: '', label: 'All projects', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: FEATURES.length },
-    { value: 'requests', label: 'Requests', keywords: 'ideas asks', icon: <InitialIcon tone="outline">R</InitialIcon>, count: 3, hot: true, onClick: () => {} },
+    { value: 'requests', label: 'Requests', keywords: 'ideas asks', icon: <InitialIcon tone="outline">R</InitialIcon>, count: 3, hot: true, note: '3 waiting for an answer', onClick: () => {} },
     { section: 'Projects', count: PROJECTS.length },
     ...PROJECTS.map((p, i) => {
       const building = FEATURES.filter((f) => f.project === p.slug && f.status === 'progress').length;

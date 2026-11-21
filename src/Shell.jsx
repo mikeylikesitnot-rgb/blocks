@@ -5,6 +5,7 @@ import { useTheme } from './theme.js';
 import { MenuIcon, XIcon, SunIcon, MoonIcon, PanelLeftIcon } from './icons.jsx';
 
 import { SHELL_OPEN_EVENT as SHELL_OPEN } from './NavMenu.jsx';
+import { NavCount } from './NavCount.jsx';
 
 /**
  * App frame with a sidebar on the left (desktop) that becomes a slide-out
@@ -129,7 +130,7 @@ export function SidebarLayout({
  *   <NavList value={slug} onChange={setSlug} items={[
  *     { value: '', label: 'All projects', icon: <InitialIcon tone="ink">✱</InitialIcon>, count: 42 },
  *     { section: 'Projects', count: 9 },
- *     { value: 'kit', label: 'Blocks', icon: <InitialIcon name="Blocks" color={2} />, count: '2 building', hot: true },
+ *     { value: 'kit', label: 'Blocks', icon: <InitialIcon name="Blocks" color={2} />, count: '2 building', hot: true, note: '2 features being built' },
  *   ]} />
  */
 export function NavList({ items, value, onChange, label, className = '' }) {
@@ -157,9 +158,7 @@ export function NavList({ items, value, onChange, label, className = '' }) {
           >
             {it.icon}
             <span className="mk-nav-label">{it.label}</span>
-            {it.count != null && it.count !== '' && (
-              <span className={cx('mk-nav-count mk-tabular', it.hot && 'mk-nav-count-hot')}>{it.count}</span>
-            )}
+            <NavCount it={it} />
           </Tag>
         );
       })}
