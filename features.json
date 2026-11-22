@@ -448,6 +448,30 @@
       "spec": "docs/specs/qa-board.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-038",
+      "name": "Column order for hand-written tables",
+      "area": "UI",
+      "description": "useColumnOrder reads older saves (bare key arrays, or any shape through migrate), takes storageKey, on:false, noMove and disabled columns, and gives order + moveNextTo. OrderedCells puts hand-written <th>/<td data-col> cells in the saved order with header drag (useHeaderDrag for one <th> at a time); the ColumnOrder menu adds row drag. Lifted from AutoDealer and TuroApp.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "blk-cols-menu",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "BLK-039",
+      "name": "MenuButton",
+      "area": "UI",
+      "description": "A button that opens a short action menu (row ⋯, toolbar More): hidden items and stray dividers drop out, danger and disabled items, closes on pick, Esc, Tab or outside click; ↑ ↓ Home End move. Lifted from AutoDealer.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "blk-cols-menu",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

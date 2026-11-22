@@ -1,5 +1,5 @@
 import {
-  FilterMenu, RangeFilter, ColumnOrder, DataTable, SortTh, Panel, Toolbar, SearchInput, Button, Badge,
+  FilterMenu, RangeFilter, ColumnOrder, MenuButton, DataTable, SortTh, Panel, Toolbar, SearchInput, Button, Badge,
   useSavedFilters, useColumnOrder, useSort, useUrlState, listParam, listValue, rangeParam, inRange, rangeBounds, matchesQuery, money,
 } from '../src/index.js';
 
@@ -53,7 +53,13 @@ export function FiltersDemo() {
         <RangeFilter label="Avg $/day" allLabel="Any $/day" value={daily} step={5} unit="/day" format={(n) => `$${n}`}
           bounds={rangeBounds(CARS.map((c) => c.daily).filter((n) => n != null), 5, daily)}
           onChange={(min, max) => setFilters({ minDaily: min, maxDaily: max })} />
-        <ColumnOrder {...cols.menu} />
+        <ColumnOrder {...cols.menu} onMoveTo={cols.moveTo} />
+        <MenuButton label="More" items={[
+          { label: 'Export CSV', onClick: () => {} },
+          { label: 'Print', onClick: () => {} },
+          'sep',
+          { label: 'Delete all', danger: true, onClick: () => {} },
+        ]} />
         {anyFilter ? <Button variant="ghost" size="sm" onClick={reset}>Reset filters</Button> : null}
       </Toolbar>
       <DataTable label="Cars" columns={cols.columns} onReorder={cols.onReorder} data={shown}

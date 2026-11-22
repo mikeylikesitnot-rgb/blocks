@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.34.0 column order for hand-written tables (BLK-038) and MenuButton (BLK-039): `useColumnOrder` gets `migrate`, `storageKey`, `on:false` / `noMove` / `disabled` columns, `order` and `moveNextTo`; new `OrderedCells` + `useHeaderDrag` (header drag on any table) and row drag in the `ColumnOrder` menu; new `MenuButton` + `visibleMenuItems`. Lifted from AutoDealer (useColumnPrefs, ColumnPicker, ColumnOrder cells, MenuButton) and TuroApp (useColumnOrder), which both switch to them
 - 2026-11-22: v0.33.0 `sqliteQaStore` + `qaSqliteSchemaSql` (better-sqlite3) for the Q&A board; every router test now runs on the memory and SQLite stores. First used by the ProjectHub guest portal
 - 2026-11-22: v0.32.0 Q&A board (BLK-036, BLK-037): `@mn/blocks/server/qa` (`qaRouter`, `pgQaStore` + `qaSchemaSql`, `memoryQaStore`) and `@mn/blocks/qa` (`QaBoard`, `QuestionList`, `VoteButtons`, `TagInput`, `qaClient`). Questions, answers, ±1 votes, accepted answer, tags, comments, sort/tag/search/pages, owner and moderator rules, close/reopen; tested on a real Postgres. Not yet in any app
 - 2026-11-21: v0.31.0 `looksLikeHtml` and `HTML_TAG` also exported from `@mn/blocks/editor` and `/editor/lite`, so a page deciding between RichText and escaped text uses the exact test the server's plainText 'keep' uses (TuroApp's car pop-up drops its copy)

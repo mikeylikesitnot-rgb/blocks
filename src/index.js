@@ -11,7 +11,8 @@ export { listParam, listValue, rangeParam, inRange, rangeBounds, rangeSummary, m
 export { useSavedFilters } from './savedFilters.js';
 export { RangeFilter } from './RangeFilter.jsx';
 export { SortTh, useSort, sortRows } from './SortTh.jsx';
-export { ColumnOrder, useColumnOrder, orderColumns } from './ColumnOrder.jsx';
+export { ColumnOrder, useColumnOrder, orderColumns, OrderedCells, useHeaderDrag } from './ColumnOrder.jsx';
+export { MenuButton, visibleMenuItems } from './MenuButton.jsx';
 export { highlight } from './highlight.jsx';
 export { SidebarLayout, NavList, InitialIcon, ThemeSwitch, initials } from './Shell.jsx';
 export { NavMenu, useNavMenu, arrangeNav, searchNav, navGroups, orderKeys, SHELL_OPEN_EVENT } from './NavMenu.jsx';
