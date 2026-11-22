@@ -1,6 +1,6 @@
 {
   "name": "@mn/blocks",
-  "version": "0.32.0",
+  "version": "0.33.0",
   "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",
@@ -62,6 +62,7 @@
     "@tiptap/starter-kit": "^3.20.1",
     "@vitejs/plugin-react": "^4.5.2",
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.2.0",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.4",
     "jose": "^6.2.17",

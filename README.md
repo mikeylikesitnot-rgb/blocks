@@ -182,6 +182,7 @@ comments) on the app's own sign-in and Postgres. Server:
 ```js
 import { qaRouter, pgQaStore, qaSchemaSql } from '@mn/blocks/server/qa'; // needs sanitize-html, express-rate-limit
 await pool.query(qaSchemaSql());                       // tables qa_questions, qa_answers, … (prefix option)
+// SQLite instead: qaRouter({ store: sqliteQaStore(betterSqliteDb) })  — creates its own tables
 app.use('/api/qa', express.json(), auth.optionalAuth,  // requireAuth for a private board
   qaRouter({ store: pgQaStore(pool), onEvent: (type, data) => { /* email the asker on 'answer' */ } }));
 ```

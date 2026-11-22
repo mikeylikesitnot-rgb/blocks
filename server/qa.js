@@ -325,4 +325,4 @@ export function qaRouter({
   return router;
 }
 
-export { memoryQaStore, pgQaStore, qaSchemaSql } from './qaStores.js';
+export { memoryQaStore, pgQaStore, qaSchemaSql, sqliteQaStore, qaSqliteSchemaSql } from './qaStores.js';
