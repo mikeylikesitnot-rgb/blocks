@@ -36,6 +36,8 @@ const ENTRIES = [
   { sub: '/server/ui-prefs', file: 'server/uiPrefs.js', subsetOf: '/server',
     note: 'uiPrefsRouter and its stores alone (needs only Express; no jose or bcrypt).' },
   { sub: '/browser', file: 'server/browser.js' },
+  { sub: '/desktop-update', file: 'server/desktopUpdate.js' },
+  { sub: '/ext-update', file: 'src/extUpdate.js' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
     note: 'just the email templates, no Express or nodemailer needed.' },
 ];
@@ -188,6 +190,16 @@ const AREAS = [
   { title: 'Server: crypto', sub: '/server', items: [
     { name: 'encrypt', also: ['decrypt'], does: 'AES-256-GCM for small stored secrets, keyed from an existing secret.', props: '(text, secret, salt)' },
   ] },
+  { title: 'Desktop apps: auto update (Electron main, no other deps)', sub: '/desktop-update', items: [
+    { name: 'createUpdater', also: ['UPDATE_MODES'], does: 'Checks the app\'s GitHub Releases (private repos with a read-only token), downloads in the background (size + sha256 checked) and installs: Windows runs the NSIS installer silently, macOS swaps the .app from the release .zip after quit (works unsigned; no Squirrel). Modes auto (install on quit, or Restart now) / notify / off; checks 15s after start and every 6h. From CommonJS: `await import(\'@mn/blocks/desktop-update\')`.', props: '({app, repo \'owner/name\', getToken, getMode () => auto|notify|off, onState({status idle|checking|up-to-date|available|downloading|ready|error, current, latest, notes, url, progress, canInstall, error, errorCode}), intervalHours (6), log}) -> {start, stop, check({manual}), download, install({relaunch}), state}' },
+    { name: 'tokenStore', does: 'Keeps the GitHub token encrypted with Electron safeStorage in one file (mode 600).', props: '({safeStorage, file}) -> {get, set(token) (\'\' removes), has, encrypted() (false: OS has no encryption, stored as plain text)}' },
+    { name: 'pickAsset', also: ['appBundlePath', 'SWAP_SCRIPT'], does: 'Which release file fits this computer (.exe on Windows, .zip on macOS, by arch); the running .app path; the swap script.', props: '(assets, {platform, arch})' },
+    { name: 'compareVersions', also: ['isNewer'], does: 'Semver-ish compare; "v1.10.0" > "1.9.3", pre-releases sort first.', props: '(a, b) -> -1|0|1' },
+  ] },
+  { title: 'Chrome extensions: self update (service worker)', sub: '/ext-update', items: [
+    { name: 'startExtUpdate', also: ['checkExtUpdate', 'diskVersion', 'EXT_UPDATE_KEY', 'EXT_UPDATE_ALARM'], does: 'For unpacked extensions kept current by ops/ext-update.sh: when manifest.json on disk is newer than the running version, reloads the extension (auto) or shows a ↑ badge (notify). Call once at the top of a module service worker; uses chrome.alarms when allowed.', props: '({mode auto|notify|off or () => mode, intervalMinutes (30), chrome, fetch}) -> {check, first}' },
+    { name: 'extUpdateStatus', also: ['applyExtUpdate', 'compareVersions'], does: 'For the popup: the waiting update ({current, version} or null) and the Update now action (reload).', props: '({chrome})' },
+  ] },
 ];
 
 // Shell scripts under ops/: not imports, so listed by hand. Each file must exist.
@@ -195,6 +207,8 @@ const OPS = [
   { file: 'ops/backup.sh', does: 'Nightly VPS backup: Postgres dump + files + folders in one restic snapshot, encrypted to Google Drive via rclone, healthchecks.io pings, retries, keep rules that really delete, weekly restore test into a scratch database, local copies.', use: 'deploy copies it to the VPS; cron runs `backup.sh <config>` (config keys in the header: NAME, RESTIC_REPOSITORY, RESTIC_PASSWORD_FILE, HC_PING_URL, DB_CONTAINER, DB_FORMAT, DB_FILE, DB_CHECK_TABLE, RESTORE_TEST_TABLES, COPY_FILES, BACKUP_PATHS, KEEP_*); `RESTORE_TEST=1` runs the restore test now' },
   { file: 'ops/automation-chrome.sh', does: 'Starts the dedicated automation Chrome (profile ~/ChromeAutomation, debug port bound to 127.0.0.1); idempotent: exits 0 if the port already answers and is this profile (DevToolsActivePort matches), 1 if another Chrome has the port; on macOS starts Chrome with `open -na` so it survives a launchd job exiting.', use: 'run `ops/automation-chrome.sh` (env PORT, PROFILE_DIR, CHROME) from launchd or by hand; sign in to your sites in that window once; jobs then use @mn/blocks/browser' },
   { file: 'ops/automation-chrome.ps1', does: 'Windows twin of automation-chrome.sh (same checks, Program Files or per-user Chrome).', use: '`powershell -File automation-chrome.ps1 [-Port 9222] [-ProfileDir C:\\path]`' },
+  { file: 'ops/desktop-release.mjs', does: 'Releases an Electron app for desktop-update (run on the Mac): checks a clean, up-to-date tree, sets the version, builds macOS dmg + zip and Windows NSIS (npm run dist:win if present), commits "Release X", tags vX, pushes, and `gh release create` with the files; a failed build commits nothing, a failed push undoes the local commit and tag.', use: '`node node_modules/@mn/blocks/ops/desktop-release.mjs <patch|minor|major|x.y.z> [--notes-file f | --notes "..."] [--mac] [--win] [--draft] [--dry-run]` from the app folder' },
+  { file: 'ops/ext-update.sh', does: 'Keeps unpacked Chrome/Edge extensions current: for each line `<name> <git url> <branch> <folder|.>` in ~/.config/mn-ext-update/extensions, shallow-fetches the branch and copies the folder to ~/.mn-extensions/<name> when manifest.json "version" changed (your git login, so private repos work); `install` schedules it every 30 min (launchd / Task Scheduler).', use: '`ops/ext-update.sh run|install|uninstall|list [config]`; load ~/.mn-extensions/<name> once with Load unpacked (keep "key" in the manifest), then startExtUpdate reloads it on each new version' },
   { file: 'ops/changelog-shot.mjs', does: 'Before/after screenshots for a changelog entry: signs in to the LOCAL app (refuses any other address), opens each page at 1280px (and 390px with --phone), saves <name>-N.jpg (JPEG q80) and writes them into <out>/entry.json shots.', use: '`node node_modules/@mn/blocks/ops/changelog-shot.mjs --base http://localhost:5173 --out changelog/<id> --name before|after [--login \'POST /api/auth/dev-login {"role":"admin"}\'] [--phone] [--hide <css>] [--wait <css>] [--full] /page ...`; needs Playwright in the app' },
 ];
 for (const o of OPS) {

@@ -29,6 +29,10 @@ modals, a login screen, sign-in sessions or emails again.
 - **Saved UI choices:** `uiPrefsRouter({ store })` serves GET/PUT `/:key` (mount after `express.json()`) for `useSavedPref` and `useSavedFilters`; pass the app's own `{get, set}` or `pgUiPrefStore(pool)` (`@mn/blocks/server/ui-prefs` alone needs only Express).
 - **Also:** `createLimiter` / `createFormLimiter` / `createCostLimiter`, `encrypt` / `decrypt` for stored secrets.
 
+**Auto update ([docs/decisions/auto-update.md](docs/decisions/auto-update.md))**
+- **Desktop apps (`@mn/blocks/desktop-update`, Electron main):** `createUpdater()` checks GitHub Releases (private repos with a read-only token kept by `tokenStore`), downloads with a sha256 check and installs: silent NSIS on Windows, an .app swap from the release .zip on macOS (works unsigned). `ops/desktop-release.mjs` builds and publishes a release.
+- **Chrome extensions (`@mn/blocks/ext-update`):** `startExtUpdate()` reloads an unpacked extension when `ops/ext-update.sh` has copied in a newer manifest version (or shows a ↑ badge in notify mode).
+
 Plain CSS with `mk-` prefixed classes and `--mk-` variables. No Tailwind,
 no icon library, no router needed. Peer dependencies: React 18 or later for the UI, Express 4.21 or later for the server.
 
