@@ -10,7 +10,8 @@
  * 2. sets the new version in package.json (+ lock);
  * 3. builds: macOS dmg + zip (the zip is what the updater installs), Windows NSIS
  *    (`npm run dist:win` when the app has it). Default: both on a Mac, Windows elsewhere;
- * 4. commits "Release X", tags vX, pushes both;
+ * 4. commits "Release X", tags vX, pushes both (HEAD to the upstream branch, so a devflow
+ *    worktree branch tracking main works);
  * 5. `gh release create vX` with the dmg, zip and exe (GitHub records each file's sha256,
  *    which the updater checks).
  * A failed build stops before anything is committed; package.json is put back. A failed push
@@ -68,6 +69,10 @@ function main() {
   let behind;
   try { behind = sh('git', ['rev-list', '--count', 'HEAD..@{u}'], { quiet: true }).trim(); } catch { die('this branch has no upstream: push it once with `git push -u origin <branch>`'); }
   if (behind !== '0') die(`this branch is ${behind} commit(s) behind its upstream: pull first`);
+  // Push to the upstream by name, so it also works from a worktree branch that tracks main.
+  const upstream = sh('git', ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], { quiet: true }).trim();
+  const remote = upstream.split('/')[0];
+  const upBranch = upstream.slice(remote.length + 1);
   if (sh('git', ['tag', '--list', `v${version}`], { quiet: true }).trim()) die(`tag v${version} already exists`);
   try { sh('gh', ['--version'], { quiet: true }); } catch { die('the GitHub CLI (gh) is needed'); }
 
@@ -95,7 +100,7 @@ function main() {
   sh('git', ['commit', '-m', `Release ${version}`], { mutate: true });
   sh('git', ['tag', `v${version}`], { mutate: true });
   try {
-    sh('git', ['push'], { mutate: true });
+    sh('git', ['push', remote, `HEAD:${upBranch}`], { mutate: true });
   } catch (e) {
     // Someone pushed during the build: undo the local commit and tag so a re-run starts clean.
     sh('git', ['tag', '-d', `v${version}`], { quiet: true });
@@ -106,7 +111,7 @@ function main() {
   const notes = opt('--notes-file') ? ['--notes-file', opt('--notes-file')] : opt('--notes') ? ['--notes', opt('--notes')] : ['--generate-notes'];
   const ghArgs = ['release', 'create', `v${version}`, ...files, '--title', `${product} ${version}`, ...notes, ...(flag('--draft') ? ['--draft'] : [])];
   try {
-    sh('git', ['push', 'origin', `v${version}`], { mutate: true });
+    sh('git', ['push', remote, `v${version}`], { mutate: true });
     sh('gh', ghArgs, { mutate: true });
   } catch (e) {
     die(`the release commit is pushed but publishing failed: ${e.message}\nFinish it with:\n  git push origin v${version}\n  gh ${ghArgs.map((a) => (/[\s"']/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);

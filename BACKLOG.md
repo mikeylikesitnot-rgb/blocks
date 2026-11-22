@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.36.1 `ops/desktop-release.mjs` pushes HEAD to the upstream branch by name, so releases work from a devflow worktree branch
 - 2026-11-22: v0.36.0 auto update (BLK-041): `@mn/blocks/desktop-update` (`createUpdater`, `tokenStore`, `pickAsset`, `compareVersions`) for Electron apps on GitHub Releases: silent NSIS install on Windows, .app swap from the release .zip on macOS (unsigned apps), sha256 checked, modes auto / notify / off; `ops/desktop-release.mjs` builds and publishes. `@mn/blocks/ext-update` (`startExtUpdate`) + `ops/ext-update.sh` keep unpacked Chrome extensions current. First used by SnagIt 1.6.0
 - 2026-11-22: v0.35.0 browser (BLK-040): `@mn/blocks/browser` (`withPage`, `connectChrome`, `downloadText`, `needsLogin`, `chromeCommand`) drives an already-logged-in Chrome over CDP for Mac launchd jobs, using a dedicated `~/ChromeAutomation` profile (Chrome 136 rule), debug port on 127.0.0.1 only; `ops/automation-chrome.sh` starts it. `playwright-core` is an optional peer
 - 2026-11-22: v0.34.0 column order for hand-written tables (BLK-038) and MenuButton (BLK-039): `useColumnOrder` gets `migrate`, `storageKey`, `on:false` / `noMove` / `disabled` columns, `order` and `moveNextTo`; new `OrderedCells` + `useHeaderDrag` (header drag on any table) and row drag in the `ColumnOrder` menu; new `MenuButton` + `visibleMenuItems`. Lifted from AutoDealer (useColumnPrefs, ColumnPicker, ColumnOrder cells, MenuButton) and TuroApp (useColumnOrder), which both switch to them
