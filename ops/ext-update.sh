@@ -8,9 +8,15 @@
 #   ext-update.sh list [config]       show each extension's installed version
 #
 # Config (default ~/.config/mn-ext-update/extensions), one extension per line:
-#   <name> <git url> <branch> <folder in repo, or .>
+#   <name> <git url> <branch> <folder in repo, or .> [build command]
 #   e.g.  workspace-switcher https://github.com/me/edge-workspace-switcher.git main .
 #         autodealer-sms     https://github.com/me/AutoDealer.git master chrome-extension
+#         ews https://github.com/me/edge-workspace-switcher.git master dist corepack pnpm install --frozen-lockfile && corepack pnpm build
+#
+# With a build command (the rest of the line, run by sh in the repo), the whole repo is
+# cloned, the version is read from the repo's root manifest.json, and only when it changed
+# is the command run and <folder> (the build output) copied in. A failed build keeps the
+# copy in use. Build tools must be on PATH (launchd gets /opt/homebrew/bin:/usr/local/bin).
 #
 # Each extension lands in ~/.mn-extensions/<name> (MN_EXT_ROOT overrides). Load that folder
 # once with "Load unpacked"; keep "key" in its manifest so the ID never changes. A new
@@ -26,12 +32,12 @@ LABEL=com.mn.ext-update
 version_of() { [ -f "$1" ] && sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1" | head -1 || true; }
 
 sync_one() {
-  local name=$1 url=$2 branch=$3 sub=$4
+  local name=$1 url=$2 branch=$3 sub=$4 build=${5:-}
   case "$name" in *[!A-Za-z0-9._-]*|'') echo "$name: bad name (letters, digits, . _ - only)" >&2; return 1 ;; esac
   local src="$ROOT/.src/$name"
   if [ ! -d "$src/.git" ]; then
     rm -rf "$src"; mkdir -p "$ROOT/.src"
-    if [ "$sub" = "." ]; then
+    if [ "$sub" = "." ] || [ -n "$build" ]; then
       git clone --quiet --depth 1 --branch "$branch" "$url" "$src"
     else
       git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$branch" "$url" "$src"
@@ -41,12 +47,18 @@ sync_one() {
     git -C "$src" fetch --quiet --depth 1 origin "$branch"
     git -C "$src" reset --quiet --hard FETCH_HEAD
   fi
-  local new="$src/$sub" dest="$ROOT/$name"
-  [ -f "$new/manifest.json" ] || { echo "$name: no manifest.json in $sub" >&2; return 1; }
+  local new="$src/$sub" dest="$ROOT/$name" vfile="$src/$sub/manifest.json"
+  [ -n "$build" ] && vfile="$src/manifest.json"
+  [ -f "$vfile" ] || { echo "$name: no manifest.json in ${build:+the repo root}${build:-$sub}" >&2; return 1; }
   local nv ov
-  nv=$(version_of "$new/manifest.json"); ov=$(version_of "$dest/manifest.json")
+  nv=$(version_of "$vfile"); ov=$(version_of "$dest/manifest.json")
   [ -n "$nv" ] || { echo "$name: no version in manifest.json" >&2; return 1; }
   if [ -n "$ov" ] && [ "$nv" = "$ov" ]; then echo "$name: $ov (current)"; return 0; fi
+  if [ -n "$build" ]; then
+    echo "$name: building $nv"
+    (cd "$src" && sh -c "$build") || { echo "$name: build failed; kept ${ov:-nothing}" >&2; return 1; }
+    [ "$(version_of "$new/manifest.json")" = "$nv" ] || { echo "$name: build left no $sub/manifest.json at $nv; kept ${ov:-nothing}" >&2; return 1; }
+  fi
   # Every step checks itself: set -e is off inside a function called from `... || rc=1`.
   rm -rf "$dest.new" "$dest.old" || return 1
   mkdir -p "$dest.new" || return 1
@@ -62,12 +74,12 @@ sync_one() {
 
 each() {
   [ -f "$CONF" ] || { echo "No config at $CONF (see the header of this script)" >&2; exit 1; }
-  local rc=0 line name url branch sub
+  local rc=0 line name url branch sub build
   while IFS= read -r line || [ -n "$line" ]; do
     line=${line//$'\r'/}   # config saved with Windows line endings
-    read -r name url branch sub _ <<< "$line" || true
+    read -r name url branch sub build <<< "$line" || true
     case "$name" in ''|'#'*) continue ;; esac
-    "$@" "$name" "$url" "${branch:-main}" "${sub:-.}" || rc=1
+    "$@" "$name" "$url" "${branch:-main}" "${sub:-.}" "$build" || rc=1
   done < "$CONF"
   return $rc
 }
@@ -90,7 +102,7 @@ install() {
 <plist version="1.0"><dict>
   <key>Label</key><string>$LABEL</string>
   <key>ProgramArguments</key><array><string>/bin/bash</string><string>$(xml "$script")</string><string>run</string><string>$(xml "$CONF")</string></array>
-  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string><key>MN_EXT_ROOT</key><string>$(xml "$ROOT")</string></dict>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string><key>MN_EXT_ROOT</key><string>$(xml "$ROOT")</string><key>COREPACK_ENABLE_DOWNLOAD_PROMPT</key><string>0</string></dict>
   <key>StartInterval</key><integer>1800</integer>
   <key>RunAtLoad</key><true/>
   <key>StandardOutPath</key><string>$(xml "$ROOT")/.bin/ext-update.log</string>

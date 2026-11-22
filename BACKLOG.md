@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.37.0 `ops/ext-update.sh` takes an optional build command per extension (rest of the config line): clones the whole repo, reads the root manifest version, builds and copies the output folder only when it changed; a failed build keeps the copy in use. First used by edge-workspace-switcher (esbuild + pnpm)
 - 2026-11-22: v0.36.1 `ops/desktop-release.mjs` pushes HEAD to the upstream branch by name, so releases work from a devflow worktree branch
 - 2026-11-22: v0.36.0 auto update (BLK-041): `@mn/blocks/desktop-update` (`createUpdater`, `tokenStore`, `pickAsset`, `compareVersions`) for Electron apps on GitHub Releases: silent NSIS install on Windows, .app swap from the release .zip on macOS (unsigned apps), sha256 checked, modes auto / notify / off; `ops/desktop-release.mjs` builds and publishes. `@mn/blocks/ext-update` (`startExtUpdate`) + `ops/ext-update.sh` keep unpacked Chrome extensions current. First used by SnagIt 1.6.0
 - 2026-11-22: v0.35.0 browser (BLK-040): `@mn/blocks/browser` (`withPage`, `connectChrome`, `downloadText`, `needsLogin`, `chromeCommand`) drives an already-logged-in Chrome over CDP for Mac launchd jobs, using a dedicated `~/ChromeAutomation` profile (Chrome 136 rule), debug port on 127.0.0.1 only; `ops/automation-chrome.sh` starts it. `playwright-core` is an optional peer

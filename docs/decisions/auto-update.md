@@ -49,3 +49,8 @@
   that copies `node_modules/@mn/blocks/src/{extUpdate,version}.js` into `vendor/mn-blocks/`
   (generated, never edited by hand) and import from there; the service worker must be
   `"type": "module"`.
+- Extensions with a build step (esbuild, Tailwind) import `@mn/blocks/ext-update` normally; the
+  bundler inlines it. Their built folder isn't in git, so the config line adds a build command
+  (e.g. `dist corepack pnpm install --frozen-lockfile && corepack pnpm build`). The helper
+  reads the version from the repo's root `manifest.json` and builds only when it changed; a
+  failed build keeps the copy in use. Each machine needs node (corepack brings pnpm).

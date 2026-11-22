@@ -108,6 +108,40 @@ describe('ops/ext-update.sh', () => {
     expect(() => readFileSync(join(out, 'README.md'))).toThrow();
   });
 
+  it('builds only when the root manifest version changes, and keeps the old copy when a build fails', () => {
+    const d = mkdtempSync(join(tmpdir(), 'extup-'));
+    const repo = join(d, 'repo');
+    mkdirSync(repo, { recursive: true });
+    const manifest = (v) => writeFileSync(join(repo, 'manifest.json'), `{ "name": "x", "version": "${v}" }`);
+    manifest('1.0.0');
+    // The "build" copies manifest.json into dist/ and counts its runs; FAIL in the repo makes it fail.
+    writeFileSync(join(repo, 'build.sh'), 'test -f FAIL && exit 3; mkdir -p dist && cp manifest.json dist/ && echo built >> ../builds.log\n');
+    git(repo, 'init', '-q', '-b', 'main'); git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'one');
+    const conf = join(d, 'conf');
+    writeFileSync(conf, `ews file://${repo} main dist sh build.sh && echo done\n`);
+    const env = { ...process.env, MN_EXT_ROOT: join(d, 'root') };
+    const run = () => execFileSync('bash', [script, 'run', conf], { env, encoding: 'utf8', stdio: 'pipe' });
+    const builds = () => readFileSync(join(d, 'root/.src/builds.log'), 'utf8').trim().split('\n').length;
+    const installed = () => JSON.parse(readFileSync(join(d, 'root/ews/manifest.json'), 'utf8')).version;
+
+    expect(run()).toContain('ews: none -> 1.0.0');
+    expect(installed()).toBe('1.0.0');
+    expect(() => readFileSync(join(d, 'root/ews/build.sh'))).toThrow();
+
+    writeFileSync(join(repo, 'wip.txt'), 'x'); git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'wip');
+    expect(run()).toContain('ews: 1.0.0 (current)');
+    expect(builds()).toBe(1);
+
+    manifest('1.1.0'); writeFileSync(join(repo, 'FAIL'), ''); git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'broken');
+    expect(run).toThrow();
+    expect(installed()).toBe('1.0.0');
+
+    git(repo, 'rm', '-q', 'FAIL'); git(repo, 'commit', '-qm', 'fixed');
+    expect(run()).toContain('ews: 1.0.0 -> 1.1.0');
+    expect(installed()).toBe('1.1.0');
+    expect(builds()).toBe(2);
+  });
+
   it('rejects unsafe names', () => {
     const d = mkdtempSync(join(tmpdir(), 'extup-'));
     writeFileSync(join(d, 'conf'), '../evil file:///nope main .\n');
