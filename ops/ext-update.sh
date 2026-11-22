@@ -2,6 +2,7 @@
 # Keeps unpacked Chrome/Edge extensions current (pairs with @mn/blocks/ext-update).
 #
 #   ext-update.sh run [config]        copy any extension whose manifest version changed
+#   ext-update.sh run-logged [config] the same, appending to ~/.mn-extensions/.bin/ext-update.log
 #   ext-update.sh install [config]    copy this script to ~/.mn-extensions/.bin and schedule
 #                                     `run` every 30 min (launchd on macOS, Task Scheduler on Windows/Git Bash)
 #   ext-update.sh uninstall           remove the schedule
@@ -28,6 +29,8 @@ CMD=${1:-run}
 CONF=${2:-${MN_EXT_CONF:-$HOME/.config/mn-ext-update/extensions}}
 ROOT=${MN_EXT_ROOT:-$HOME/.mn-extensions}
 LABEL=com.mn.ext-update
+# A headless scheduled run can't answer corepack's "download pnpm?" prompt.
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=${COREPACK_ENABLE_DOWNLOAD_PROMPT:-0}
 
 version_of() { [ -f "$1" ] && sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1" | head -1 || true; }
 
@@ -44,12 +47,19 @@ sync_one() {
       git -C "$src" sparse-checkout set "$sub"
     fi
   else
+    # A clone made sparse for a folder-only line lacks the sources a build needs.
+    if [ -n "$build" ] && [ "$(git -C "$src" config --bool core.sparseCheckout || true)" = true ]; then
+      git -C "$src" sparse-checkout disable || return 1
+    fi
     git -C "$src" fetch --quiet --depth 1 origin "$branch"
     git -C "$src" reset --quiet --hard FETCH_HEAD
   fi
   local new="$src/$sub" dest="$ROOT/$name" vfile="$src/$sub/manifest.json"
   [ -n "$build" ] && vfile="$src/manifest.json"
-  [ -f "$vfile" ] || { echo "$name: no manifest.json in ${build:+the repo root}${build:-$sub}" >&2; return 1; }
+  if [ ! -f "$vfile" ]; then
+    if [ -n "$build" ]; then echo "$name: no manifest.json in the repo root" >&2; else echo "$name: no manifest.json in $sub" >&2; fi
+    return 1
+  fi
   local nv ov
   nv=$(version_of "$vfile"); ov=$(version_of "$dest/manifest.json")
   [ -n "$nv" ] || { echo "$name: no version in manifest.json" >&2; return 1; }
@@ -82,6 +92,20 @@ each() {
     "$@" "$name" "$url" "${branch:-main}" "${sub:-.}" "$build" || rc=1
   done < "$CONF"
   return $rc
+}
+
+# One run at a time: a build can take minutes, and launchd's RunAtLoad plus `install`'s own
+# run (or a slow run overlapping the next) would share .src and the .new/.old folders.
+locked() {
+  local lock="$ROOT/.lock"
+  mkdir -p "$ROOT"
+  if ! mkdir "$lock" 2>/dev/null; then
+    # A lock older than 2 hours is left over from a killed run.
+    if [ -n "$(find "$lock" -maxdepth 0 -mmin +120 2>/dev/null)" ]; then rm -rf "$lock"; mkdir "$lock" || return 1
+    else echo "another run is in progress ($lock)"; return 0; fi
+  fi
+  trap 'rm -rf "$ROOT/.lock"' EXIT
+  "$@"
 }
 
 list_one() { echo "$1: $(version_of "$ROOT/$1/manifest.json")"; }
@@ -118,7 +142,7 @@ PLIST
       # conhost --headless keeps a console window from flashing up every run; -l gives a login
       # shell so Git's /usr/bin (sed, tar, mkdir) is on PATH.
       schtasks //Create //F //SC MINUTE //MO 30 //TN "mn-ext-update" \
-        //TR "conhost.exe --headless \"$bash_w\" -l \"$script_w\" run \"$conf_w\"" >/dev/null
+        //TR "conhost.exe --headless \"$bash_w\" -l \"$script_w\" run-logged \"$conf_w\"" >/dev/null
       echo "Scheduled every 30 min in Task Scheduler (mn-ext-update)." ;;
     *) echo "Unsupported OS: schedule '$script run' yourself." >&2; exit 1 ;;
   esac
@@ -134,9 +158,11 @@ uninstall() {
 }
 
 case "$CMD" in
-  run) each sync_one ;;
+  run) locked each sync_one ;;
+  # What Task Scheduler runs: `run` with output appended to the same log launchd writes.
+  run-logged) mkdir -p "$ROOT/.bin"; { echo "== $(date)"; locked each sync_one; } >>"$ROOT/.bin/ext-update.log" 2>&1 ;;
   list) each list_one ;;
   install) install ;;
   uninstall) uninstall ;;
-  *) echo "usage: ext-update.sh run|install|uninstall|list [config]" >&2; exit 2 ;;
+  *) echo "usage: ext-update.sh run|run-logged|install|uninstall|list [config]" >&2; exit 2 ;;
 esac

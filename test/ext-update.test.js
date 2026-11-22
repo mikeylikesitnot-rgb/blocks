@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
@@ -140,6 +140,32 @@ describe('ops/ext-update.sh', () => {
     expect(run()).toContain('ews: 1.0.0 -> 1.1.0');
     expect(installed()).toBe('1.1.0');
     expect(builds()).toBe(2);
+  });
+
+  it('skips while another run holds the lock, logs with run-logged, and un-sparses a clone when a build is added', () => {
+    const d = mkdtempSync(join(tmpdir(), 'extup-'));
+    const repo = join(d, 'repo');
+    mkdirSync(join(repo, 'ext'), { recursive: true });
+    writeFileSync(join(repo, 'manifest.json'), '{ "name": "x", "version": "2.0.0" }');
+    writeFileSync(join(repo, 'ext/manifest.json'), '{ "name": "x", "version": "1.0.0" }');
+    mkdirSync(join(repo, 'src')); writeFileSync(join(repo, 'src/build.sh'), 'mkdir -p dist && cp manifest.json dist/\n');
+    git(repo, 'init', '-q', '-b', 'main'); git(repo, 'add', '.'); git(repo, 'commit', '-qm', 'one');
+    const root = join(d, 'root');
+    const env = { ...process.env, MN_EXT_ROOT: root };
+    const conf = join(d, 'conf');
+    const run = (cmd = 'run') => execFileSync('bash', [script, cmd, conf], { env, encoding: 'utf8', stdio: 'pipe' });
+
+    writeFileSync(conf, `e file://${repo} main ext\n`);
+    mkdirSync(join(root, '.lock'), { recursive: true });
+    expect(run()).toContain('another run is in progress');
+    rmSync(join(root, '.lock'), { recursive: true });
+    expect(run()).toContain('e: none -> 1.0.0');
+
+    writeFileSync(conf, `e file://${repo} main dist sh src/build.sh\n`);
+    run('run-logged');
+    expect(readFileSync(join(root, '.bin/ext-update.log'), 'utf8')).toContain('e: 1.0.0 -> 2.0.0');
+    expect(JSON.parse(readFileSync(join(root, 'e/manifest.json'), 'utf8')).version).toBe('2.0.0');
+    expect(() => readFileSync(join(root, '.lock'))).toThrow();
   });
 
   it('rejects unsafe names', () => {
