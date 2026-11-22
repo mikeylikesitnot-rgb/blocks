@@ -519,6 +519,40 @@ textarea.mk-input { height: auto; min-height: 96px; padding: var(--mk-space-2) v
 .mk-cols-row .mk-filter-option input:disabled { opacity: 0.5; }
 .mk-icon-btn.mk-cols-move { position: static; transform: none; width: 32px; height: 32px; font-size: 14px; flex: none; }
 .mk-icon-btn.mk-cols-move:disabled { opacity: 0.35; cursor: default; background: none; }
+.mk-cols-grip { width: 18px; flex: none; display: inline-flex; justify-content: center; color: var(--mk-subtle); font-size: 14px; }
+.mk-cols-draggable { cursor: grab; }
+.mk-cols-dragging { opacity: 0.4; }
+.mk-cols-drop-before { box-shadow: inset 0 2px 0 var(--mk-primary); }
+.mk-cols-drop-after { box-shadow: inset 0 -2px 0 var(--mk-primary); }
+/* Header drag (useHeaderDrag / OrderedCells) on any table. */
+.mk-col-dragging { opacity: 0.4; }
+.mk-col-drop-before { box-shadow: inset 2px 0 0 var(--mk-primary); }
+.mk-col-drop-after { box-shadow: inset -2px 0 0 var(--mk-primary); }
+.mk-col-draggable { cursor: grab; }
+
+/* ───────── MenuButton: a short list of actions ───────── */
+.mk-menu-wrap { position: relative; display: inline-block; }
+.mk-menu-caret { font-size: 14px; margin-left: 2px; opacity: 0.7; }
+.mk-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 60;
+  min-width: 180px; max-width: min(300px, calc(100vw - 32px));
+  padding: var(--mk-space-1); background: var(--mk-surface); color: var(--mk-text);
+  border: 1px solid var(--mk-border); border-radius: var(--mk-radius); box-shadow: var(--mk-shadow-lg);
+  overscroll-behavior: contain;
+}
+.mk-menu-end { left: auto; right: 0; }
+.mk-menu-item {
+  display: flex; align-items: center; gap: var(--mk-space-2); width: 100%;
+  min-height: 36px; padding: 0 var(--mk-space-3); border: 0; border-radius: var(--mk-radius-sm, 6px);
+  background: none; color: inherit; font: inherit; font-size: var(--mk-text-sm); text-align: left; cursor: pointer;
+  touch-action: manipulation;
+}
+.mk-menu-item:hover:not(:disabled), .mk-menu-item:focus-visible { background: var(--mk-surface-2); outline: none; }
+.mk-menu-item:focus-visible { box-shadow: inset 0 0 0 2px var(--mk-focus); }
+.mk-menu-item:disabled { opacity: 0.5; cursor: default; }
+.mk-menu-item-danger { color: var(--mk-danger); }
+.mk-menu-sep { height: 1px; margin: var(--mk-space-1) 0; background: var(--mk-border); }
+@media (pointer: coarse) { .mk-menu-item { min-height: 44px; } }
 
 /* ───────── GroupedList ───────── */
 .mk-glist { background: var(--mk-surface); border: 1px solid var(--mk-border); border-radius: var(--mk-radius-lg); overflow: hidden; }

@@ -11,7 +11,7 @@ modals, a login screen, sign-in sessions or emails again.
 - **App frame:** `SidebarLayout` (sidebar on desktop, slide-out menu on phones), `NavList`, `InitialIcon`, `ThemeSwitch`.
 - **Lists:** `FilterMenu` (checklist dropdown), `RangeFilter` (price/cost slider with Min/Max boxes), `GroupedList` (grouped rows with ID, badge and side cells), `highlight`.
 - **List filters:** `useSavedFilters` (filters in the URL, remembered per browser session and saved per browser or account; a shared link wins), `listParam`, `rangeParam`, `inRange`, `rangeBounds`.
-- **Tables you build yourself:** `SortTh` + `useSort` (sortable header cells), `ColumnOrder` + `useColumnOrder` (show, hide and move columns, remembered).
+- **Tables you build yourself:** `SortTh` + `useSort` (sortable header cells), `ColumnOrder` + `useColumnOrder` (show, hide and move columns, remembered), `OrderedCells` (hand-written cells in the saved order, with header drag), `MenuButton` (a short action menu).
 - **Attachments:** `FileDrop` (drag, drop or pick, with type and size checks), `usePasteFiles` (⌘V a screenshot anywhere in a panel, even while typing; text pastes stay text), `AttachmentGrid` (image thumbnails that open in a `Lightbox`, other files as download rows), `formatBytes`, `checkFiles`. UI only: the app uploads and serves the files.
 - **Inputs:** Input, Textarea, SearchInput, Select, Field (label + hint/error, wired for screen readers).
 - **DataTable:** sortable columns, sticky header, drag-to-reorder columns, auto right-aligned numbers, built-in loading/empty/filtered states, and a card list on phones. Pass `singleLayout` when cells hold inputs, selects or buttons: only the layout for the current width is rendered, so each control exists once.
@@ -182,6 +182,7 @@ comments) on the app's own sign-in and Postgres. Server:
 ```js
 import { qaRouter, pgQaStore, qaSchemaSql } from '@mn/blocks/server/qa'; // needs sanitize-html, express-rate-limit
 await pool.query(qaSchemaSql());                       // tables qa_questions, qa_answers, … (prefix option)
+// SQLite instead: qaRouter({ store: sqliteQaStore(betterSqliteDb) })  — creates its own tables
 app.use('/api/qa', express.json(), auth.optionalAuth,  // requireAuth for a private board
   qaRouter({ store: pgQaStore(pool), onEvent: (type, data) => { /* email the asker on 'answer' */ } }));
 ```

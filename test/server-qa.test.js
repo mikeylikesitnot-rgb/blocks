@@ -1,7 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import express from 'express';
 import request from 'supertest';
-import { qaRouter, memoryQaStore, qaSchemaSql, pgQaStore, normalizeTag, QA_LIMITS } from '../server/qa.js';
+import Database from 'better-sqlite3';
+import { qaRouter, memoryQaStore as memoryStore, qaSchemaSql, pgQaStore, sqliteQaStore, qaSqliteSchemaSql, normalizeTag, QA_LIMITS } from '../server/qa.js';
+
+// Every router test runs on each store, so the stores can't drift apart.
+const STORES = [
+  ['memory', (o) => memoryStore(o)],
+  ['sqlite', (o) => { const db = new Database(':memory:'); db.pragma('foreign_keys = ON'); return sqliteQaStore(db, o); }],
+];
+let memoryQaStore = STORES[0][1];
 import * as serverEntry from '../server/index.js';
 
 const USERS = {
@@ -32,6 +40,9 @@ async function seed(as) {
   const q = (await as('ana').post('/questions', Q)).body;
   return q;
 }
+
+describe.each(STORES)('%s store', (_name, factory) => {
+beforeAll(() => { memoryQaStore = factory; });
 
 describe('qaRouter: questions', () => {
   let ctx;
@@ -248,12 +259,24 @@ describe('qaRouter: limits, names, /me', () => {
   });
 });
 
+});
+
 describe('qa helpers', () => {
   it('normalizeTag', () => {
     expect(normalizeTag(' React JS ')).toBe('react-js');
     expect(normalizeTag('C++')).toBe('c++');
     expect(normalizeTag('<x>')).toBeNull();
     expect(normalizeTag('a'.repeat(26))).toBeNull();
+  });
+  it('sqliteQaStore: schema is idempotent, needs a database, keeps prefixes apart', () => {
+    const db = new Database(':memory:');
+    sqliteQaStore(db, { prefix: 'a_' });
+    sqliteQaStore(db, { prefix: 'a_' });
+    expect(db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE 'a_%' ORDER BY name").all().map((r) => r.name))
+      .toEqual(['a_answers', 'a_comments', 'a_questions', 'a_views', 'a_votes']);
+    expect(qaSqliteSchemaSql()).toContain('CREATE TABLE IF NOT EXISTS qa_questions');
+    expect(() => sqliteQaStore({})).toThrow(/better-sqlite3/);
+    expect(() => sqliteQaStore(db, { prefix: 'x; drop' })).toThrow();
   });
   it('schema SQL is idempotent and refuses bad prefixes', () => {
     const sql = qaSchemaSql({ prefix: 'board_' });

@@ -422,3 +422,251 @@ export function pgQaStore(pool, { prefix = 'qa_' } = {}) {
     async deleteComment(board, id) { await pool.query(`DELETE FROM ${t.c} WHERE id = $1`, [id]); },
   };
 }
+
+// ---- SQLite (better-sqlite3) ----------------------------------------------------
+
+/** SQLite SQL for the board's tables (idempotent). sqliteQaStore runs it for you. */
+export function qaSqliteSchemaSql({ prefix = 'qa_' } = {}) {
+  const t = tables(prefix);
+  return `
+CREATE TABLE IF NOT EXISTS ${t.q} (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  board              TEXT NOT NULL DEFAULT 'main',
+  title              TEXT NOT NULL,
+  body               TEXT,
+  body_text          TEXT NOT NULL DEFAULT '',
+  tags               TEXT NOT NULL DEFAULT '[]',
+  author_id          TEXT NOT NULL,
+  author_name        TEXT NOT NULL,
+  score              INTEGER NOT NULL DEFAULT 0,
+  answer_count       INTEGER NOT NULL DEFAULT 0,
+  views              INTEGER NOT NULL DEFAULT 0,
+  accepted_answer_id INTEGER,
+  closed             INTEGER NOT NULL DEFAULT 0,
+  created_at         TEXT NOT NULL,
+  edited_at          TEXT,
+  activity_at        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ${t.q}_board_activity ON ${t.q} (board, activity_at DESC);
+CREATE TABLE IF NOT EXISTS ${t.a} (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_id INTEGER NOT NULL REFERENCES ${t.q}(id) ON DELETE CASCADE,
+  body        TEXT,
+  body_text   TEXT NOT NULL DEFAULT '',
+  author_id   TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  score       INTEGER NOT NULL DEFAULT 0,
+  created_at  TEXT NOT NULL,
+  edited_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS ${t.a}_question ON ${t.a} (question_id);
+CREATE TABLE IF NOT EXISTS ${t.c} (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_id INTEGER REFERENCES ${t.q}(id) ON DELETE CASCADE,
+  answer_id   INTEGER REFERENCES ${t.a}(id) ON DELETE CASCADE,
+  body        TEXT NOT NULL,
+  author_id   TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  created_at  TEXT NOT NULL,
+  CHECK ((question_id IS NULL) <> (answer_id IS NULL))
+);
+CREATE INDEX IF NOT EXISTS ${t.c}_question ON ${t.c} (question_id);
+CREATE INDEX IF NOT EXISTS ${t.c}_answer ON ${t.c} (answer_id);
+CREATE TABLE IF NOT EXISTS ${t.v} (
+  kind    TEXT NOT NULL CHECK (kind IN ('question', 'answer')),
+  post_id INTEGER NOT NULL,
+  user_id TEXT NOT NULL,
+  value   INTEGER NOT NULL CHECK (value IN (-1, 1)),
+  PRIMARY KEY (kind, post_id, user_id)
+);
+CREATE TABLE IF NOT EXISTS ${t.w} (
+  question_id INTEGER NOT NULL REFERENCES ${t.q}(id) ON DELETE CASCADE,
+  user_id     TEXT NOT NULL,
+  PRIMARY KEY (question_id, user_id)
+);`;
+}
+
+/**
+ * SQLite store on a better-sqlite3 Database (creates its tables on first use). Tags are a
+ * JSON array; search matches every word anywhere in the title or body (no FTS needed at
+ * board sizes). Turn on `PRAGMA foreign_keys = ON` so deletes cascade.
+ */
+export function sqliteQaStore(db, { prefix = 'qa_', now = () => new Date() } = {}) {
+  if (!db || typeof db.prepare !== 'function' || typeof db.transaction !== 'function') {
+    throw new Error('sqliteQaStore needs a better-sqlite3 Database');
+  }
+  const t = tables(prefix);
+  db.exec(qaSqliteSchemaSql({ prefix }));
+  const stamp = () => now().toISOString();
+  const one = (sql, ...a) => db.prepare(sql).get(...a);
+  const all = (sql, ...a) => db.prepare(sql).all(...a);
+  const run = (sql, ...a) => db.prepare(sql).run(...a);
+  const LIST_COLS = `q.id, q.title, q.body_text, q.tags, q.author_id, q.author_name, q.created_at, q.activity_at,
+    q.score, q.answer_count, q.views, q.accepted_answer_id, q.closed`;
+  const item = (r) => ({
+    id: r.id, title: r.title, excerpt: excerpt(r.body_text), tags: JSON.parse(r.tags || '[]'), authorId: r.author_id, authorName: r.author_name,
+    createdAt: r.created_at, activityAt: r.activity_at, score: r.score, answerCount: r.answer_count, views: r.views,
+    accepted: r.accepted_answer_id != null, closed: Boolean(r.closed),
+  });
+  const comment = (r) => ({ id: r.id, body: r.body, authorId: r.author_id, authorName: r.author_name, createdAt: r.created_at });
+  const recountAnswers = (qid) => run(`UPDATE ${t.q} SET answer_count = (SELECT count(*) FROM ${t.a} WHERE question_id = ?) WHERE id = ?`, qid, qid);
+  const answerOf = (board, id) => {
+    const r = one(`SELECT a.id, a.question_id, a.author_id FROM ${t.a} a JOIN ${t.q} q ON q.id = a.question_id WHERE a.id = ? AND q.board = ?`, id, board);
+    return r ? { id: r.id, questionId: r.question_id, authorId: r.author_id } : null;
+  };
+  const like = (w) => `%${w.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+
+  return {
+    async listQuestions(board, { sort = 'active', tags = [], q = '', limit = 20, offset = 0 } = {}) {
+      const where = ['q.board = ?'];
+      const args = [board];
+      if (tags.length) {
+        where.push(`EXISTS (SELECT 1 FROM json_each(q.tags) j WHERE j.value IN (${tags.map(() => '?').join(', ')}))`);
+        args.push(...tags);
+      }
+      for (const w of String(q).toLowerCase().split(/\s+/).filter(Boolean).slice(0, 10)) {
+        where.push(`lower(q.title || ' ' || q.body_text) LIKE ? ESCAPE '\\'`);
+        args.push(like(w));
+      }
+      if (sort === 'unanswered') where.push('q.answer_count = 0');
+      const order = {
+        newest: 'q.created_at DESC, q.id DESC',
+        unanswered: 'q.created_at DESC, q.id DESC',
+        votes: 'q.score DESC, q.id DESC',
+        active: 'q.activity_at DESC, q.id DESC',
+      }[sort] || 'q.activity_at DESC, q.id DESC';
+      const sqlWhere = where.join(' AND ');
+      const rows = all(`SELECT ${LIST_COLS} FROM ${t.q} q WHERE ${sqlWhere} ORDER BY ${order} LIMIT ? OFFSET ?`, ...args, limit, offset);
+      const { n } = one(`SELECT count(*) AS n FROM ${t.q} q WHERE ${sqlWhere}`, ...args);
+      return { items: rows.map(item), total: n };
+    },
+    async tags(board) {
+      return all(`SELECT j.value AS tag, count(*) AS count FROM ${t.q} q, json_each(q.tags) j WHERE q.board = ?
+        GROUP BY j.value ORDER BY count DESC, tag`, board);
+    },
+    async getQuestion(board, id, userId) {
+      const r = one(`SELECT ${LIST_COLS}, q.body, q.edited_at FROM ${t.q} q WHERE q.id = ? AND q.board = ?`, id, board);
+      if (!r) return null;
+      const uid = userId == null ? null : String(userId);
+      const answers = all(`SELECT id, question_id, body, author_id, author_name, created_at, edited_at, score FROM ${t.a} WHERE question_id = ?`, id);
+      const comments = all(`SELECT c.id, c.question_id, c.answer_id, c.body, c.author_id, c.author_name, c.created_at FROM ${t.c} c
+        LEFT JOIN ${t.a} a ON a.id = c.answer_id WHERE c.question_id = ? OR a.question_id = ? ORDER BY c.created_at, c.id`, id, id);
+      const votes = uid == null ? [] : all(`SELECT kind, post_id, value FROM ${t.v} WHERE user_id = ? AND (
+        (kind = 'question' AND post_id = ?) OR (kind = 'answer' AND post_id IN (SELECT id FROM ${t.a} WHERE question_id = ?)))`, uid, id, id);
+      const vote = (kind, pid) => votes.find((v) => v.kind === kind && v.post_id === pid)?.value || 0;
+      const commentsFor = (key, pid) => comments.filter((c) => c[key] === pid).map(comment);
+      return {
+        ...item(r), body: r.body, editedAt: r.edited_at, acceptedAnswerId: r.accepted_answer_id,
+        myVote: vote('question', id), comments: commentsFor('question_id', id),
+        answers: answers.map((a) => ({
+          id: a.id, questionId: a.question_id, body: a.body, authorId: a.author_id, authorName: a.author_name,
+          createdAt: a.created_at, editedAt: a.edited_at, score: a.score, myVote: vote('answer', a.id),
+          accepted: r.accepted_answer_id === a.id, comments: commentsFor('answer_id', a.id),
+        })).sort(byAnswerOrder),
+      };
+    },
+    async createQuestion(board, { title, body, bodyText, tags, authorId, authorName }) {
+      const at = stamp();
+      return Number(run(`INSERT INTO ${t.q} (board, title, body, body_text, tags, author_id, author_name, created_at, activity_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, board, title, body, bodyText, JSON.stringify(tags), String(authorId), authorName, at, at).lastInsertRowid);
+    },
+    async updateQuestion(board, id, { edited, ...patch }) {
+      const cols = { title: 'title', body: 'body', bodyText: 'body_text', tags: 'tags', closed: 'closed' };
+      const sets = [];
+      const args = [];
+      for (const [k, col] of Object.entries(cols)) {
+        if (!(k in patch)) continue;
+        sets.push(`${col} = ?`);
+        args.push(k === 'tags' ? JSON.stringify(patch[k]) : k === 'closed' ? (patch[k] ? 1 : 0) : patch[k]);
+      }
+      if (edited) { const at = stamp(); sets.push('edited_at = ?', 'activity_at = ?'); args.push(at, at); }
+      if (!sets.length) return;
+      run(`UPDATE ${t.q} SET ${sets.join(', ')} WHERE id = ? AND board = ?`, ...args, id, board);
+    },
+    async deleteQuestion(board, id) {
+      db.transaction(() => {
+        const answerIds = all(`SELECT a.id FROM ${t.a} a JOIN ${t.q} q ON q.id = a.question_id WHERE q.id = ? AND q.board = ?`, id, board).map((r) => r.id);
+        if (!run(`DELETE FROM ${t.q} WHERE id = ? AND board = ?`, id, board).changes) return;
+        // Votes have no foreign key; without foreign_keys ON, answers, comments and views go here too.
+        run(`DELETE FROM ${t.v} WHERE kind = 'question' AND post_id = ?`, id);
+        for (const aid of answerIds) {
+          run(`DELETE FROM ${t.v} WHERE kind = 'answer' AND post_id = ?`, aid);
+          run(`DELETE FROM ${t.c} WHERE answer_id = ?`, aid);
+        }
+        run(`DELETE FROM ${t.a} WHERE question_id = ?`, id);
+        run(`DELETE FROM ${t.c} WHERE question_id = ?`, id);
+        run(`DELETE FROM ${t.w} WHERE question_id = ?`, id);
+      })();
+    },
+    async addView(board, id, userId) {
+      return db.transaction(() => {
+        if (!one(`SELECT id FROM ${t.q} WHERE id = ? AND board = ?`, id, board)) return false;
+        if (!run(`INSERT OR IGNORE INTO ${t.w} (question_id, user_id) VALUES (?, ?)`, id, String(userId)).changes) return false;
+        run(`UPDATE ${t.q} SET views = views + 1 WHERE id = ?`, id);
+        return true;
+      })();
+    },
+    async getAnswer(board, id) { return answerOf(board, id); },
+    async createAnswer(board, questionId, { body, bodyText, authorId, authorName }) {
+      return db.transaction(() => {
+        if (!one(`SELECT id FROM ${t.q} WHERE id = ? AND board = ?`, questionId, board)) return null;
+        const at = stamp();
+        const id = Number(run(`INSERT INTO ${t.a} (question_id, body, body_text, author_id, author_name, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+          questionId, body, bodyText, String(authorId), authorName, at).lastInsertRowid);
+        run(`UPDATE ${t.q} SET activity_at = ? WHERE id = ?`, at, questionId);
+        recountAnswers(questionId);
+        return id;
+      })();
+    },
+    async updateAnswer(board, id, { body, bodyText }) {
+      const a = answerOf(board, id);
+      if (!a) return;
+      const at = stamp();
+      db.transaction(() => {
+        run(`UPDATE ${t.a} SET body = ?, body_text = ?, edited_at = ? WHERE id = ?`, body, bodyText, at, id);
+        run(`UPDATE ${t.q} SET activity_at = ? WHERE id = ?`, at, a.questionId);
+      })();
+    },
+    async deleteAnswer(board, id) {
+      const a = answerOf(board, id);
+      if (!a) return;
+      db.transaction(() => {
+        run(`DELETE FROM ${t.c} WHERE answer_id = ?`, id);
+        run(`DELETE FROM ${t.a} WHERE id = ?`, id);
+        run(`DELETE FROM ${t.v} WHERE kind = 'answer' AND post_id = ?`, id);
+        run(`UPDATE ${t.q} SET accepted_answer_id = NULL WHERE id = ? AND accepted_answer_id = ?`, a.questionId, id);
+        recountAnswers(a.questionId);
+      })();
+    },
+    async setAccepted(board, questionId, answerId) {
+      run(`UPDATE ${t.q} SET accepted_answer_id = ? WHERE id = ? AND board = ?`, answerId, questionId, board);
+    },
+    async setVote(board, kind, id, userId, value) {
+      const table = kind === 'question' ? t.q : t.a;
+      return db.transaction(() => {
+        if (!one(`SELECT id FROM ${table} WHERE id = ?`, id)) return 0;
+        if (value === 0) run(`DELETE FROM ${t.v} WHERE kind = ? AND post_id = ? AND user_id = ?`, kind, id, String(userId));
+        else {
+          run(`INSERT INTO ${t.v} (kind, post_id, user_id, value) VALUES (?, ?, ?, ?)
+            ON CONFLICT (kind, post_id, user_id) DO UPDATE SET value = excluded.value`, kind, id, String(userId), value);
+        }
+        const { s } = one(`SELECT coalesce(sum(value), 0) AS s FROM ${t.v} WHERE kind = ? AND post_id = ?`, kind, id);
+        run(`UPDATE ${table} SET score = ? WHERE id = ?`, s, id);
+        return s;
+      })();
+    },
+    async addComment(board, kind, postId, { body, authorId, authorName }) {
+      const col = kind === 'question' ? 'question_id' : 'answer_id';
+      const at = stamp();
+      const id = Number(run(`INSERT INTO ${t.c} (${col}, body, author_id, author_name, created_at) VALUES (?, ?, ?, ?, ?)`,
+        postId, body, String(authorId), authorName, at).lastInsertRowid);
+      return { id, body, authorId: String(authorId), authorName, createdAt: at };
+    },
+    async getComment(board, id) {
+      const r = one(`SELECT c.id, c.author_id FROM ${t.c} c LEFT JOIN ${t.a} a ON a.id = c.answer_id
+        JOIN ${t.q} q ON q.id = coalesce(c.question_id, a.question_id) WHERE c.id = ? AND q.board = ?`, id, board);
+      return r ? { id: r.id, authorId: r.author_id } : null;
+    },
+    async deleteComment(board, id) { run(`DELETE FROM ${t.c} WHERE id = ?`, id); },
+  };
+}
