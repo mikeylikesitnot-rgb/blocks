@@ -5,12 +5,14 @@
  * Sign in as demo@example.com / demo-password, or use "Email me a code":
  * with no SMTP set, the code is printed in this terminal.
  * Email previews: http://localhost:3009/emails
+ * Q&A board API: /api/qa (QaBoard apiBase="/api/qa")
  */
 import express from 'express';
 import {
   createAuth, memoryUserStore, hashPassword, createMailer,
   loginCodeEmail, passwordChangedEmail, inviteEmail, notificationEmail,
 } from '../server/index.js';
+import { qaRouter, memoryQaStore } from '../server/qa.js';
 
 const brand = { appName: 'Blocks demo', color: '#1a56db', url: 'http://localhost:5173' };
 const users = memoryUserStore([
@@ -28,6 +30,8 @@ const auth = createAuth({
 const app = express();
 app.use('/api/auth', auth.router);
 app.get('/api/secret', auth.requireAuth, (req, res) => res.json({ message: `Hi ${req.user.email}` }));
+// Q&A board: anyone can read, signed-in people post; demo@example.com is an admin, so a moderator.
+app.use('/api/qa', express.json(), auth.optionalAuth, qaRouter({ store: memoryQaStore(), onEvent: (type, d) => console.log(`[qa] new ${type}`, d.question?.title || '') }));
 
 const previews = {
   'login-code': () => loginCodeEmail({ brand, code: '482913' }),

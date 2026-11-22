@@ -2,10 +2,12 @@
 
 1. **Adopt in apps:** TuroApp and AIAgent are on the kit; BigLoveInstall is being moved; AutoDealer last (largest CSS surface).
 2. **AutoDealer on the server kit:** its auth has API tokens and a customer portal on top; move it only once another app has used the kit for a while.
-3. **AutoDealer on the shared editor:** switch its RichTextEditor/RichText/RichTextField to `@mn/blocks/editor` (pass `disable={['heading','codeBlock','horizontalRule']}`), with its own deploy.
+3. **Q&A board in apps:** mount `qaRouter` + `QaBoard` per app (one route, one table set), app by app.
+4. **AutoDealer on the shared editor:** switch its RichTextEditor/RichText/RichTextField to `@mn/blocks/editor` (pass `disable={['heading','codeBlock','horizontalRule']}`), with its own deploy.
 
 ## Done
 
+- 2026-11-22: v0.32.0 Q&A board (BLK-036, BLK-037): `@mn/blocks/server/qa` (`qaRouter`, `pgQaStore` + `qaSchemaSql`, `memoryQaStore`) and `@mn/blocks/qa` (`QaBoard`, `QuestionList`, `VoteButtons`, `TagInput`, `qaClient`). Questions, answers, ±1 votes, accepted answer, tags, comments, sort/tag/search/pages, owner and moderator rules, close/reopen; tested on a real Postgres. Not yet in any app
 - 2026-11-21: v0.31.0 `looksLikeHtml` and `HTML_TAG` also exported from `@mn/blocks/editor` and `/editor/lite`, so a page deciding between RichText and escaped text uses the exact test the server's plainText 'keep' uses (TuroApp's car pop-up drops its copy)
 - 2026-11-21: v0.30.0 server rich-text cleaning (BLK-034) and saved UI choices (BLK-035): `sanitizeRich` / `cleanRich` (one allowlist, NOTE_TAGS / EDITOR_TAGS, plainText 'keep', blank to NULL) and `uiPrefsRouter` with `pgUiPrefStore` / `memoryUiPrefStore` or the app's own `{get, set}`. Rich text lives only on `@mn/blocks/server/richtext` (so `/server` never needs the new optional peer `sanitize-html`); the router is on `/server` and `/server/ui-prefs`. Lifted from AutoDealer and TuroApp, which both switch to them
 - 2026-11-21: v0.29.1 FilterMenu search box takes focus without scrolling the page (a menu near the right edge shifted the page sideways in TuroApp)

@@ -424,6 +424,30 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-036",
+      "name": "Q&A board server",
+      "area": "Server",
+      "description": "qaRouter, pgQaStore and memoryQaStore in @mn/blocks/server/qa: a Stack Overflow-style board on any app’s own sign-in and Postgres. Questions, answers, one vote per person, accepted answer, tags, comments, sort/tag/search/pages; owners and moderators edit and delete; bodies cleaned with cleanRich; writes rate-limited.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "qa-board",
+      "spec": "docs/specs/qa-board.md",
+      "mockup": null,
+      "fromRequest": null
+    },
+    {
+      "id": "BLK-037",
+      "name": "Q&A board screens",
+      "area": "UI",
+      "description": "QaBoard in @mn/blocks/qa: list, ask form and question page (votes, accepted answer first, answers, comments) in one drop-in component, with QuestionList, VoteButtons, TagInput and qaClient. View and filters live in the URL; cards on phones; light and dark.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "qa-board",
+      "spec": "docs/specs/qa-board.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

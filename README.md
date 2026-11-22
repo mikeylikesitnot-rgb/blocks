@@ -174,6 +174,32 @@ import { RichTextEditor, RichText } from '@mn/blocks/editor';
 - Helpers: `isBlankHtml`, `sameHtml`, `htmlToText`, `toRichHtml`, `editorExtensions()`
   (the exact Tiptap schema, for a server-side or test round trip).
 
+## Q&A board
+
+A Stack Overflow-style board (questions, answers, votes, accepted answer, tags,
+comments) on the app's own sign-in and Postgres. Server:
+
+```js
+import { qaRouter, pgQaStore, qaSchemaSql } from '@mn/blocks/server/qa'; // needs sanitize-html, express-rate-limit
+await pool.query(qaSchemaSql());                       // tables qa_questions, qa_answers, … (prefix option)
+app.use('/api/qa', express.json(), auth.optionalAuth,  // requireAuth for a private board
+  qaRouter({ store: pgQaStore(pool), onEvent: (type, data) => { /* email the asker on 'answer' */ } }));
+```
+
+Screen (one route; needs `OverlayProvider` and the editor's Tiptap peers):
+
+```jsx
+import { QaBoard } from '@mn/blocks/qa';
+<QaBoard apiBase="/api/qa" title="Questions" onSignIn={() => navigate('/login')} />
+```
+
+Writes are rate-limited per person and per kind (`limits: {posts, votes, comments}`); pass
+`rateLimitKey` behind a proxy, as with `createAuth`. Author names come from `req.user.name`
+(never the email). Authors edit and delete their own posts; people whose `req.user.role` is in
+`moderatorRoles` (`['admin']`) can edit or delete any post and close questions.
+The view and filters live in the URL (`?qa=12`, `?qa=ask`, `qaSort`, `qaTag`, `qaQ`, `qaPage`).
+The demo's Q&A tab runs the board in the browser; `npm run example` serves the real API at `/api/qa`.
+
 ## Add sign-in to an app
 
 Server (Express + Postgres):

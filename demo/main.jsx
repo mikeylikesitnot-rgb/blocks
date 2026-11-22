@@ -13,6 +13,7 @@ import { FiltersDemo } from './FiltersDemo.jsx';
 import { AttachmentsDemo } from './AttachmentsDemo.jsx';
 import { ChangelogDemo } from './ChangelogDemo.jsx';
 import { AutosaveDemo } from './AutosaveDemo.jsx';
+import { QaDemo } from './QaDemo.jsx';
 
 const TRIPS = Array.from({ length: 40 }, (_, i) => ({
   id: i + 1,
@@ -68,7 +69,7 @@ function Demo() {
         }
       >
         <Tabs value={tab} onChange={setTab} label="Sections"
-          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'filters', label: 'Filters' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'editor', label: 'Editor' }, { value: 'attachments', label: 'Attachments' }, { value: 'changelog', label: 'Changelog' }, { value: 'autosave', label: 'Autosave' }, { value: 'login', label: 'Login' }]} />
+          items={[{ value: 'components', label: 'Components' }, { value: 'list', label: 'List page', count: rows.length }, { value: 'table', label: 'Table' }, { value: 'filters', label: 'Filters' }, { value: 'states', label: 'States' }, { value: 'hub', label: 'Project hub' }, { value: 'editor', label: 'Editor' }, { value: 'attachments', label: 'Attachments' }, { value: 'changelog', label: 'Changelog' }, { value: 'autosave', label: 'Autosave' }, { value: 'qa', label: 'Q&A' }, { value: 'login', label: 'Login' }]} />
       </PageHeader>
 
       {tab === 'components' && (
@@ -214,6 +215,7 @@ function Demo() {
       {tab === 'attachments' && <AttachmentsDemo />}
       {tab === 'changelog' && <ChangelogDemo />}
       {tab === 'autosave' && <AutosaveDemo />}
+      {tab === 'qa' && <QaDemo />}
 
       {tab === 'login' && (
         <Panel flush>
