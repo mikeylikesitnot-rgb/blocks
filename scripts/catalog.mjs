@@ -127,7 +127,7 @@ const AREAS = [
     { name: 'RichTextField', does: 'RichTextEditor loaded on demand as its own chunk; same props.', props: 'same as RichTextEditor' },
     { name: 'RichText', does: 'Read-only view of a stored value, styled like the editor; no Tiptap.', props: 'html, as' },
     { name: 'editorExtensions', does: 'The exact Tiptap schema, for server-side or test round trips.', props: '({disable})' },
-    { name: 'isBlankHtml', also: ['sameHtml', 'htmlToText', 'toRichHtml'], does: 'Value helpers: blank check, equality, plain text, plain-text-to-HTML.', props: '(html)' },
+    { name: 'isBlankHtml', also: ['sameHtml', 'htmlToText', 'toRichHtml', 'looksLikeHtml', 'HTML_TAG'], does: 'Value helpers: blank check, equality, plain text, plain-text-to-HTML, and the "is this HTML or plain text" test (looksLikeHtml / HTML_TAG) a page uses to show a stored value as RichText or escaped text; the server keeps plain text raw by the same test.', props: '(html)' },
   ] },
   { title: 'Server: auth', sub: '/server', items: [
     { name: 'createAuth', does: 'Express sign-in: password, Google, email code, reset, sign-up, idle/hard timeouts, roles.', props: '{secret (32+), users, codeStore, mailer, brand, google:{clientId}, password (false = Google-only), rateLimitKey (req→client id), signup, idleMinutes 30, maxHours 8} -> {router, requireAuth, optionalAuth, requireRole, readSession, startSession}' },

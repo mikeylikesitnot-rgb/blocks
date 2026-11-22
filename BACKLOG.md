@@ -6,6 +6,7 @@
 
 ## Done
 
+- 2026-11-21: v0.31.0 `looksLikeHtml` and `HTML_TAG` also exported from `@mn/blocks/editor` and `/editor/lite`, so a page deciding between RichText and escaped text uses the exact test the server's plainText 'keep' uses (TuroApp's car pop-up drops its copy)
 - 2026-11-21: v0.30.0 server rich-text cleaning (BLK-034) and saved UI choices (BLK-035): `sanitizeRich` / `cleanRich` (one allowlist, NOTE_TAGS / EDITOR_TAGS, plainText 'keep', blank to NULL) and `uiPrefsRouter` with `pgUiPrefStore` / `memoryUiPrefStore` or the app's own `{get, set}`. Rich text lives only on `@mn/blocks/server/richtext` (so `/server` never needs the new optional peer `sanitize-html`); the router is on `/server` and `/server/ui-prefs`. Lifted from AutoDealer and TuroApp, which both switch to them
 - 2026-11-21: v0.29.1 FilterMenu search box takes focus without scrolling the page (a menu near the right edge shifted the page sideways in TuroApp)
 - 2026-11-21: v0.29.0 FilterMenu `search` (search box at the top of the open menu; true, or a number = only past that many options; Enter ticks the only match) + `searchPlaceholder`; SortTh without `sort` is a plain header with the same look (for drag-only columns). Defaults unchanged. First used by TuroApp's Dashboard (car filter, Earnings table)

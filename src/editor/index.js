@@ -4,4 +4,4 @@
 export { RichTextEditor, DEFAULT_TOOLBAR, LINK_PROTOCOLS, editorExtensions } from './RichTextEditor.jsx';
 export { RichText } from './RichText.jsx';
 export { RichTextField } from './RichTextField.jsx';
-export { isBlankHtml, sameHtml, htmlToText, toRichHtml } from './value.js';
+export { isBlankHtml, sameHtml, htmlToText, toRichHtml, looksLikeHtml, HTML_TAG } from './value.js';

@@ -3,4 +3,4 @@
    chunk the first time it renders. Use this from bundles customers download. */
 export { RichText } from './RichText.jsx';
 export { RichTextField } from './RichTextField.jsx';
-export { isBlankHtml, sameHtml, htmlToText, toRichHtml } from './value.js';
+export { isBlankHtml, sameHtml, htmlToText, toRichHtml, looksLikeHtml, HTML_TAG } from './value.js';

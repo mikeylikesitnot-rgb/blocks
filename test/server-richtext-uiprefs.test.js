@@ -149,3 +149,12 @@ describe('pgUiPrefStore', () => {
     expect(() => pgUiPrefStore(pool, { table: 'x; drop' })).toThrow();
   });
 });
+
+describe('editor/lite HTML test', () => {
+  it('is the same function the server uses', async () => {
+    const lite = await import('../src/editor/lite.js');
+    const server = await import('../server/richText.js');
+    expect(lite.looksLikeHtml).toBe(server.looksLikeHtml);
+    expect(lite.HTML_TAG).toBe(server.HTML_TAG);
+  });
+});
