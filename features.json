@@ -448,6 +448,18 @@
       "spec": "docs/specs/qa-board.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-038",
+      "name": "Browser jobs (drive logged-in Chrome)",
+      "area": "Server",
+      "status": "in-progress",
+      "since": "2026-11-22",
+      "description": "@mn/blocks/browser: withPage, connectChrome, downloadText, needsLogin, chromeCommand on Playwright connectOverCDP, for scheduled Mac jobs that read pages behind a login. Dedicated ~/ChromeAutomation profile (Chrome 136 ignores the debug port on the default profile), port bound to 127.0.0.1, ops/automation-chrome.sh starts it; playwright-core optional peer.",
+      "branch": "browser-block",
+      "spec": "docs/decisions/browser.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

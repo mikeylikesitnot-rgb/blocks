@@ -35,6 +35,7 @@ const ENTRIES = [
   { sub: '/server/qa', file: 'server/qa.js' },
   { sub: '/server/ui-prefs', file: 'server/uiPrefs.js', subsetOf: '/server',
     note: 'uiPrefsRouter and its stores alone (needs only Express; no jose or bcrypt).' },
+  { sub: '/browser', file: 'server/browser.js' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
     note: 'just the email templates, no Express or nodemailer needed.' },
 ];
@@ -176,6 +177,13 @@ const AREAS = [
     { name: 'uiPrefsRouter', also: ['UI_PREF_KEY'], does: 'Express router (mount after express.json()) for saved screen choices per signed-in person (the server half of useSavedPref, useSavedFilters, useColumnOrder): GET /:key -> {key, value}, PUT /:key {value} (null deletes); 401 without a user, 400 bad key, 413 too large.', props: '{store {get(userId,key), set(userId,key,value)}, userId (req) => req.user?.id, keyPattern, maxBytes 16 KB, objectsOnly, onError}' },
     { name: 'pgUiPrefStore', also: ['uiPrefSchemaSql', 'memoryUiPrefStore'], does: 'Stores for uiPrefsRouter: Postgres (one JSONB row per person and key, plus the idempotent CREATE TABLE) and in-memory for tests; an app with its own table passes {get, set} instead.', props: "(pool, {table 'ui_prefs'}); uiPrefSchemaSql({table})" },
   ] },
+  { title: 'Server: browser (needs playwright-core; Mac jobs only)', sub: '/browser', items: [
+    { name: 'withPage', does: 'Opens a NEW tab in the already-running, already-logged-in automation Chrome, goes to url, runs fn(page), always closes the tab and disconnects (Chrome and the user\'s tabs are never touched); returns fn\'s result.', props: '(url, fn(page), {port 9222, host, timeoutMs, waitUntil, navTimeoutMs})' },
+    { name: 'connectChrome', does: 'Connects Playwright to the running Chrome over CDP (chromium.connectOverCDP); clear errors for a missing playwright-core and for Chrome not running with remote debugging. browser.close() only disconnects.', props: '({port 9222, host \'127.0.0.1\', timeoutMs}) -> {browser, context}' },
+    { name: 'downloadText', does: 'Waits for the download a trigger starts (e.g. clicking Export) and returns its text.', props: '(page, trigger(page), {timeoutMs}) -> {fileName, text}' },
+    { name: 'needsLogin', does: 'True when the page is a sign-in page (URL contains login/signin/sign-in, or a password field), so a job reports "log in to the automation profile" instead of scraping it.', props: '(page, {urlIncludes})' },
+    { name: 'chromeCommand', also: ['chromeArgs', 'DEFAULT_PORT', 'DEFAULT_PROFILE_DIR'], does: 'The command to start the automation Chrome (dedicated profile, debug port bound to 127.0.0.1; Chrome 136+ ignores the port on the default profile); chromeArgs gives {command, args}.', props: '({port 9222, profileDir \'~/ChromeAutomation\', chromePath})' },
+  ] },
   { title: 'Server: crypto', sub: '/server', items: [
     { name: 'encrypt', also: ['decrypt'], does: 'AES-256-GCM for small stored secrets, keyed from an existing secret.', props: '(text, secret, salt)' },
   ] },
@@ -184,6 +192,8 @@ const AREAS = [
 // Shell scripts under ops/: not imports, so listed by hand. Each file must exist.
 const OPS = [
   { file: 'ops/backup.sh', does: 'Nightly VPS backup: Postgres dump + files + folders in one restic snapshot, encrypted to Google Drive via rclone, healthchecks.io pings, retries, keep rules that really delete, weekly restore test into a scratch database, local copies.', use: 'deploy copies it to the VPS; cron runs `backup.sh <config>` (config keys in the header: NAME, RESTIC_REPOSITORY, RESTIC_PASSWORD_FILE, HC_PING_URL, DB_CONTAINER, DB_FORMAT, DB_FILE, DB_CHECK_TABLE, RESTORE_TEST_TABLES, COPY_FILES, BACKUP_PATHS, KEEP_*); `RESTORE_TEST=1` runs the restore test now' },
+  { file: 'ops/automation-chrome.sh', does: 'Starts the dedicated automation Chrome (profile ~/ChromeAutomation, debug port bound to 127.0.0.1); idempotent: exits 0 if the port already answers and is this profile (DevToolsActivePort matches), 1 if another Chrome has the port; on macOS starts Chrome with `open -na` so it survives a launchd job exiting.', use: 'run `ops/automation-chrome.sh` (env PORT, PROFILE_DIR, CHROME) from launchd or by hand; sign in to your sites in that window once; jobs then use @mn/blocks/browser' },
+  { file: 'ops/automation-chrome.ps1', does: 'Windows twin of automation-chrome.sh (same checks, Program Files or per-user Chrome).', use: '`powershell -File automation-chrome.ps1 [-Port 9222] [-ProfileDir C:\\path]`' },
   { file: 'ops/changelog-shot.mjs', does: 'Before/after screenshots for a changelog entry: signs in to the LOCAL app (refuses any other address), opens each page at 1280px (and 390px with --phone), saves <name>-N.jpg (JPEG q80) and writes them into <out>/entry.json shots.', use: '`node node_modules/@mn/blocks/ops/changelog-shot.mjs --base http://localhost:5173 --out changelog/<id> --name before|after [--login \'POST /api/auth/dev-login {"role":"admin"}\'] [--phone] [--hide <css>] [--wait <css>] [--full] /page ...`; needs Playwright in the app' },
 ];
 for (const o of OPS) {
@@ -264,7 +274,7 @@ const out = [
   '## How apps use it',
   '',
   `- **Install (client):** \`npm install "${PKG}@${install}"\`. A client-only app needs nothing else.`,
-  `- **Server pieces** (\`${PKG}/server\`, \`${PKG}/email\`): the app also installs \`jose bcryptjs express-rate-limit nodemailer\` (optional peers); \`${PKG}/server/richtext\` needs \`sanitize-html\` instead; \`${PKG}/server/qa\` needs \`sanitize-html express-rate-limit\`.`,
+  `- **Server pieces** (\`${PKG}/server\`, \`${PKG}/email\`): the app also installs \`jose bcryptjs express-rate-limit nodemailer\` (optional peers); \`${PKG}/server/richtext\` needs \`sanitize-html\` instead; \`${PKG}/server/qa\` needs \`sanitize-html express-rate-limit\`; \`${PKG}/browser\` needs \`playwright-core\`.`,
   `- **Editor** (\`${PKG}/editor\`): the app also installs \`@tiptap/react @tiptap/pm @tiptap/starter-kit\`.`,
   `- **CSS:** \`import '${PKG}/kit.css'\` once (brings tokens.css), before the app's own CSS. With Tailwind, put it in the components layer (\`@import "${PKG}/kit.css" layer(components);\`) so utilities passed as \`className\` win. The editor imports its own \`editor.css\`.`,
   '- **Wrap** the app in `<OverlayProvider>` (confirm, alert, toasts); add `class="mk-root"` to `<body>` for base font and colours (optional).',

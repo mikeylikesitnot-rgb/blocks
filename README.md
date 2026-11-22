@@ -286,6 +286,28 @@ Restore: `restic snapshots --host <NAME>` then
 `restic restore latest --host <NAME> --target /tmp/restore`; the dump is under
 `/tmp/restore<LOCAL_DIR>/current/`.
 
+## Browser jobs on the Mac
+
+`@mn/blocks/browser` (needs `npm i playwright-core`) drives an already-running,
+already-logged-in Chrome for scheduled Mac jobs that read pages behind a login
+and push results to a server. Since Chrome 136 the debug port is ignored on the
+everyday profile, so start a dedicated one: `ops/automation-chrome.sh` (profile
+`~/ChromeAutomation`, port 9222 on 127.0.0.1; `automation-chrome.ps1` on Windows), sign in to your sites in that
+window once, and it stays signed in.
+
+```js
+import { withPage, needsLogin, downloadText } from '@mn/blocks/browser';
+
+const report = await withPage('https://example.com/reports', async (page) => {
+  if (await needsLogin(page)) throw new Error('Log in to the automation profile first');
+  return downloadText(page, (p) => p.getByRole('button', { name: 'Export' }).click());
+});
+```
+
+`withPage` opens its own tab and closes it again; your tabs are never touched.
+Headed Chrome binds loopback by default (`--remote-debugging-address` is only honoured headless). While a job is connected, manual downloads in that profile go to Playwright's temp folder.
+Rules (127.0.0.1 only, Mac not VPS, site terms): `docs/decisions/browser.md`.
+
 ## Work on the kit
 
 ```bash
