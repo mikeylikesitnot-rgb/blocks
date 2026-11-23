@@ -532,6 +532,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-045",
+      "name": "siteapi: any website to an API",
+      "area": "Server",
+      "description": "Finds a website's own hidden JSON API (capture traffic, rank endpoints by the text you saw, probe the least auth needed) and calls it politely with siteFetch; works on logged-in sites through the automation Chrome. Scraping only as a fallback. Powers the /siteapi skill.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "siteapi",
+      "spec": "docs/decisions/siteapi.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

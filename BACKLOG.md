@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.41.0 siteapi (BLK-045): `@mn/blocks/siteapi` (`siteFetch`, `readSiteEnv`, `analyzeHar`, `probeRequest`, `captureHar`) and `ops/siteapi.mjs capture|analyze|probe` turn any website into an API by finding its internal JSON calls (scraping is the fallback); `captureHar({chrome:true})` uses the signed-in automation Chrome. `playwright-core` is now a dev dependency so the CLI runs from the Blocks checkout. Drives the /siteapi skill (replaces its Python scripts)
 - 2026-11-22: v0.40.0 toasts that stay until closed (BLK-044): `toast.error(msg, 0)`. For AutoDealer's admin moving onto OverlayProvider
 - 2026-11-22 v0.39.1 desktop-release.mjs runs when called through a symlinked node_modules (it exited silently before)
 - 2026-11-22: v0.39.0 `timeAgo` / `Ago` in the main package (BLK-043): moved out of the Q&A board (still re-exported there), plus `maxDays` and a guard for unreadable dates. AutoDealer (task comments, API tokens) and TuroApp (Upload) drop their own copies

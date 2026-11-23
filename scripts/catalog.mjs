@@ -36,6 +36,7 @@ const ENTRIES = [
   { sub: '/server/ui-prefs', file: 'server/uiPrefs.js', subsetOf: '/server',
     note: 'uiPrefsRouter and its stores alone (needs only Express; no jose or bcrypt).' },
   { sub: '/browser', file: 'server/browser.js' },
+  { sub: '/siteapi', file: 'server/siteapi.js' },
   { sub: '/desktop-update', file: 'server/desktopUpdate.js' },
   { sub: '/ext-update', file: 'src/extUpdate.js' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
@@ -189,6 +190,13 @@ const AREAS = [
     { name: 'needsLogin', does: 'True when the page is a sign-in page (URL contains login/signin/sign-in, or a password field), so a job reports "log in to the automation profile" instead of scraping it.', props: '(page, {urlIncludes})' },
     { name: 'chromeCommand', also: ['chromeArgs', 'DEFAULT_PORT', 'DEFAULT_PROFILE_DIR'], does: 'The command to start the automation Chrome (dedicated profile, debug port bound to 127.0.0.1; Chrome 136+ ignores the port on the default profile); chromeArgs gives {command, args}.', props: '({port 9222, profileDir \'~/ChromeAutomation\', chromePath})' },
   ] },
+  { title: 'Server: siteapi (any website to an API; no deps, captureHar needs playwright-core)', sub: '/siteapi', items: [
+    { name: 'siteFetch', also: ['SiteApiError'], does: 'Polite JSON client for one site\'s internal API: one request at a time with minGap between, cookie/token from ~/.config/siteapi/<site>.env, SiteApiError with .expired on 401/403 or an HTML page (logged out, bot wall).', props: '({base, site, minGap 1000, headers (object or (env) => object), timeoutMs, env}) -> {get(path, params), post(path, body, params), call(method, path, {params, body, headers}), env}' },
+    { name: 'readSiteEnv', also: ['siteEnvPath'], does: 'A site\'s secrets: KEY=value lines from ~/.config/siteapi/<site>.env, with <SITE>_KEY env vars on top.', props: '(site, {home, env})' },
+    { name: 'analyzeHar', also: ['normPath', 'jsonShape'], does: 'Ranks the JSON endpoints in a HAR by how likely they hold the page\'s data (text you saw on the page wins), groups ids/VINs into {id}, labels GraphQL ops, skips analytics and static files, and reports JSON embedded in HTML (__NEXT_DATA__, ld+json).', props: '(har, {find [], allHosts}) -> {pageHost, endpoints [{n, endpoint, status, queryKeys, authHeaders, found, shape, sample, request}], embedded}' },
+    { name: 'probeRequest', does: 'Replays a captured request with fewer headers (none, browser, + cookies, full) and names the least that still returns JSON.', props: '(request, {fetch}) -> {levels, minimum, extraHeaders}' },
+    { name: 'captureHar', does: 'Records a page\'s traffic (requests + JSON/HTML bodies) as a HAR: in a new tab of the signed-in automation Chrome (chrome: true, tab closed after) or a fresh installed-Chrome launch; browseMs keeps it open for a person to log in or click.', props: '(url, {chrome, headed, browseMs, waitMs, scroll, port})' },
+  ] },
   { title: 'Server: crypto', sub: '/server', items: [
     { name: 'encrypt', also: ['decrypt'], does: 'AES-256-GCM for small stored secrets, keyed from an existing secret.', props: '(text, secret, salt)' },
   ] },
@@ -212,6 +220,7 @@ const OPS = [
   { file: 'ops/desktop-release.mjs', does: 'Releases an Electron app for desktop-update (run on the Mac): checks a clean, up-to-date tree, sets the version, builds macOS dmg + zip and Windows NSIS (npm run dist:win if present), commits "Release X", tags vX, pushes, and `gh release create` with the files; a failed build commits nothing, a failed push undoes the local commit and tag.', use: '`node node_modules/@mn/blocks/ops/desktop-release.mjs <patch|minor|major|x.y.z> [--notes-file f | --notes "..."] [--mac] [--win] [--draft] [--dry-run]` from the app folder' },
   { file: 'ops/ext-update.sh', does: 'Keeps unpacked Chrome/Edge extensions current: for each line `<name> <git url> <branch> <folder|.> [build command]` in ~/.config/mn-ext-update/extensions, shallow-fetches the branch and copies the folder (with a build command: runs it first and copies its output folder) to ~/.mn-extensions/<name> when manifest.json "version" changed (your git login, so private repos work); `install` schedules it every 30 min (launchd / Task Scheduler), one run at a time, log in ~/.mn-extensions/.bin/ext-update.log.', use: '`ops/ext-update.sh run|install|uninstall|list [config]`; load ~/.mn-extensions/<name> once with Load unpacked (keep "key" in the manifest), then startExtUpdate reloads it on each new version' },
   { file: 'ops/changelog-shot.mjs', does: 'Before/after screenshots for a changelog entry: signs in to the LOCAL app (refuses any other address), opens each page at 1280px (and 390px with --phone), saves <name>-N.jpg (JPEG q80) and writes them into <out>/entry.json shots.', use: '`node node_modules/@mn/blocks/ops/changelog-shot.mjs --base http://localhost:5173 --out changelog/<id> --name before|after [--login \'POST /api/auth/dev-login {"role":"admin"}\'] [--phone] [--hide <css>] [--wait <css>] [--full] /page ...`; needs Playwright in the app' },
+  { file: 'ops/siteapi.mjs', does: 'Find a website\'s internal JSON API: capture traffic (fresh browser, or --chrome for the signed-in automation Chrome), rank the endpoints, probe the least auth each needs; files in ~/.config/siteapi/out/<site>/ (outside every repo, they hold cookies). Used by the /siteapi skill.', use: '`node ops/siteapi.mjs capture <url> --site <name> [--chrome] [--browse 120]`, `analyze <site> [--find text]...`, `probe <site> <n>`' },
 ];
 for (const o of OPS) {
   try { readFileSync(join(ROOT, o.file)); } catch { console.error(`catalog: ${o.file} is listed in OPS but missing`); process.exit(1); }

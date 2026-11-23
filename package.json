@@ -1,7 +1,7 @@
 {
   "name": "@mn/blocks",
-  "version": "0.40.0",
-  "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
+  "version": "0.41.0",
+  "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), siteapi (any website to a JSON API), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",
   "repository": "github:mikeylikesitnot-rgb/blocks",
@@ -23,6 +23,7 @@
     "./server/qa": "./server/qa.js",
     "./email": "./server/email.js",
     "./browser": "./server/browser.js",
+    "./siteapi": "./server/siteapi.js",
     "./desktop-update": "./server/desktopUpdate.js",
     "./ext-update": "./src/extUpdate.js"
   },
@@ -73,6 +74,7 @@
     "jsdom": "^26.1.0",
     "nodemailer": "^7.0.13",
     "pg": "^8.23.1",
+    "playwright-core": "^1.65.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "sanitize-html": "^2.18.2",
