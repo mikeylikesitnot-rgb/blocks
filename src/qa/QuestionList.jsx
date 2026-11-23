@@ -2,25 +2,9 @@ import { cx } from '../cx.js';
 import { CheckIcon } from '../icons.jsx';
 import { EmptyState, SkeletonRows } from '../States.jsx';
 import { highlight } from '../highlight.jsx';
+import { Ago } from '../time.jsx';
 
-/** "just now", "5 min ago", "3 h ago", "2 d ago", then "Nov 3" (or "Nov 3, 2025"). */
-export function timeAgo(value, now = new Date()) {
-  if (!value) return '';
-  const d = new Date(value);
-  const s = Math.round((now - d) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
-  if (s < 7 * 86400) return `${Math.floor(s / 86400)} d ago`;
-  const opts = { month: 'short', day: 'numeric', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) };
-  return d.toLocaleDateString(undefined, opts);
-}
-
-/** A date as "3 h ago" with the full date and time as its tooltip. */
-export function Ago({ value, prefix = '' }) {
-  if (!value) return null;
-  return <time dateTime={value} title={new Date(value).toLocaleString()}>{prefix}{timeAgo(value)}</time>;
-}
+export { timeAgo, Ago } from '../time.jsx';
 
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 

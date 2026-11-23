@@ -27,3 +27,4 @@ export { Changelog, CompareImages, normalizeChangelog, changelogDay, CHANGE_TYPE
 export { useSavedPref } from './savedPref.js';
 export { useAutosave } from './autosave.js';
 export { SaveStatus } from './SaveStatus.jsx';
+export { timeAgo, Ago } from './time.jsx';

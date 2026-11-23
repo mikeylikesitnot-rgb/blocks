@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.39.0 `timeAgo` / `Ago` in the main package (BLK-043): moved out of the Q&A board (still re-exported there), plus `maxDays` and a guard for unreadable dates. AutoDealer (task comments, API tokens) and TuroApp (Upload) drop their own copies
 - 2026-11-22: v0.38.0 browser-side rich text cleaner (cleanRichHtml / cleanRichNodes, same rules as sanitizeRich), RichText `clean`, QaBoard cleans post bodies again in the browser, installRichTrustedTypes() default policy for pages that enforce Trusted Types (BLK-042; first used by ProjectHub's guest portal)
 - 2026-11-22: v0.37.1 `ops/ext-update.sh`: one run at a time (lock), Task Scheduler runs `run-logged` so Windows gets the same log file, a sparse clone is widened when a build command is added, corepack never waits on its download prompt
 - 2026-11-22: v0.37.0 `ops/ext-update.sh` takes an optional build command per extension (rest of the config line): clones the whole repo, reads the root manifest version, builds and copies the output folder only when it changed; a failed build keeps the copy in use. First used by edge-workspace-switcher (esbuild + pnpm)

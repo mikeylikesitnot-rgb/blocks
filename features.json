@@ -508,6 +508,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-043",
+      "name": "timeAgo / Ago in the main package",
+      "area": "UI",
+      "description": "\"just now\", \"5 min ago\", \"3 h ago\", \"2 d ago\", then the date, with maxDays to move (or drop) the switch to a date; Ago wraps it in a <time> with the full date as tooltip. Moved out of the Q&A board (which re-exports it) so every app uses one copy.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "blk-timeago",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
