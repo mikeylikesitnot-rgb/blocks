@@ -491,7 +491,7 @@
       "area": "Desktop",
       "status": "live",
       "since": "2026-11-22",
-      "description": "@mn/blocks/desktop-update: Electron apps check their GitHub Releases (private repos with a read-only token), download with a sha256 check and install: silent NSIS on Windows, .app swap from the release zip on macOS. Modes auto / notify / off. ops/desktop-release.mjs builds and publishes. @mn/blocks/ext-update + ops/ext-update.sh reload unpacked Chrome extensions when a new manifest version lands (v0.37.0: extensions with a build step are built by the helper).",
+      "description": "@mn/blocks/desktop-update: Electron apps check their GitHub Releases (private repos with a read-only token), download with a sha256 check and install: silent NSIS on Windows, .app swap from the release zip on macOS. Modes auto / notify / off. ops/desktop-release.mjs builds and publishes (v0.39.1: also runs when node_modules is a symlink, e.g. from a linked worktree). @mn/blocks/ext-update + ops/ext-update.sh reload unpacked Chrome extensions when a new manifest version lands (v0.37.0: extensions with a build step are built by the helper).",
       "branch": "auto-update",
       "spec": "docs/decisions/auto-update.md",
       "mockup": null,

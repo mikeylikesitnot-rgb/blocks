@@ -19,8 +19,8 @@
  * Mac only: the macOS zip has to be built on a Mac, and the Windows installer builds there too.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
@@ -119,4 +119,7 @@ function main() {
   console.log(DRY ? 'Dry run done: nothing was built, committed or published.' : `Released ${product} ${version}.`);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+// Compare real paths: an app's node_modules may be a symlink (a worktree linked to the main checkout's), and
+// import.meta.url is the resolved path while argv[1] is the one typed, so a plain compare never ran main().
+const isMain = () => { try { return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); } catch { return false; } };
+if (process.argv[1] && isMain()) main();
