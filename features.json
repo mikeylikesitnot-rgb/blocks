@@ -496,6 +496,18 @@
       "spec": "docs/decisions/auto-update.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-042",
+      "name": "Browser-side rich text cleaner and Trusted Types policy",
+      "area": "Editor",
+      "status": "live",
+      "since": "2026-11-22",
+      "description": "cleanRichHtml / cleanRichNodes clean rich text in the browser with the same tags and link rules as the server's sanitizeRich, no dependency. RichText clean renders other people's HTML through it without innerHTML; QaBoard always does. installRichTrustedTypes() adds a Trusted Types default policy so a page can enforce require-trusted-types-for 'script' with the editor still working (paste, load).",
+      "branch": "rich-trusted-types",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

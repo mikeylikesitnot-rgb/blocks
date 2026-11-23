@@ -423,7 +423,7 @@ function Post({ kind, post, vote, tags, viewer, client, onComments, actions, sid
       </div>
       <div className="mk-qa-post-main">
         {badge}
-        {children || <RichText html={post.body} className="mk-qa-body" />}
+        {children || <RichText html={post.body} className="mk-qa-body" clean />}
         {tags && <TagList tags={tags} />}
         <div className="mk-qa-post-foot">
           <div className="mk-qa-post-actions">{actions}</div>
