@@ -121,7 +121,7 @@ const AREAS = [
     { name: 'OverlayProvider', does: 'Wrap the app once so confirm, alert and toasts render.' },
     { name: 'useConfirm', does: 'Promise-based confirm instead of window.confirm.', props: 'await confirm({title, body, confirmLabel, danger})' },
     { name: 'useAlert', does: 'Promise-based alert instead of window.alert.', props: 'await alert({title, body})' },
-    { name: 'useToast', does: 'Toasts.', props: "toast('Saved'), toast.error(msg), toast.info(msg)" },
+    { name: 'useToast', does: 'Toasts.', props: "toast('Saved'), toast.error(msg), toast.info(msg); second arg = ms on screen (0 = until dismissed)" },
   ] },
   { title: 'Sign-in UI', sub: '', items: [
     { name: 'SessionProvider', does: 'Holds the signed-in user from the server kit\'s /api/auth router.', props: 'apiBase (/api/auth)' },

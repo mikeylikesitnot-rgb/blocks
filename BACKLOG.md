@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-22: v0.40.0 toasts that stay until closed (BLK-044): `toast.error(msg, 0)`. For AutoDealer's admin moving onto OverlayProvider
 - 2026-11-22 v0.39.1 desktop-release.mjs runs when called through a symlinked node_modules (it exited silently before)
 - 2026-11-22: v0.39.0 `timeAgo` / `Ago` in the main package (BLK-043): moved out of the Q&A board (still re-exported there), plus `maxDays` and a guard for unreadable dates. AutoDealer (task comments, API tokens) and TuroApp (Upload) drop their own copies
 - 2026-11-22: v0.38.0 browser-side rich text cleaner (cleanRichHtml / cleanRichNodes, same rules as sanitizeRich), RichText `clean`, QaBoard cleans post bodies again in the browser, installRichTrustedTypes() default policy for pages that enforce Trusted Types (BLK-042; first used by ProjectHub's guest portal)

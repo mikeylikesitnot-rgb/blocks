@@ -106,7 +106,9 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
    then:
      const confirm = useConfirm();
      if (!(await confirm({ title: 'Delete task?', body: '…', confirmLabel: 'Delete', danger: true }))) return;
-     const toast = useToast();  toast('Saved');  toast.error('Couldn’t save');   */
+     const toast = useToast();  toast('Saved');  toast.error('Couldn’t save');
+     The second argument is how long it stays, in ms; 0 keeps it until dismissed:
+     toast.error('SMTP said: 550 …', 0).   */
 const Ctx = createContext(null);
 const TOAST_ICON = { success: CheckCircleIcon, error: AlertIcon, info: InfoIcon };
 
@@ -193,11 +195,12 @@ function Toast({ toast, onDismiss }) {
   const [paused, setPaused] = useState(false);
   const left = useRef(ms);
   useEffect(() => {
-    if (paused) return undefined;
+    // ms 0 (or Infinity): stays until its × is pressed, e.g. an error someone may need to copy.
+    if (paused || !ms || !Number.isFinite(ms)) return undefined;
     const started = Date.now();
     const t = setTimeout(() => onDismiss(id), left.current);
     return () => { clearTimeout(t); left.current = Math.max(left.current - (Date.now() - started), 1000); };
-  }, [paused, id, onDismiss]);
+  }, [paused, id, onDismiss, ms]);
   const Icon = TOAST_ICON[tone];
   return (
     <div

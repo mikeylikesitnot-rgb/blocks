@@ -520,6 +520,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-044",
+      "name": "Toasts that stay until closed",
+      "area": "UI",
+      "description": "useToast's second argument 0 (or Infinity) keeps a toast on screen until its × is pressed, for error text someone may need to copy. For AutoDealer's admin, which keeps errors up.",
+      "status": "live",
+      "since": "2026-11-22",
+      "branch": "blk-sticky-toast",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
