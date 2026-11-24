@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-24: v0.45.0 apps installer (BLK-049): `ops/apps.mjs` + `ops/apps.json` install/update Michael's own apps on the Mac or Windows (electron-release via GitHub Releases with sha256 check, script-repo via clone/pull + per-OS hook); `--json` for Project Hub's Apps page
 - 2026-11-24: v0.44.0 premium controls (BLK-048): optional button tokens kit.css reads with a fallback (`--mk-btn-radius`, `--mk-btn-secondary-bg/-border/-hover-bg`, `--mk-btn-disabled-opacity/-bg/-fg`), set by premium.css for pill buttons, a soft grey secondary and neutral-grey disabled buttons; unset, nothing changes. `<Badge plain>`: tone dot + muted text, no pill. First used by Project Hub (PH-125)
 - 2026-11-24: v0.43.0 premium look (BLK-047): opt-in `@mn/blocks/premium.css`, token overrides for a calm Apple-style look (blue accent, cool greys, system font first, softer shadows, 16px cards, lighter 28-34px page title, true-black dark). Demo has a Look switch. First used by Project Hub (PH-124)
 - 2026-11-23: v0.42.0 motion polish (BLK-046): more than 3 toasts collapse to the newest 3 plus "+N more" (hover, focus or the chip expands), toasts slide in and out and swipe away on touch; Modal/Lightbox bottom sheets on phones get a grab handle (drag down past ~30% or flick to close, short drags spring back); StatCard `count` + `format` tick to new numbers, plus `useCountUp`. All native, no new dependencies (chosen over Sonner/Vaul/NumberFlow), no motion under reduce motion. Apps get the toasts and sheets with `npm update @mn/blocks`; StatCard counting is opt-in

@@ -1,0 +1,22 @@
+{
+  "$comment": "Michael's own apps for ops/apps.mjs. kind electron-release: installs the latest GitHub release (macOS .zip into /Applications, Windows NSIS .exe silently). kind script-repo: clones/pulls the repo into the apps folder, then runs the hook for this OS (.sh with sh, .ps1 with PowerShell) from the repo folder.",
+  "apps": [
+    {
+      "name": "SnagIt",
+      "kind": "electron-release",
+      "repo": "mikeylikesitnot-rgb/SnagIt",
+      "product": "SnagIt",
+      "platforms": ["darwin", "win32"],
+      "about": "Floating screenshot button"
+    },
+    {
+      "name": "WindowsManager",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/WindowsManager",
+      "branch": "main",
+      "platforms": ["darwin", "win32"],
+      "hook": { "darwin": "mac/install.sh", "win32": "windows/setup.ps1" },
+      "about": "Three-zone tab bars and Workspaces (Hammerspoon / AutoHotkey)"
+    }
+  ]
+}
