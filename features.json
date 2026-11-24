@@ -544,6 +544,18 @@
       "spec": "docs/decisions/siteapi.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-046",
+      "name": "Motion polish: toast stack, sheet drag, counting stats",
+      "area": "Components",
+      "description": "Toasts collapse past 3 into a stack with \"+N more\", slide in and out, and swipe away on touch; phone bottom sheets drag down or flick to close; StatCard count ticks to new numbers (useCountUp). Native, no new dependencies, respects reduce motion.",
+      "status": "live",
+      "since": "2026-11-23",
+      "branch": "blk-046-polish",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
