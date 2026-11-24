@@ -132,6 +132,30 @@ export function useNavMenu(prefKey, { load, save } = {}) {
   };
 }
 
+/** Runs searchExtra for the query after `delay` ms, dropping stale answers. */
+function useExtraSearch(fn, query, min, delay) {
+  const [state, setState] = useState({ q: '', sections: [], loading: false, error: false });
+  const q = String(query || '').trim();
+  useEffect(() => {
+    if (!fn || q.length < min) { setState({ q: '', sections: [], loading: false, error: false }); return undefined; }
+    setState((s) => ({ ...s, loading: true, error: false }));
+    const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    const t = setTimeout(() => {
+      Promise.resolve()
+        .then(() => fn(q, { signal: ctl?.signal }))
+        .then((res) => {
+          if (ctl?.signal.aborted) return;
+          const sections = (Array.isArray(res) ? res : [])
+            .filter((s) => s && Array.isArray(s.items) && s.items.length);
+          setState({ q, sections, loading: false, error: false });
+        })
+        .catch(() => { if (!ctl?.signal.aborted) setState({ q, sections: [], loading: false, error: true }); });
+    }, delay);
+    return () => { clearTimeout(t); ctl?.abort(); };
+  }, [fn, q, min, delay]);
+  return state;
+}
+
 const typing = (el) => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);
 
 /**
@@ -150,11 +174,16 @@ const typing = (el) => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el
  * editing + onEditingChange drive edit mode from outside; editButton={false} drops the
  * built-in "Edit menu" button (Done / Reset menu still show while editing); hint={false}
  * drops the "Tip: star a page" line.
+ * searchExtra(query, { signal }) → Promise<[{ section, items: [{ key, label, detail, href, onClick, icon }], more? }]>
+ * adds record results (cars, trips…) under the page matches, fetched searchDelay ms (200)
+ * after typing stops once the query has searchMin (2) characters; `more` is a
+ * { label, href, onClick } "See all" link. ↑ / ↓ move through results, Esc clears.
  */
 export function NavMenu({
   items, value, onChange, prefKey, load, save, label = 'Menu',
   placeholder = 'Search menu', favoritesLabel = 'Favorites', shortcut = true, className = '',
   editing: editingProp, onEditingChange, editButton = true, hint = true,
+  searchExtra, searchMin = 2, searchDelay = 200,
 }) {
   const nav = useNavMenu(prefKey, { load, save });
   const [query, setQuery] = useState('');
@@ -191,6 +220,8 @@ export function NavMenu({
   const groups = useMemo(() => arrangeNav(items, nav.prefs, { editing }), [items, nav.prefs, editing]);
   const hits = useMemo(() => searchNav(items, query), [items, query]);
   const searching = query.trim() !== '';
+  const extra = useExtraSearch(searchExtra, query, searchMin, searchDelay);
+  const extraCount = extra.sections.reduce((n, s) => n + s.items.length, 0);
 
   useEffect(() => { if (editing) setQuery(''); }, [editing]);
 
@@ -198,6 +229,38 @@ export function NavMenu({
     it.onClick?.(e);
     if (!it.onClick && onChange) onChange(it.value);
     if (searching) setQuery('');
+  };
+
+  const resultLinks = () => [...(navRef.current?.querySelectorAll('.mk-nav-item, .mk-nav-more') || [])];
+  const onNavKey = (e) => {
+    if (!searching) return;
+    if (e.key === 'Escape') { e.preventDefault(); setQuery(''); inputRef.current?.focus(); return; }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const links = resultLinks();
+    const i = links.indexOf(document.activeElement);
+    e.preventDefault();
+    if (e.key === 'ArrowUp' && i <= 0) { inputRef.current?.focus(); return; }
+    links[Math.min(links.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1))]?.focus();
+  };
+
+  const extraRow = (sec, it, i) => {
+    const Tag = it.href ? 'a' : 'button';
+    return (
+      <div key={`x:${sec}:${it.key ?? i}`} className="mk-nav-row">
+        <Tag
+          type={Tag === 'button' ? 'button' : undefined}
+          href={it.href}
+          className="mk-nav-item mk-nav-result"
+          onClick={(e) => { it.onClick?.(e); setQuery(''); }}
+        >
+          {it.icon}
+          <span className="mk-nav-label">
+            {typeof it.label === 'string' ? highlight(it.label, query) : it.label}
+            {it.detail && <span className="mk-nav-detail">{typeof it.detail === 'string' ? highlight(it.detail, query) : it.detail}</span>}
+          </span>
+        </Tag>
+      </div>
+    );
   };
 
   // After ↑ / ↓ the row re-renders elsewhere: keep focus on its arrow, or on
@@ -300,15 +363,31 @@ export function NavMenu({
         onKeyDown={(e) => {
           // A real click on the first result: follows a link, runs onClick or
           // onChange, and lets SidebarLayout close the phone menu.
-          if (e.key === 'Enter' && hits[0]) { e.preventDefault(); navRef.current?.querySelector('.mk-nav-item')?.click(); }
+          if (e.key === 'Enter' && (hits[0] || extraCount)) { e.preventDefault(); navRef.current?.querySelector('.mk-nav-item')?.click(); }
+          else if (e.key === 'ArrowDown' && searching) { e.preventDefault(); resultLinks()[0]?.focus(); }
+          else if (e.key === 'Escape' && searching) { e.preventDefault(); setQuery(''); }
         }}
       />
       <p className="mk-sr-only" role="status">
-        {searching ? (hits.length === 1 ? '1 page' : `${hits.length} pages`) : ''}
+        {searching ? [hits.length === 1 ? '1 page' : `${hits.length} pages`, extraCount ? `${extraCount} more results` : ''].filter(Boolean).join(', ') : ''}
       </p>
-      <nav ref={navRef} className="mk-nav" aria-label={label}>
+      <nav ref={navRef} className="mk-nav" aria-label={label} onKeyDown={onNavKey}>
         {searching ? (
-          hits.length ? hits.map((it) => row(it, null, 0, [])) : <p className="mk-nav-empty">No page matches “{query.trim()}”.</p>
+          <>
+            {hits.length ? hits.map((it) => row(it, null, 0, []))
+              : !extraCount && !extra.loading ? <p className="mk-nav-empty">{searchExtra ? 'Nothing matches' : 'No page matches'} “{query.trim()}”.</p> : null}
+            {extra.sections.map((sec, si) => (
+              <div key={`xs:${si}`} className="mk-nav-group" role="group" aria-label={typeof sec.section === 'string' ? sec.section : undefined}>
+                <div className="mk-nav-section"><span>{sec.section}</span></div>
+                {sec.items.map((it, i) => extraRow(si, it, i))}
+                {sec.more && (sec.more.href
+                  ? <a className="mk-nav-more" href={sec.more.href} onClick={(e) => { sec.more.onClick?.(e); setQuery(''); }}>{sec.more.label || 'See all'}</a>
+                  : <button type="button" className="mk-nav-more" onClick={(e) => { sec.more.onClick?.(e); setQuery(''); }}>{sec.more.label || 'See all'}</button>)}
+              </div>
+            ))}
+            {extra.loading && <p className="mk-nav-empty">Searching…</p>}
+            {extra.error && <p className="mk-nav-empty">Couldn't search records. Try again.</p>}
+          </>
         ) : groups.map((g) => {
           const keys = g.items.filter(isPage).map(keyOf);
           return (

@@ -279,7 +279,7 @@
       "area": "Layout",
       "status": "live",
       "since": "2026-11-20",
-      "description": "NavMenu: a sidebar menu people can search (⌘K or /, other names via keywords, Enter opens the first match), star pages into a Favorites group, and rearrange or hide in Edit menu. Choices saved per browser or account (useNavMenu, same load/save as useColumnOrder). An app can put Edit menu elsewhere (editing, onEditingChange, editButton={false}) and drop the star tip (hint={false}). First used by AutoDealer admin.",
+      "description": "NavMenu: a sidebar menu people can search (⌘K or /, other names via keywords, Enter opens the first match), star pages into a Favorites group, and rearrange or hide in Edit menu. Choices saved per browser or account (useNavMenu, same load/save as useColumnOrder). An app can put Edit menu elsewhere (editing, onEditingChange, editButton={false}) and drop the star tip (hint={false}). searchExtra adds async record results (cars, trips…) under the page matches, with ↑/↓ and Esc. First used by AutoDealer admin.",
       "branch": "nav-menu",
       "spec": "https://docs.google.com/document/d/1bvcy2GTqGWvQL1jwqiYJYZA5pQdF3JaLn-zj2pVYBt8/edit",
       "mockup": "https://claude.ai/artifact/JEHZjfP4rRSyq3z2ndibVu",

@@ -232,3 +232,65 @@ describe('NavMenu', () => {
     expect(screen.getByRole('button', { name: /Leads 3 \(3 waiting over 2 hours\)/ })).toBeTruthy();
   });
 });
+
+describe('NavMenu searchExtra', () => {
+  const recs = (q) => Promise.resolve(q.startsWith('ver') ? [
+    { section: 'Cars', items: [{ key: 25, label: '#25 2017 Nissan Versa', detail: 'YPP3474 · Snooze', href: '/fleet/25' }], more: { label: 'See all cars', href: '/fleet?q=ver' } },
+    { section: 'Trips', items: [] },
+  ] : []);
+
+  it('shows record results under page matches after the delay, skips empty sections', async () => {
+    vi.useFakeTimers();
+    try {
+      const fn = vi.fn(recs);
+      const { container } = render(<Harness searchExtra={fn} searchDelay={200} />);
+      const box = screen.getByRole('searchbox', { name: 'Search menu' });
+      fireEvent.change(box, { target: { value: 'v' } });
+      await act(async () => { vi.advanceTimersByTime(300); });
+      expect(fn).not.toHaveBeenCalled(); // below searchMin
+      fireEvent.change(box, { target: { value: 'vers' } });
+      expect(container.textContent).toContain('Searching…');
+      await act(async () => { vi.advanceTimersByTime(250); });
+      expect(fn).toHaveBeenCalledTimes(1);
+      expect(fn.mock.calls[0][0]).toBe('vers');
+      expect(sections(container)).toEqual(['Cars']);
+      const link = container.querySelector('a.mk-nav-result');
+      expect(link.getAttribute('href')).toBe('/fleet/25');
+      expect(link.textContent).toContain('YPP3474');
+      expect(container.querySelector('a.mk-nav-more').textContent).toBe('See all cars');
+      expect(screen.getByRole('status').textContent).toBe('0 pages, 1 more results');
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('Enter opens the first record when no page matches; arrows and Esc work', async () => {
+    vi.useFakeTimers();
+    try {
+      const onClick = vi.fn((e) => e.preventDefault());
+      const fn = () => Promise.resolve([{ section: 'Cars', items: [{ key: 1, label: 'Versa', onClick }] }]);
+      render(<Harness searchExtra={fn} />);
+      const box = screen.getByRole('searchbox', { name: 'Search menu' });
+      fireEvent.change(box, { target: { value: 'versa' } });
+      await act(async () => { vi.advanceTimersByTime(250); });
+      fireEvent.keyDown(box, { key: 'ArrowDown' });
+      expect(document.activeElement.textContent).toBe('Versa');
+      fireEvent.keyDown(document.activeElement, { key: 'ArrowUp' });
+      expect(document.activeElement).toBe(box);
+      fireEvent.keyDown(box, { key: 'Enter' });
+      expect(onClick).toHaveBeenCalledTimes(1);
+      expect(box.value).toBe('');
+      fireEvent.change(box, { target: { value: 'versa' } });
+      fireEvent.keyDown(box, { key: 'Escape' });
+      expect(box.value).toBe('');
+    } finally { vi.useRealTimers(); }
+  });
+
+  it('says so when the record search fails', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<Harness searchExtra={() => Promise.reject(new Error('x'))} />);
+      fireEvent.change(screen.getByRole('searchbox', { name: 'Search menu' }), { target: { value: 'zz' } });
+      await act(async () => { vi.advanceTimersByTime(250); });
+      expect(container.textContent).toContain("Couldn't search records");
+    } finally { vi.useRealTimers(); }
+  });
+});

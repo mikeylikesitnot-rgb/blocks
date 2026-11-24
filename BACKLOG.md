@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-24: v0.46.0 NavMenu `searchExtra` (+ `searchMin`, `searchDelay`): async record results (cars, trips…) in sections under the page matches, with a detail line, highlighted match, optional "See all" link, ↑/↓ through results, Esc clears, Enter opens the first record when no page matches. Default unchanged. First used by TuroApp's universal search
 - 2026-11-24: v0.45.0 apps installer (BLK-049): `ops/apps.mjs` + `ops/apps.json` install/update Michael's own apps on the Mac or Windows (electron-release via GitHub Releases with sha256 check, script-repo via clone/pull + per-OS hook); `--json` for Project Hub's Apps page
 - 2026-11-24: v0.44.0 premium controls (BLK-048): optional button tokens kit.css reads with a fallback (`--mk-btn-radius`, `--mk-btn-secondary-bg/-border/-hover-bg`, `--mk-btn-disabled-opacity/-bg/-fg`), set by premium.css for pill buttons, a soft grey secondary and neutral-grey disabled buttons; unset, nothing changes. `<Badge plain>`: tone dot + muted text, no pill. First used by Project Hub (PH-125)
 - 2026-11-24: v0.43.0 premium look (BLK-047): opt-in `@mn/blocks/premium.css`, token overrides for a calm Apple-style look (blue accent, cool greys, system font first, softer shadows, 16px cards, lighter 28-34px page title, true-black dark). Demo has a Look switch. First used by Project Hub (PH-124)

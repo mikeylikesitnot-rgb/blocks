@@ -27,6 +27,17 @@ const STATUS = [
   { value: 'planned', label: 'Planned', tone: 'accent' },
 ];
 
+// searchExtra: record results under the page matches (try "fil" or "lo").
+const DEMO_RECORDS = [
+  { key: 'f1', label: 'Saved filters', detail: 'Blocks · list filters' },
+  { key: 'f2', label: 'Login screen', detail: 'Blocks · auth' },
+  { key: 'f3', label: 'Filter menu checklist', detail: 'TuroApp · lists' },
+];
+const demoRecordSearch = (q) => new Promise((res) => setTimeout(() => {
+  const hits = DEMO_RECORDS.filter((r) => `${r.label} ${r.detail}`.toLowerCase().includes(q.toLowerCase()));
+  res([{ section: 'Features', items: hits.slice(0, 5).map((r) => ({ ...r, onClick: (e) => e.preventDefault() })), more: hits.length > 5 ? { label: 'See all' } : undefined }]);
+}, 150));
+
 export function HubDemo() {
   const [project, setProject] = useUrlState('hp');
   const [q, setQ] = useUrlState('hq');
@@ -82,7 +93,8 @@ export function HubDemo() {
       resizable
       style={{ '--mk-shell-h': '760px' }}
       sidebar={<NavMenu prefKey="demo.hub.menu" label="Projects" items={nav} value={project} onChange={(v) => { setProject(v); setArea([]); }}
-        editing={editingMenu} onEditingChange={setEditingMenu} editButton={false} hint={false} />}
+        editing={editingMenu} onEditingChange={setEditingMenu} editButton={false} hint={false}
+        searchExtra={demoRecordSearch} placeholder="Search (⌘K)" />}
       footer={<div style={{ display: 'grid', gap: 4 }}>
         {/* Edit menu lives in the footer here: editing + onEditingChange + editButton={false} */}
         <Button variant="ghost" size="sm" onClick={() => setEditingMenu(true)} disabled={editingMenu}>Edit menu</Button>
