@@ -284,6 +284,23 @@ describe('NavMenu searchExtra', () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it('drops results for an older query while the new one runs', async () => {
+    vi.useFakeTimers();
+    try {
+      const onClick = vi.fn((e) => e.preventDefault());
+      const fn = (q) => Promise.resolve(q === 'versa' ? [{ section: 'Cars', items: [{ key: 1, label: 'Versa', onClick }] }] : []);
+      const { container } = render(<Harness searchExtra={fn} />);
+      const box = screen.getByRole('searchbox', { name: 'Search menu' });
+      fireEvent.change(box, { target: { value: 'versa' } });
+      await act(async () => { vi.advanceTimersByTime(250); });
+      expect(sections(container)).toEqual(['Cars']);
+      fireEvent.change(box, { target: { value: 'versa xyz' } });
+      expect(sections(container)).toEqual([]);
+      fireEvent.keyDown(box, { key: 'Enter' });
+      expect(onClick).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it('says so when the record search fails', async () => {
     vi.useFakeTimers();
     try {

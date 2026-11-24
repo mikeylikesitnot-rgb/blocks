@@ -153,7 +153,8 @@ function useExtraSearch(fn, query, min, delay) {
     }, delay);
     return () => { clearTimeout(t); ctl?.abort(); };
   }, [fn, q, min, delay]);
-  return state;
+  // Results for an older query are never shown (nor opened by Enter) while the new one runs.
+  return state.q === q ? state : { q, sections: [], loading: !!fn && q.length >= min, error: false };
 }
 
 const typing = (el) => el && (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) || el.isContentEditable);
