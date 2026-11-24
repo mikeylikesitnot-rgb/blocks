@@ -544,6 +544,18 @@
       "spec": "docs/decisions/siteapi.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-046",
+      "name": "Premium look (opt-in)",
+      "area": "Foundation",
+      "description": "Import @mn/blocks/premium.css after kit.css for a calm Apple-style look: one blue accent, cool greys, the system font first, softer shadows, rounder cards, a lighter 28-34px page title, and true-black dark mode with raised grey surfaces. Token overrides only; apps that don't import it don't change. First used by Project Hub.",
+      "status": "progress",
+      "since": null,
+      "branch": "premium-theme",
+      "spec": "docs/decisions/style-guide.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

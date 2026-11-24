@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-24: v0.42.0 premium look (BLK-046): opt-in `@mn/blocks/premium.css`, token overrides for a calm Apple-style look (blue accent, cool greys, system font first, softer shadows, 16px cards, lighter 28-34px page title, true-black dark). Demo has a Look switch. First used by Project Hub (PH-124)
 - 2026-11-22: v0.41.0 siteapi (BLK-045): `@mn/blocks/siteapi` (`siteFetch`, `readSiteEnv`, `analyzeHar`, `probeRequest`, `captureHar`) and `ops/siteapi.mjs capture|analyze|probe` turn any website into an API by finding its internal JSON calls (scraping is the fallback); `captureHar({chrome:true})` uses the signed-in automation Chrome. `playwright-core` is now a dev dependency so the CLI runs from the Blocks checkout. Drives the /siteapi skill (replaces its Python scripts)
 - 2026-11-22: v0.40.0 toasts that stay until closed (BLK-044): `toast.error(msg, 0)`. For AutoDealer's admin moving onto OverlayProvider
 - 2026-11-22 v0.39.1 desktop-release.mjs runs when called through a symlinked node_modules (it exited silently before)

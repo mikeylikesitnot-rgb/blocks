@@ -1,6 +1,7 @@
-import { StrictMode, useState } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../src/kit.css';
+import premiumCss from '../src/premium.css?inline';
 import {
   Button, CopyButton, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
@@ -39,8 +40,23 @@ const ROWS = [
   { name: 'Chris Wu', phone: '(972) 555-7781', status: 'Completed' },
 ];
 
+/** Preview the opt-in premium look: injects src/premium.css after kit.css while on. */
+function usePremiumLook() {
+  const [look, setLook] = useUrlState('look', 'standard');
+  useEffect(() => {
+    if (look !== 'premium') return undefined;
+    const style = document.createElement('style');
+    style.dataset.mkLook = 'premium';
+    style.textContent = premiumCss;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, [look]);
+  return [look, setLook];
+}
+
 function Demo() {
   const [theme, setTheme] = useTheme();
+  const [look, setLook] = usePremiumLook();
   const [tab, setTab] = useUrlState('tab', 'components');
   const [q, setQ] = useUrlState('q');
   const [view, setView] = useState('list');
@@ -62,6 +78,8 @@ function Demo() {
         meta={<Badge tone="info">v0.10</Badge>}
         actions={
           <>
+            <Segmented label="Look" value={look} onChange={setLook}
+              items={[{ value: 'standard', label: 'Standard' }, { value: 'premium', label: 'Premium' }]} />
             <Segmented label="Theme" value={theme} onChange={setTheme}
               items={[{ value: 'system', label: 'Auto' }, { value: 'light', label: 'Light', icon: SunIcon }, { value: 'dark', label: 'Dark', icon: MoonIcon }]} />
             <Button icon={PlusIcon} onClick={() => setOpen(true)}>Open modal</Button>

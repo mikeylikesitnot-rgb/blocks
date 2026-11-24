@@ -53,6 +53,7 @@ npm install jose bcryptjs express-rate-limit nodemailer
 ```jsx
 // main.jsx
 import '@mn/blocks/kit.css';            // tokens + components; import before the app's own CSS
+import '@mn/blocks/premium.css';        // optional: the calm Apple-style look (blue, cool greys, SF font, true-black dark)
 import { OverlayProvider } from '@mn/blocks';
 
 createRoot(root).render(<OverlayProvider><App /></OverlayProvider>);
