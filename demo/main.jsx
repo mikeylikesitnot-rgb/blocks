@@ -112,6 +112,7 @@ function Demo() {
               <Button variant="ghost" icon={XIcon} label="Close" />
               <Button loading>Saving…</Button>
               <Button disabled>Disabled</Button>
+              <Button variant="secondary" disabled>Disabled secondary</Button>
               <CopyButton text="37 | CHEVROLET SILVERADO 2500HD LS 2003 | XLC6117 | 1GCHC23U23F258963" label="Copy car info" toast="Copied car info" />
               <CopyButton variant="secondary" text="Hello">Copy</CopyButton>
             </div>
@@ -124,6 +125,9 @@ function Demo() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {['Active', 'Pending', 'Completed', 'Overdue', 'Closed', 'Draft'].map((s) => <Badge key={s} text={s} dot />)}
               <Badge tone="accent">Custom tone</Badge>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
+              {['Active', 'Pending', 'Completed', 'Overdue', 'Draft'].map((s) => <Badge key={s} text={s} plain />)}
             </div>
           </Panel>
 

@@ -48,7 +48,7 @@
   height: var(--mk-h-md);
   padding: 0 var(--mk-space-4);
   border: 2px solid transparent;
-  border-radius: var(--mk-radius);
+  border-radius: var(--mk-btn-radius, var(--mk-radius));
   font: inherit;
   font-size: var(--mk-text-sm);
   font-weight: var(--mk-weight-label);
@@ -59,11 +59,11 @@
   user-select: none;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-.mk-btn:disabled, .mk-btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }
+.mk-btn:disabled, .mk-btn[aria-disabled='true'] { opacity: var(--mk-btn-disabled-opacity, 0.5); pointer-events: none; }
 .mk-btn .mk-icon { font-size: 16px; }
-.mk-btn-xs { height: var(--mk-h-xs); padding: 0 var(--mk-space-2); font-size: var(--mk-text-xs); gap: var(--mk-space-1); border-radius: var(--mk-radius-sm); }
+.mk-btn-xs { height: var(--mk-h-xs); padding: 0 var(--mk-space-2); font-size: var(--mk-text-xs); gap: var(--mk-space-1); border-radius: var(--mk-btn-radius, var(--mk-radius-sm)); }
 .mk-btn-xs .mk-icon { font-size: 14px; }
-.mk-btn-sm { height: var(--mk-h-sm); padding: 0 var(--mk-space-3); gap: 6px; border-radius: var(--mk-radius-sm); }
+.mk-btn-sm { height: var(--mk-h-sm); padding: 0 var(--mk-space-3); gap: 6px; border-radius: var(--mk-btn-radius, var(--mk-radius-sm)); }
 .mk-btn-lg { height: var(--mk-h-lg); padding: 0 var(--mk-space-5); font-size: var(--mk-text-base); }
 .mk-btn-lg .mk-icon { font-size: 20px; }
 .mk-btn-icon { padding: 0; aspect-ratio: 1; }
@@ -77,14 +77,24 @@
 .mk-btn-accent:hover { background: var(--mk-accent-hover); }
 .mk-btn-danger { background: var(--mk-danger); color: #fff; }
 .mk-btn-danger:hover { background: var(--mk-danger-hover); }
-.mk-btn-secondary { background: var(--mk-surface); color: var(--mk-text); border-color: var(--mk-border-strong); }
-.mk-btn-secondary:hover { background: var(--mk-surface-2); }
+.mk-btn-secondary { background: var(--mk-btn-secondary-bg, var(--mk-surface)); color: var(--mk-text); border-color: var(--mk-btn-secondary-border, var(--mk-border-strong)); }
+.mk-btn-secondary:hover { background: var(--mk-btn-secondary-hover-bg, var(--mk-surface-2)); }
 .mk-btn-soft { background: var(--mk-tint-info-bg); color: var(--mk-tint-info-fg); }
 .mk-btn-soft:hover { filter: brightness(0.96); }
 .mk-btn-soft-danger { background: var(--mk-tint-danger-bg); color: var(--mk-tint-danger-fg); }
 .mk-btn-soft-danger:hover { filter: brightness(0.96); }
 .mk-btn-ghost { background: transparent; color: var(--mk-muted); }
 .mk-btn-ghost:hover { background: var(--mk-surface-2); color: var(--mk-heading); }
+/* Optional look tokens (premium.css sets them; unset = the look above):
+   --mk-btn-radius, --mk-btn-secondary-bg / -border / -hover-bg, and for disabled buttons
+   --mk-btn-disabled-opacity / -bg / -fg (a neutral fill instead of a faded colour). */
+.mk-btn-primary:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-primary)); color: var(--mk-btn-disabled-fg, var(--mk-primary-fg)); }
+.mk-btn-accent:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-accent)); color: var(--mk-btn-disabled-fg, var(--mk-accent-fg)); }
+.mk-btn-danger:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-danger)); color: var(--mk-btn-disabled-fg, #fff); }
+.mk-btn-secondary:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-text)); }
+.mk-btn-soft:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-tint-info-fg)); }
+.mk-btn-soft-danger:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-tint-danger-fg)); }
+.mk-btn-ghost:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-muted)); }
 
 /* ───────── Badge ───────── */
 .mk-badge {
@@ -100,6 +110,10 @@
 }
 .mk-badge-xs { padding: 0 6px; font-size: var(--mk-text-2xs); }
 .mk-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+/* plain: the tone's dot plus muted text, no pill (quiet status in lists). */
+.mk-badge.mk-badge-plain { background: none; padding-inline: 0; }
+.mk-badge-plain .mk-badge-dot { opacity: 1; }
+.mk-badge-plain .mk-badge-text { color: var(--mk-muted); }
 .mk-tone-neutral { background: var(--mk-tint-neutral-bg); color: var(--mk-tint-neutral-fg); }
 .mk-tone-info    { background: var(--mk-tint-info-bg);    color: var(--mk-tint-info-fg); }
 .mk-tone-success { background: var(--mk-tint-success-bg); color: var(--mk-tint-success-fg); }

@@ -17,6 +17,11 @@ overrides only, so it follows every rule here. Import it right after `kit.css`, 
 Tailwind layer. Apps that don't import it look exactly as before. Any token it sets for light
 it also sets in both dark blocks (`test/premium.test.js`).
 
+It also sets the optional button tokens kit.css reads with a fallback (`--mk-btn-radius`,
+`--mk-btn-secondary-*`, `--mk-btn-disabled-*`): pill buttons, secondary as a soft grey fill with no
+outline, and disabled buttons as a neutral grey fill instead of a faded colour. Unset, buttons look
+as before. For quiet status in lists use `<Badge plain>` (tone dot + muted text, no pill).
+
 ## One size per job
 | Job | Token |
 |---|---|

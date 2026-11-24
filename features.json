@@ -568,6 +568,18 @@
       "spec": "docs/decisions/style-guide.md",
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-048",
+      "name": "Premium controls",
+      "area": "Controls",
+      "description": "With premium.css, buttons are pills, secondary buttons are a soft grey fill instead of an outline, and disabled buttons go neutral grey instead of fading their colour. Done with optional button tokens, so apps without premium.css don't change. Badge plain shows a tone dot with muted text and no pill, for quiet status in lists.",
+      "status": "live",
+      "since": "2026-11-24",
+      "branch": "premium-controls",
+      "spec": "docs/decisions/style-guide.md",
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

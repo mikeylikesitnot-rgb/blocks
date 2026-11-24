@@ -33,6 +33,17 @@ describe('Button', () => {
 });
 
 describe('Badge', () => {
+  it('plain shows the tone dot and muted text, no pill (BLK-048)', () => {
+    const { container } = render(<Badge text="Overdue" plain />);
+    const b = container.querySelector('.mk-badge');
+    expect(b.className).toBe('mk-badge mk-tone-danger mk-badge-plain');
+    expect(b.querySelector('.mk-badge-dot')).not.toBeNull();
+    expect(b.querySelector('.mk-badge-text').textContent).toBe('Overdue');
+  });
+  it('without plain keeps the pill markup', () => {
+    const { container } = render(<Badge text="Overdue" />);
+    expect(container.querySelector('.mk-badge').innerHTML).toBe('Overdue');
+  });
   it('guesses tone from status words, case-insensitive', () => {
     expect(toneFor('Overdue')).toBe('danger');
     expect(toneFor('completed')).toBe('success');
