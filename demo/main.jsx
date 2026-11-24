@@ -1,6 +1,7 @@
-import { StrictMode, useState } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../src/kit.css';
+import premiumCss from '../src/premium.css?inline';
 import {
   Button, CopyButton, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
@@ -39,8 +40,23 @@ const ROWS = [
   { name: 'Chris Wu', phone: '(972) 555-7781', status: 'Completed' },
 ];
 
+/** Preview the opt-in premium look: injects src/premium.css after kit.css while on. */
+function usePremiumLook() {
+  const [look, setLook] = useUrlState('look', 'standard');
+  useEffect(() => {
+    if (look !== 'premium') return undefined;
+    const style = document.createElement('style');
+    style.dataset.mkLook = 'premium';
+    style.textContent = premiumCss;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, [look]);
+  return [look, setLook];
+}
+
 function Demo() {
   const [theme, setTheme] = useTheme();
+  const [look, setLook] = usePremiumLook();
   const [tab, setTab] = useUrlState('tab', 'components');
   const [q, setQ] = useUrlState('q');
   const [view, setView] = useState('list');
@@ -50,6 +66,7 @@ function Demo() {
   const [open, setOpen] = useState(false);
   const [innerOpen, setInnerOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [revenue, setRevenue] = useState(48210);
   const confirm = useConfirm();
   const toast = useToast();
   const rows = ROWS.filter((r) => matchesQuery(q, [r.name, r.phone, r.status]));
@@ -62,6 +79,8 @@ function Demo() {
         meta={<Badge tone="info">v0.10</Badge>}
         actions={
           <>
+            <Segmented label="Look" value={look} onChange={setLook}
+              items={[{ value: 'standard', label: 'Standard' }, { value: 'premium', label: 'Premium' }]} />
             <Segmented label="Theme" value={theme} onChange={setTheme}
               items={[{ value: 'system', label: 'Auto' }, { value: 'light', label: 'Light', icon: SunIcon }, { value: 'dark', label: 'Dark', icon: MoonIcon }]} />
             <Button icon={PlusIcon} onClick={() => setOpen(true)}>Open modal</Button>
@@ -75,7 +94,7 @@ function Demo() {
       {tab === 'components' && (
         <div style={{ display: 'grid', gap: 16 }}>
           <StatGrid cols={4}>
-            <StatCard label="Revenue, Nov" value="$48,210" delta={12.4} deltaLabel="vs Oct" />
+            <StatCard label="Revenue, Nov" count={revenue} format={(n) => `$${Math.round(n).toLocaleString()}`} delta={12.4} deltaLabel="vs Oct" sub="click: it ticks" onClick={() => setRevenue((r) => r + 1000 + Math.round(Math.random() * 4000))} />
             <StatCard label="Costs" value="$9,880" delta={4.1} invert deltaLabel="vs Oct" />
             <StatCard label="Open leads" value="37" sub="9 new today" note="Leads not yet contacted" title="Counts leads with no logged call or email." />
             <StatCard label="Overdue" value="5" onClick={() => toast.info('Clickable stat')} />
@@ -93,6 +112,7 @@ function Demo() {
               <Button variant="ghost" icon={XIcon} label="Close" />
               <Button loading>Saving…</Button>
               <Button disabled>Disabled</Button>
+              <Button variant="secondary" disabled>Disabled secondary</Button>
               <CopyButton text="37 | CHEVROLET SILVERADO 2500HD LS 2003 | XLC6117 | 1GCHC23U23F258963" label="Copy car info" toast="Copied car info" />
               <CopyButton variant="secondary" text="Hello">Copy</CopyButton>
             </div>
@@ -106,6 +126,9 @@ function Demo() {
               {['Active', 'Pending', 'Completed', 'Overdue', 'Closed', 'Draft'].map((s) => <Badge key={s} text={s} dot />)}
               <Badge tone="accent">Custom tone</Badge>
             </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 12 }}>
+              {['Active', 'Pending', 'Completed', 'Overdue', 'Draft'].map((s) => <Badge key={s} text={s} plain />)}
+            </div>
           </Panel>
 
           <Panel title="Form">
@@ -118,6 +141,7 @@ function Demo() {
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
                 <Button type="submit">Save</Button>
                 <Button variant="secondary" onClick={() => toast.error('Couldn’t reach the server')}>Error toast</Button>
+                <Button variant="soft" onClick={() => ['Saved car 37', 'Lead assigned', 'Photo added', 'Price updated', 'Email sent'].forEach((m, i) => setTimeout(() => toast(m, 8000), i * 150))}>5 toasts</Button>
               </div>
             </form>
           </Panel>

@@ -9,6 +9,19 @@ from `src/tokens.css`. A literal like `#fee2e2` pins one control to a colour
 the palette can no longer move, and it breaks dark mode. Apps re-brand by
 overriding `--mk-primary*` / `--mk-accent*`, not by editing component CSS.
 
+## Premium look (opt-in)
+`src/premium.css` (`@mn/blocks/premium.css`) re-skins the kit for apps that want the calm
+Apple-style look: blue `#0071e3`, cool greys, the system font first, softer shadows, 16px cards,
+a 28-34px page title at weight 700, and true-black dark with `#1c1c1e` surfaces. It is token
+overrides only, so it follows every rule here. Import it right after `kit.css`, in the same
+Tailwind layer. Apps that don't import it look exactly as before. Any token it sets for light
+it also sets in both dark blocks (`test/premium.test.js`).
+
+It also sets the optional button tokens kit.css reads with a fallback (`--mk-btn-radius`,
+`--mk-btn-secondary-*`, `--mk-btn-disabled-*`): pill buttons, secondary as a soft grey fill with no
+outline, and disabled buttons as a neutral grey fill instead of a faded colour. Unset, buttons look
+as before. For quiet status in lists use `<Badge plain>` (tone dot + muted text, no pill).
+
 ## One size per job
 | Job | Token |
 |---|---|

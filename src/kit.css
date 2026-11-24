@@ -48,7 +48,7 @@
   height: var(--mk-h-md);
   padding: 0 var(--mk-space-4);
   border: 2px solid transparent;
-  border-radius: var(--mk-radius);
+  border-radius: var(--mk-btn-radius, var(--mk-radius));
   font: inherit;
   font-size: var(--mk-text-sm);
   font-weight: var(--mk-weight-label);
@@ -59,11 +59,11 @@
   user-select: none;
   transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
-.mk-btn:disabled, .mk-btn[aria-disabled='true'] { opacity: 0.5; pointer-events: none; }
+.mk-btn:disabled, .mk-btn[aria-disabled='true'] { opacity: var(--mk-btn-disabled-opacity, 0.5); pointer-events: none; }
 .mk-btn .mk-icon { font-size: 16px; }
-.mk-btn-xs { height: var(--mk-h-xs); padding: 0 var(--mk-space-2); font-size: var(--mk-text-xs); gap: var(--mk-space-1); border-radius: var(--mk-radius-sm); }
+.mk-btn-xs { height: var(--mk-h-xs); padding: 0 var(--mk-space-2); font-size: var(--mk-text-xs); gap: var(--mk-space-1); border-radius: var(--mk-btn-radius, var(--mk-radius-sm)); }
 .mk-btn-xs .mk-icon { font-size: 14px; }
-.mk-btn-sm { height: var(--mk-h-sm); padding: 0 var(--mk-space-3); gap: 6px; border-radius: var(--mk-radius-sm); }
+.mk-btn-sm { height: var(--mk-h-sm); padding: 0 var(--mk-space-3); gap: 6px; border-radius: var(--mk-btn-radius, var(--mk-radius-sm)); }
 .mk-btn-lg { height: var(--mk-h-lg); padding: 0 var(--mk-space-5); font-size: var(--mk-text-base); }
 .mk-btn-lg .mk-icon { font-size: 20px; }
 .mk-btn-icon { padding: 0; aspect-ratio: 1; }
@@ -77,14 +77,24 @@
 .mk-btn-accent:hover { background: var(--mk-accent-hover); }
 .mk-btn-danger { background: var(--mk-danger); color: #fff; }
 .mk-btn-danger:hover { background: var(--mk-danger-hover); }
-.mk-btn-secondary { background: var(--mk-surface); color: var(--mk-text); border-color: var(--mk-border-strong); }
-.mk-btn-secondary:hover { background: var(--mk-surface-2); }
+.mk-btn-secondary { background: var(--mk-btn-secondary-bg, var(--mk-surface)); color: var(--mk-text); border-color: var(--mk-btn-secondary-border, var(--mk-border-strong)); }
+.mk-btn-secondary:hover { background: var(--mk-btn-secondary-hover-bg, var(--mk-surface-2)); }
 .mk-btn-soft { background: var(--mk-tint-info-bg); color: var(--mk-tint-info-fg); }
 .mk-btn-soft:hover { filter: brightness(0.96); }
 .mk-btn-soft-danger { background: var(--mk-tint-danger-bg); color: var(--mk-tint-danger-fg); }
 .mk-btn-soft-danger:hover { filter: brightness(0.96); }
 .mk-btn-ghost { background: transparent; color: var(--mk-muted); }
 .mk-btn-ghost:hover { background: var(--mk-surface-2); color: var(--mk-heading); }
+/* Optional look tokens (premium.css sets them; unset = the look above):
+   --mk-btn-radius, --mk-btn-secondary-bg / -border / -hover-bg, and for disabled buttons
+   --mk-btn-disabled-opacity / -bg / -fg (a neutral fill instead of a faded colour). */
+.mk-btn-primary:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-primary)); color: var(--mk-btn-disabled-fg, var(--mk-primary-fg)); }
+.mk-btn-accent:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-accent)); color: var(--mk-btn-disabled-fg, var(--mk-accent-fg)); }
+.mk-btn-danger:is(:disabled, [aria-disabled='true']) { background: var(--mk-btn-disabled-bg, var(--mk-danger)); color: var(--mk-btn-disabled-fg, #fff); }
+.mk-btn-secondary:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-text)); }
+.mk-btn-soft:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-tint-info-fg)); }
+.mk-btn-soft-danger:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-tint-danger-fg)); }
+.mk-btn-ghost:is(:disabled, [aria-disabled='true']) { color: var(--mk-btn-disabled-fg, var(--mk-muted)); }
 
 /* ───────── Badge ───────── */
 .mk-badge {
@@ -100,6 +110,10 @@
 }
 .mk-badge-xs { padding: 0 6px; font-size: var(--mk-text-2xs); }
 .mk-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.8; }
+/* plain: the tone's dot plus muted text, no pill (quiet status in lists). */
+.mk-badge.mk-badge-plain { background: none; padding-inline: 0; }
+.mk-badge-plain .mk-badge-dot { opacity: 1; }
+.mk-badge-plain .mk-badge-text { color: var(--mk-muted); }
 .mk-tone-neutral { background: var(--mk-tint-neutral-bg); color: var(--mk-tint-neutral-fg); }
 .mk-tone-info    { background: var(--mk-tint-info-bg);    color: var(--mk-tint-info-fg); }
 .mk-tone-success { background: var(--mk-tint-success-bg); color: var(--mk-tint-success-fg); }
@@ -768,3 +782,34 @@ a.mk-att-name:hover { text-decoration: underline; }
   transform: translateY(-200%);
 }
 .mk-skip-link:focus { transform: none; outline: 2px solid var(--mk-primary); outline-offset: 2px; }
+
+/* ───────── Motion: sheet drag, toast stack and swipe (BLK-046) ───────── */
+.mk-modal-grab { display: flex; justify-content: center; padding: var(--mk-space-2) 0 0; margin-bottom: calc(-1 * var(--mk-space-2)); cursor: grab; touch-action: none; }
+.mk-modal-grab > span { width: 36px; height: 4px; border-radius: 2px; background: var(--mk-border-strong); }
+@media (max-width: 639.98px) {
+  .mk-modal { transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1); }
+  .mk-modal-head { touch-action: none; }
+  .mk-modal-root .mk-modal { animation: mk-sheet-in 240ms cubic-bezier(0.32, 0.72, 0, 1); }
+}
+@media (min-width: 640px) { .mk-modal-grab { display: none; } }
+@keyframes mk-sheet-in { from { transform: translateY(100%); } }
+
+.mk-toasts-list { display: flex; flex-direction: column; align-items: inherit; gap: var(--mk-space-2); width: 100%; }
+.mk-toast { touch-action: pan-y; transition: transform 200ms ease-out, opacity 200ms ease-out; animation: mk-toast-in 200ms ease-out; }
+.mk-toast-hidden { display: none; }
+.mk-toast-leave { pointer-events: none; opacity: 0; }
+.mk-toast-leave-down { transform: translateY(8px) scale(0.97); }
+.mk-toast-leave-left { transform: translateX(-110%); }
+.mk-toast-leave-right { transform: translateX(110%); }
+@keyframes mk-toast-in { from { opacity: 0; transform: translateY(12px) scale(0.97); } }
+.mk-toasts-more {
+  pointer-events: auto; padding: 2px var(--mk-space-3); min-height: 24px;
+  border: 0; border-radius: var(--mk-radius-full); background: var(--mk-toast-bg); color: var(--mk-toast-fg);
+  font: inherit; font-size: var(--mk-text-xs); box-shadow: var(--mk-shadow-lg); opacity: 0.9; cursor: pointer;
+}
+.mk-toasts-more:focus-visible { outline: 2px solid var(--mk-primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .mk-modal, .mk-modal-root .mk-modal, .mk-toast { animation: none; transition: none; }
+}
+/* An open stack of many toasts scrolls instead of running off the top. */
+.mk-toasts-expanded .mk-toasts-list { max-height: calc(100dvh - 160px); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; }
