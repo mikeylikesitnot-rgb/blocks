@@ -28,3 +28,4 @@ export { useSavedPref } from './savedPref.js';
 export { useAutosave } from './autosave.js';
 export { SaveStatus } from './SaveStatus.jsx';
 export { timeAgo, Ago } from './time.jsx';
+export { useCountUp } from './motion.js';

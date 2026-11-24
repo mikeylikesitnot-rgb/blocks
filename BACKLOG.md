@@ -7,7 +7,8 @@
 
 ## Done
 
-- 2026-11-24: v0.42.0 premium look (BLK-046): opt-in `@mn/blocks/premium.css`, token overrides for a calm Apple-style look (blue accent, cool greys, system font first, softer shadows, 16px cards, lighter 28-34px page title, true-black dark). Demo has a Look switch. First used by Project Hub (PH-124)
+- 2026-11-24: v0.43.0 premium look (BLK-047): opt-in `@mn/blocks/premium.css`, token overrides for a calm Apple-style look (blue accent, cool greys, system font first, softer shadows, 16px cards, lighter 28-34px page title, true-black dark). Demo has a Look switch. First used by Project Hub (PH-124)
+- 2026-11-23: v0.42.0 motion polish (BLK-046): more than 3 toasts collapse to the newest 3 plus "+N more" (hover, focus or the chip expands), toasts slide in and out and swipe away on touch; Modal/Lightbox bottom sheets on phones get a grab handle (drag down past ~30% or flick to close, short drags spring back); StatCard `count` + `format` tick to new numbers, plus `useCountUp`. All native, no new dependencies (chosen over Sonner/Vaul/NumberFlow), no motion under reduce motion. Apps get the toasts and sheets with `npm update @mn/blocks`; StatCard counting is opt-in
 - 2026-11-22: v0.41.0 siteapi (BLK-045): `@mn/blocks/siteapi` (`siteFetch`, `readSiteEnv`, `analyzeHar`, `probeRequest`, `captureHar`) and `ops/siteapi.mjs capture|analyze|probe` turn any website into an API by finding its internal JSON calls (scraping is the fallback); `captureHar({chrome:true})` uses the signed-in automation Chrome. `playwright-core` is now a dev dependency so the CLI runs from the Blocks checkout. Drives the /siteapi skill (replaces its Python scripts)
 - 2026-11-22: v0.40.0 toasts that stay until closed (BLK-044): `toast.error(msg, 0)`. For AutoDealer's admin moving onto OverlayProvider
 - 2026-11-22 v0.39.1 desktop-release.mjs runs when called through a symlinked node_modules (it exited silently before)

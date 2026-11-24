@@ -1,4 +1,4 @@
-// BLK-046: the opt-in premium look (src/premium.css) is token overrides only.
+// BLK-047: the opt-in premium look (src/premium.css) is token overrides only.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,7 +19,7 @@ function block(selector) {
 // Theme-independent tokens are set once, on :root only.
 const SHARED = ['--mk-font', '--mk-radius-lg', '--mk-text-h1', '--mk-weight-title'];
 
-describe('premium.css (BLK-046)', () => {
+describe('premium.css (BLK-047)', () => {
   it('is exported as @mn/blocks/premium.css', () => {
     expect(pkg.exports['./premium.css']).toBe('./src/premium.css');
   });

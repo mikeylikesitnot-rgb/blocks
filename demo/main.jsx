@@ -66,6 +66,7 @@ function Demo() {
   const [open, setOpen] = useState(false);
   const [innerOpen, setInnerOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [revenue, setRevenue] = useState(48210);
   const confirm = useConfirm();
   const toast = useToast();
   const rows = ROWS.filter((r) => matchesQuery(q, [r.name, r.phone, r.status]));
@@ -93,7 +94,7 @@ function Demo() {
       {tab === 'components' && (
         <div style={{ display: 'grid', gap: 16 }}>
           <StatGrid cols={4}>
-            <StatCard label="Revenue, Nov" value="$48,210" delta={12.4} deltaLabel="vs Oct" />
+            <StatCard label="Revenue, Nov" count={revenue} format={(n) => `$${Math.round(n).toLocaleString()}`} delta={12.4} deltaLabel="vs Oct" sub="click: it ticks" onClick={() => setRevenue((r) => r + 1000 + Math.round(Math.random() * 4000))} />
             <StatCard label="Costs" value="$9,880" delta={4.1} invert deltaLabel="vs Oct" />
             <StatCard label="Open leads" value="37" sub="9 new today" note="Leads not yet contacted" title="Counts leads with no logged call or email." />
             <StatCard label="Overdue" value="5" onClick={() => toast.info('Clickable stat')} />
@@ -136,6 +137,7 @@ function Demo() {
               <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
                 <Button type="submit">Save</Button>
                 <Button variant="secondary" onClick={() => toast.error('Couldn’t reach the server')}>Error toast</Button>
+                <Button variant="soft" onClick={() => ['Saved car 37', 'Lead assigned', 'Photo added', 'Price updated', 'Email sent'].forEach((m, i) => setTimeout(() => toast(m, 8000), i * 150))}>5 toasts</Button>
               </div>
             </form>
           </Panel>

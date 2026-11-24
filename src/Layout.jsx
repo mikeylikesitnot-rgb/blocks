@@ -1,4 +1,5 @@
 import { cx } from './cx.js';
+import { useCountUp } from './motion.js';
 
 /**
  * Top of every page. Title left, actions right; stacks on phones.
@@ -50,16 +51,22 @@ export function Panel({ title, subtitle, actions, children, flush = false, class
  * `invert` when down is good (costs). Clickable when given onClick.
  * `note` is a short visible line saying how the number is defined (works on
  * phones, unlike a tooltip); `title` holds the longer explanation for mouse users.
+ * `count` (a number) instead of `value` ticks to each new figure instead of
+ * jumping; `format` turns it into text (default: rounded, with thousands commas).
+ *   <StatCard label="Revenue" count={48210} format={(n) => money(n)} />
  */
-export function StatCard({ label, value, sub, note, title, delta, deltaSuffix = '%', deltaLabel, invert = false, onClick, className = '' }) {
+const defaultCountFormat = (n) => Math.round(n).toLocaleString();
+export function StatCard({ label, value, count, format = defaultCountFormat, sub, note, title, delta, deltaSuffix = '%', deltaLabel, invert = false, onClick, className = '' }) {
   const hasDelta = typeof delta === 'number' && Number.isFinite(delta);
   const good = hasDelta && (invert ? delta < 0 : delta > 0);
   const bad = hasDelta && (invert ? delta > 0 : delta < 0);
   const Tag = onClick ? 'button' : 'div';
+  const counting = typeof count === 'number' && Number.isFinite(count);
+  const shown = useCountUp(counting ? count : NaN);
   return (
     <Tag type={onClick ? 'button' : undefined} onClick={onClick} title={title} className={cx('mk-stat', className)}>
       <p className="mk-eyebrow mk-eyebrow-trunc">{label}</p>
-      <p className="mk-stat-value mk-tabular">{value}</p>
+      <p className="mk-stat-value mk-tabular">{counting ? format(Number.isFinite(shown) ? shown : count) : value}</p>
       {(hasDelta || sub) && (
         <p className="mk-stat-foot">
           {hasDelta && (
