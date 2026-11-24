@@ -14,6 +14,15 @@ import {
 
 afterEach(cleanup);
 
+// jsdom has no layout, so Range lacks getClientRects/getBoundingClientRect. Tiptap's focus() scrolls the selection
+// into view on the next animation frame; if a test is still running then (a busy machine), ProseMirror measures a
+// text range and throws an uncaught error that fails the whole run. Give ranges empty rects, as a browser with no
+// layout would.
+if (typeof Range !== 'undefined') {
+  Range.prototype.getClientRects ??= () => [];
+  Range.prototype.getBoundingClientRect ??= () => ({ x: 0, y: 0, width: 0, height: 0, top: 0, left: 0, right: 0, bottom: 0, toJSON() { return this; } });
+}
+
 // AutoDealer src/components/RichTextEditor.jsx (contract notes).
 const AUTODEALER_DISABLE = ['heading', 'codeBlock', 'horizontalRule'];
 const autoDealerLegacy = () => [StarterKit.configure({
