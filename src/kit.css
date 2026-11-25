@@ -818,3 +818,56 @@ a.mk-att-name:hover { text-decoration: underline; }
 }
 /* An open stack of many toasts scrolls instead of running off the top. */
 .mk-toasts-expanded .mk-toasts-list { max-height: calc(100dvh - 160px); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; }
+
+/* ── SectionTab: phone section menu (tab on the left edge + side panel) ─────────────── */
+.mk-sectab {
+  position: fixed; left: 0; top: 50%; transform: translateY(-50%); z-index: 30;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--mk-space-1);
+  width: 20px; height: 64px; padding: 0;
+  background: var(--mk-surface); color: var(--mk-primary);
+  border: 1px solid var(--mk-border); border-left: 0; border-radius: 0 var(--mk-radius-lg) var(--mk-radius-lg) 0;
+  box-shadow: var(--mk-shadow-lg); cursor: pointer;
+}
+@media (hover: hover) { .mk-sectab:hover, .mk-sectab-item:hover { background: var(--mk-surface-2); } }
+.mk-sectab:focus-visible { outline: 2px solid var(--mk-focus); outline-offset: 2px; }
+.mk-sectab-icon { width: 16px; height: 16px; flex: none; }
+.mk-sectab-chev { width: 12px; height: 12px; color: var(--mk-subtle); }
+.mk-sectab > .mk-sectab-dot { position: absolute; right: 0; top: var(--mk-space-1); }
+.mk-sectab-dot { width: 8px; height: 8px; border-radius: var(--mk-radius-full); flex: none; }
+.mk-sectab-dot-red { background: var(--mk-danger); }
+.mk-sectab-dot-amber { background: var(--mk-tint-warning-fg); }
+/* Wide screens show every section; from 860px Blocks' pinned sidebar is on screen, so sit beside it. */
+@media (min-width: 860px) { .mk-shell:not(.mk-shell-unpinned) .mk-sectab { left: var(--mk-sidebar-w); } }
+@media (min-width: 1024px) { .mk-sectab, .mk-sectab-root { display: none; } }
+
+.mk-sectab-root { position: fixed; inset: 0; z-index: 50; }
+.mk-sectab-backdrop { position: absolute; inset: 0; border: 0; padding: 0; background: var(--mk-overlay); cursor: default; }
+.mk-sectab-panel {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 288px; max-width: 85vw;
+  display: flex; flex-direction: column; background: var(--mk-surface); box-shadow: var(--mk-shadow-lg);
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.mk-sectab-head { display: flex; align-items: center; gap: var(--mk-space-2); padding: var(--mk-space-3) var(--mk-space-4) var(--mk-space-1); }
+.mk-sectab-title { flex: 1; margin: 0; font-size: var(--mk-text-base); font-weight: var(--mk-weight-label); color: var(--mk-heading); }
+.mk-sectab-hint { margin: 0; padding: 0 var(--mk-space-4) var(--mk-space-2); font-size: var(--mk-text-xs); color: var(--mk-muted); }
+.mk-sectab-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0 var(--mk-space-2); list-style: none; display: flex; flex-direction: column; gap: var(--mk-space-1); }
+.mk-sectab-item {
+  display: flex; align-items: center; gap: var(--mk-space-3); width: 100%; min-height: 48px; padding: 0 var(--mk-space-3);
+  border: 0; border-radius: var(--mk-radius); background: none; color: var(--mk-text);
+  font: inherit; font-size: var(--mk-text-base); text-align: left; cursor: pointer;
+}
+.mk-sectab-item:focus-visible { outline: 2px solid var(--mk-focus); outline-offset: -2px; }
+.mk-sectab-item[aria-current='true'] { background: var(--mk-tint-info-bg); color: var(--mk-tint-info-fg); font-weight: var(--mk-weight-label); }
+.mk-sectab-item-icon { width: 20px; height: 20px; flex: none; color: var(--mk-muted); }
+.mk-sectab-item[aria-current='true'] .mk-sectab-item-icon { color: inherit; }
+.mk-sectab-item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-sectab-meta { flex: none; font-size: var(--mk-text-xs); font-weight: normal; color: var(--mk-muted); }
+.mk-sectab-row {
+  display: flex; align-items: center; gap: var(--mk-space-2); min-height: 48px; padding-left: var(--mk-space-3);
+  border: 1px dashed var(--mk-border-strong); border-radius: var(--mk-radius); background: var(--mk-surface);
+  font-size: var(--mk-text-base); color: var(--mk-text);
+}
+.mk-sectab-row-drag { border-style: solid; border-color: var(--mk-primary); box-shadow: var(--mk-shadow-lg); }
+.mk-sectab-grip { display: grid; place-items: center; width: 40px; height: 48px; flex: none; color: var(--mk-subtle); cursor: grab; touch-action: none; }
+.mk-sectab-grip .mk-icon { width: 20px; height: 20px; }
+.mk-sectab-foot { display: flex; gap: var(--mk-space-2); padding: var(--mk-space-3) var(--mk-space-4); border-top: 1px solid var(--mk-border); }

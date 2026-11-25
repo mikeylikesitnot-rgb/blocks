@@ -640,6 +640,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-054",
+      "name": "SectionTab",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-25",
+      "description": "SectionTab: a phone section menu for long pages. A small tab on the left edge shows the section being read (and a red/amber dot) and opens a side panel to jump to a section, with optional Fold all / Open all and Reorder (drag or arrows). Hidden from 1024px, beside the pinned sidebar from 860px. useCurrentSection is the scroll-follow alone. Moved from TuroApp's car page (TA-093).",
+      "branch": "section-tab",
+      "spec": null,
+      "mockup": "https://claude.ai/artifact/NwuTPemv9izSXo4Sg9hib9",
+      "fromRequest": null
     }
   ]
 }

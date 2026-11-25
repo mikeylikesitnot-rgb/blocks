@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-25: v0.50.0 SectionTab (BLK-054): phone section menu for long pages, a left-edge tab (current section icon, red/amber dot) that opens a side panel to jump, Fold all / Open all and Reorder; `useCurrentSection` scroll-follow. Moved from TuroApp's car page (TA-093).
 - 2026-11-24: v0.47.0 contact-form spam checks (BLK-050): `@mn/blocks/server/spam` (spamCheck, botReason, contentReason, isSalesPitch, pitchGroups, hasLink with allowHosts, isFakePhone) and `server/spamPhrases.json`, the phrase groups Munger's PHP form can read too. First used by AutoDealer's leads
 - 2026-11-24: v0.46.1 NavMenu searchExtra: results for an older query are hidden (and Enter can't open them) while the new search runs
 - 2026-11-24: v0.46.0 NavMenu `searchExtra` (+ `searchMin`, `searchDelay`): async record results (cars, trips…) in sections under the page matches, with a detail line, highlighted match, optional "See all" link, ↑/↓ through results, Esc clears, Enter opens the first record when no page matches. Default unchanged. First used by TuroApp's universal search
