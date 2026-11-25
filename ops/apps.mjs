@@ -5,7 +5,8 @@
  *   node ops/apps.mjs status  [name|all] [--json]
  *   node ops/apps.mjs install <name|all> [--force] [--json]
  *   node ops/apps.mjs update  [name|all] [--force] [--json]
- *   options: --manifest <file> (default ops/apps.json next to this script), --apps-dir <dir>
+ *   options: --manifest <file> (default ops/apps.json next to this script), --apps-dir <dir>,
+ *            --progress (with --json: each step still goes to stderr, for a live UI)
  *
  * Kinds (see apps.json):
  * - electron-release: latest GitHub release. macOS: the .zip for this arch (pickAsset), sha256
@@ -263,7 +264,7 @@ export function formatTable(rows) {
 export const ROW_KEYS = ['name', 'kind', 'about', 'state', 'installed', 'latest', 'behind', 'branch', 'path', 'action', 'from', 'note'];
 /** Every row has the same keys (null when empty), so a UI can rely on them. */
 export const toRow = (r) => Object.fromEntries(ROW_KEYS.map((k) => [k, r[k] ?? null]));
-const FLAGS = ['--json', '--force', '--manifest', '--apps-dir'];
+const FLAGS = ['--json', '--force', '--manifest', '--apps-dir', '--progress'];
 
 export function main(argv = process.argv.slice(2)) {
   const opt = (f) => { const i = argv.indexOf(f); return i === -1 ? null : argv[i + 1]; };
@@ -279,7 +280,10 @@ export function main(argv = process.argv.slice(2)) {
   if (words.length > 2) return bad(`one app at a time, or all (got ${words.slice(1).join(' ')})`);
   let picked;
   try { picked = selectApps(loadManifest(opt('--manifest') || undefined), name); } catch (e) { return bad(e.message); }
-  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: json ? () => {} : undefined });
+  // --progress: with --json, still write each step ("pulling …", "running hook …") to stderr, so a UI
+  // can show it live; stdout stays the one JSON answer.
+  const quiet = json && !argv.includes('--progress');
+  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: quiet ? () => {} : undefined });
   const rows = picked.map((a) => toRow(command === 'status' ? apps.status(a) : apps.act(a, command, { force: argv.includes('--force') })));
   if (json) console.log(JSON.stringify({ platform: process.platform, apps: rows }, null, 2));
   else console.log(formatTable(rows));

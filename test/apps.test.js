@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { appsDir, classify, launchEnv, createApps, formatTable, hookCommand, loadManifest, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
 import { vi } from 'vitest';
@@ -277,4 +278,17 @@ describe('review fixes', () => {
 
 it('starts apps without ELECTRON_RUN_AS_NODE', () => {
   expect(launchEnv({ PATH: '/bin', ELECTRON_RUN_AS_NODE: '1' })).toEqual({ PATH: '/bin' });
+});
+
+describe('--progress', () => {
+  it('is accepted with --json, and stdout stays one JSON answer', () => {
+    const file = join(tmpdir(), `apps-progress-${process.pid}.json`);
+    writeFileSync(file, JSON.stringify({ apps: [{ name: 'X', kind: 'script-repo', repo: 'o/X', platforms: ['nope'] }] }));
+    const out = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((m) => out.push(m));
+    try {
+      expect(main(['status', '--json', '--progress', '--manifest', file])).toBe(0);
+    } finally { spy.mockRestore(); }
+    expect(JSON.parse(out.join('\n')).apps[0]).toMatchObject({ name: 'X', state: 'unsupported' });
+  });
 });

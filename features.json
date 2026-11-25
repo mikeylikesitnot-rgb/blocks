@@ -616,6 +616,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-052",
+      "name": "apps.mjs --progress",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-25",
+      "description": "With --json, --progress still writes each step (pulling, running the hook) to stderr so a desktop UI (AppShelf) can show it live; stdout stays one JSON answer.",
+      "branch": "apps-progress",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
