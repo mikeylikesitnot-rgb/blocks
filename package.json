@@ -1,6 +1,6 @@
 {
   "name": "@mn/blocks",
-  "version": "0.47.0",
+  "version": "0.48.0",
   "description": "Blocks: Michael's shared building blocks. React UI (tokens, components, login page, attachments, optional rich text editor), Express server pieces (auth, email, rate limits), siteapi (any website to a JSON API), ops scripts (nightly VPS backup) and a one-line-per-export CATALOG.md.",
   "type": "module",
   "license": "UNLICENSED",

@@ -604,6 +604,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-051",
+      "name": "Apps installer: 4 more Mac apps, retry a failed hook",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-25",
+      "description": "ops/apps.json also lists edge-workspace-switcher, maclikewindows, Mac Explorer and ScreenShare (script-repo apps with Mac hooks). apps.mjs records the commit whose hook last finished (git config apps.hooked), so a hook that failed after the pull still shows Update instead of up to date.",
+      "branch": "apps-hooks",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

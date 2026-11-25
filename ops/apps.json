@@ -17,6 +17,44 @@
       "platforms": ["darwin", "win32"],
       "hook": { "darwin": "mac/install.sh", "win32": "windows/setup.ps1" },
       "about": "Three-zone tab bars and Workspaces (Hammerspoon / AutoHotkey)"
+    },
+    {
+      "name": "edge-workspace-switcher",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/edge-workspace-switcher",
+      "branch": "master",
+      "platforms": ["darwin"],
+      "hook": { "darwin": "scripts/apps-hook.sh" },
+      "about": "Edge workspace switcher extension (synced to ~/.mn-extensions by ext-update)"
+    },
+    {
+      "name": "maclikewindows",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/maclikewindows",
+      "branch": "main",
+      "platforms": ["darwin"],
+      "hook": { "darwin": "scripts/apps-hook.sh" },
+      "about": "Windows keyboard shortcuts on the Mac (re-applies the Karabiner rules; first install by hand)"
+    },
+    {
+      "name": "Mac Explorer",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/macexplorer",
+      "branch": "main",
+      "folder": "mac explorer",
+      "platforms": ["darwin"],
+      "hook": { "darwin": "scripts/install-app.sh" },
+      "about": "Explorer-style file manager (builds into /Applications)"
+    },
+    {
+      "name": "ScreenShare",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/screenshare",
+      "branch": "main",
+      "folder": "screenshare",
+      "platforms": ["darwin"],
+      "hook": { "darwin": "scripts/install-app.sh" },
+      "about": "MacBook as a second display for the Mac mini (rebuilds Host/Viewer; first install by hand)"
     }
   ]
 }

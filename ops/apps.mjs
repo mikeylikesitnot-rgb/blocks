@@ -123,7 +123,10 @@ export function createApps({
     const remote = tryOut('git', ['-C', path, 'rev-parse', '--short', `origin/${branch}`]);
     const dirty = tryOut('git', ['-C', path, 'status', '--porcelain', '--untracked-files=no']) !== '';
     const behind = Number(tryOut('git', ['-C', path, 'rev-list', '--count', `HEAD..origin/${branch}`]) || 0);
-    return { path, branch, installed: head || null, latest: remote || null, dirty, behind, fetched };
+    // The commit whose hook last finished (installScript records it). A hook that failed after
+    // the pull leaves HEAD current but the app stale; that must still read as needing an update.
+    const hookPending = !!app.hook?.[platform] && !!head && tryOut('git', ['-C', path, 'config', '--get', 'apps.hooked']) !== head;
+    return { path, branch, installed: head || null, latest: remote || null, dirty, behind, fetched, hookPending };
   }
 
   function status(app) {
@@ -139,8 +142,9 @@ export function createApps({
       const info = scriptInfo(app);
       let state = classify(info);
       if (state === 'behind' && !info.behind) state = 'ahead'; // local commits not on origin
-      return { ...base, installed: info.installed, latest: info.latest, state, behind: info.behind, path: info.path, branch: info.branch,
-        note: info.installed && !info.fetched ? "couldn't reach GitHub; latest is from the last check" : null };
+      let note = info.installed && !info.fetched ? "couldn't reach GitHub; latest is from the last check" : null;
+      if (state === 'current' && info.hookPending) { state = 'behind'; note = "install step hasn't finished for this version; Update runs it again"; }
+      return { ...base, installed: info.installed, latest: info.latest, state, behind: info.behind, path: info.path, branch: info.branch, note };
     } catch (e) {
       return { ...base, installed: null, latest: null, state: 'error', note: firstLine(e) };
     }
@@ -215,6 +219,8 @@ export function createApps({
       log(`  running ${hook}`);
       const [cmd, args] = hookCommand(hook, platform);
       sh(cmd, args, { cwd: path, stdio: ['ignore', 'pipe', 'pipe'], env: launchEnv() });
+      const head = tryOut('git', ['-C', path, 'rev-parse', '--short', 'HEAD']);
+      if (head) sh('git', ['-C', path, 'config', 'apps.hooked', head]);
     }
   }
 

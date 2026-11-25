@@ -11,6 +11,14 @@ describe('apps manifest', () => {
     expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['SnagIt', 'WindowsManager']));
     expect(apps.find((a) => a.name === 'WindowsManager').hook).toEqual({ darwin: 'mac/install.sh', win32: 'windows/setup.ps1' });
   });
+  it('ships the Mac script apps with a hook for every platform they list', () => {
+    expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['edge-workspace-switcher', 'maclikewindows', 'Mac Explorer', 'ScreenShare']));
+    for (const a of apps.filter((x) => x.kind === 'script-repo')) {
+      for (const p of a.platforms) expect(a.hook?.[p], `${a.name} hook for ${p}`).toBeTruthy();
+    }
+    expect(apps.find((a) => a.name === 'Mac Explorer').folder).toBe('mac explorer');
+    expect(apps.find((a) => a.name === 'edge-workspace-switcher').branch).toBe('master');
+  });
   it('selects all, one (any case), or fails on an unknown name', () => {
     expect(selectApps(apps, 'all')).toHaveLength(apps.length);
     expect(selectApps(apps, 'snagit')[0].name).toBe('SnagIt');
@@ -119,18 +127,47 @@ describe('script-repo', () => {
 
   it('clones a missing repo into the apps folder and runs the hook there', () => {
     let cloned = false;
+    const hooks = [];
     const { sh, calls } = fakeShell([
       ['gh repo clone', () => { cloned = true; return ''; }],
       ['git -C /apps/WM rev-parse --short HEAD', 'abc1234'],
+      ['git -C /apps/WM config --get apps.hooked', () => (hooks.length ? 'abc1234' : '')],
       ['git -C /apps/WM rev-parse --short origin/main', 'abc1234'],
       ['git -C /apps/WM rev-list', '0'],
     ]);
-    const hooks = [];
     const sh2 = (cmd, args, opts) => { if (cmd === 'sh') hooks.push(opts.cwd); return sh(cmd, args, opts); };
     const r = createApps({ platform: 'darwin', dir: '/apps', sh: sh2, exists: () => cloned, log: () => {} }).act(app, 'install');
     expect(calls[0]).toBe('gh repo clone o/WM /apps/WM -- --branch main');
     expect(hooks).toEqual(['/apps/WM']);
     expect(r).toMatchObject({ action: 'installed', state: 'current' });
+  });
+
+  it('records the commit once its hook finishes', () => {
+    const { sh, calls } = fakeShell([
+      ['git -C /apps/WM rev-parse --short HEAD', 'abc1234'],
+      ['git -C /apps/WM rev-parse --short origin/main', 'def5678'],
+      ['git -C /apps/WM rev-list', '1'],
+    ]);
+    createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, log: () => {} }).act(app, 'update');
+    expect(calls).toContain('git -C /apps/WM config apps.hooked abc1234');
+  });
+
+  it('a hook that failed after the pull still reads as needing an update, and Update re-runs it', () => {
+    const answers = [
+      ['git -C /apps/WM rev-parse --short HEAD', 'abc1234'],
+      ['git -C /apps/WM rev-parse --short origin/main', 'abc1234'],
+      ['git -C /apps/WM config --get apps.hooked', 'old0000'],
+      ['git -C /apps/WM rev-list', '0'],
+    ];
+    const { sh, calls } = fakeShell(answers);
+    const apps = createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, log: () => {} });
+    const s = apps.status(app);
+    expect(s.state).toBe('behind');
+    expect(s.note).toMatch(/install step hasn't finished/);
+    apps.act(app, 'update');
+    expect(calls.some((c) => c.startsWith('sh mac/install.sh'))).toBe(true);
+    // An app with no hook for this OS never reads as pending.
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh: fakeShell(answers).sh, exists: () => true }).status({ ...app, hook: {} }).state).toBe('current');
   });
 
   it('never pulls a repo with local changes', () => {
