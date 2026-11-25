@@ -10,6 +10,14 @@
       "about": "Floating screenshot button"
     },
     {
+      "name": "AppShelf",
+      "kind": "electron-release",
+      "repo": "mikeylikesitnot-rgb/AppShelf",
+      "product": "AppShelf",
+      "platforms": ["darwin", "win32"],
+      "about": "This list as a tray app: install and update these apps (updates itself)"
+    },
+    {
       "name": "WindowsManager",
       "kind": "script-repo",
       "repo": "mikeylikesitnot-rgb/WindowsManager",

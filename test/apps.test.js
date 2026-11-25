@@ -9,7 +9,8 @@ import { vi } from 'vitest';
 describe('apps manifest', () => {
   const apps = loadManifest();
   it('ships SnagIt and WindowsManager with a valid kind', () => {
-    expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['SnagIt', 'WindowsManager']));
+    expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['SnagIt', 'WindowsManager', 'AppShelf']));
+    expect(apps.find((a) => a.name === 'AppShelf')).toMatchObject({ kind: 'electron-release', product: 'AppShelf' });
     expect(apps.find((a) => a.name === 'WindowsManager').hook).toEqual({ darwin: 'mac/install.sh', win32: 'windows/setup.ps1' });
   });
   it('ships the Mac script apps with a hook for every platform they list', () => {

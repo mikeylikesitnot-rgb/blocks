@@ -628,6 +628,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-053",
+      "name": "AppShelf in the apps list",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-25",
+      "description": "ops/apps.json lists AppShelf (electron-release), the tray app that runs apps.mjs, so Project Hub's Apps page and apps.mjs can install it on each computer.",
+      "branch": "appshelf-entry",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
