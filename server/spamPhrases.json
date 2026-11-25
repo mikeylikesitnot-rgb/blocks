@@ -1,0 +1,91 @@
+{
+  "about": "Sales-pitch phrase groups for contact forms. A message is a pitch when it hits at least `minGroups` different groups and at least one of them is in `strong`. Patterns are PCRE/JS-compatible regex source: `ci` are matched case-insensitively, `cs` case-sensitively (both Unicode). Used by @mn/blocks/server/spam (JS) and read as-is by PHP sites (preg_match with ~...~iu / ~...~u).",
+  "minGroups": 2,
+  "strong": ["opt-out", "money", "marketing", "partner"],
+  "groups": {
+    "call": {
+      "ci": [
+        "\\b(?:\\d{1,2}|five|ten|fifteen|twenty|thirty)[- ]?min(?:ute)?s?\\s+(?:call|chat|meeting|zoom|demo)\\b",
+        "\\bopen to an? (?:quick |short |brief )?(?:call|chat|conversation)\\b",
+        "\\bbook an? (?:quick |short )?(?:call|demo)\\b",
+        "\\bhop on an? (?:quick )?call\\b",
+        "\\bworth an? (?:quick |short )?(?:call|chat|conversation)\\b"
+      ]
+    },
+    "opt-out": {
+      "ci": [
+        "\\breach out again\\b",
+        "\\bunsubscribe\\b",
+        "\\bopt[- ]?out\\b",
+        "\\breply (?:with )?[\"“]?stop\\b",
+        "\\bremove you from\\b",
+        "\\b(?:won['’]?t|will not) (?:contact|email|bother|message) you again\\b"
+      ]
+    },
+    "money": {
+      "ci": [
+        "\\bper accepted hour\\b",
+        "\\bpaying businesses\\b",
+        "\\bpre-?qualifies\\b",
+        "\\bbusiness line of credit\\b",
+        "\\bworking capital\\b",
+        "\\bmerchant cash\\b",
+        "\\bbusiness (?:loan|funding|financing)\\b",
+        "\\bper (?:worker|employee)\\b",
+        "\\brevenue share\\b",
+        "\\bbacking (?:of|for) (?:\\w+ ){0,2}(?:dealers?|dealerships|businesses|companies|contractors)\\b",
+        "\\bprivate (?:group|equity|investors?|capital|lenders?)\\b",
+        "\\binvestment (?:group|firm|fund)\\b",
+        "\\bfloor ?plan(?:ning)? (?:line|financing|funding|capital)\\b"
+      ]
+    },
+    "marketing": {
+      "ci": [
+        "\\bSEO\\b",
+        "\\brank(?:s|ing|ed)? (?:higher )?(?:on|in) google\\b",
+        "\\bfirst page (?:of|on) google\\b",
+        "\\bgoogle (?:business profile|maps ranking)\\b",
+        "\\bmore (?:leads|clients|customers|jobs)\\b",
+        "\\blead[- ]?gen",
+        "\\b(?:qualified|exclusive|guaranteed) leads\\b",
+        "\\bwebsite (?:redesign|development)\\b",
+        "\\bweb design services\\b",
+        "\\bdigital marketing\\b",
+        "\\bsocial media (?:marketing|management)\\b",
+        "\\bmarketing (?:agency|services|campaigns?)\\b",
+        "\\bvirtual assistants?\\b",
+        "\\bappointment setting\\b",
+        "\\boutsourced (?:team|staff|services|marketing|bookkeeping)\\b",
+        "\\bbacklinks?\\b"
+      ]
+    },
+    "ai": {
+      "cs": ["\\bAI\\b"],
+      "ci": ["\\bartificial intelligence\\b", "\\brobot(?:s|ic|ics)?\\b", "\\btraining data\\b", "\\bchatbots?\\b"]
+    },
+    "target": {
+      "ci": [
+        "\\b(?:businesses|companies|contractors|dealers|dealerships) like (?:yours|you)\\b",
+        "\\bwe help (?:\\w+ ){0,2}(?:businesses|contractors|companies|remodelers|owners|dealers|dealerships)\\b"
+      ]
+    },
+    "partner": {
+      "ci": [
+        "\\bpartnership\\b",
+        "\\bpartner with (?:you|your)\\b",
+        "\\bwhite[- ]label\\b",
+        "\\baffiliate program\\b",
+        "\\bstrategic (?:partner|alliance)\\b"
+      ]
+    },
+    "intro": {
+      "ci": [
+        "\\bsynerg(?:y|ies|istic)\\b",
+        "\\b(?:right|best|correct) person to (?:talk|speak|chat) (?:to|with)\\b",
+        "\\bwho(?:['’]s| is| would be) the (?:right|best|correct) (?:person|contact)\\b",
+        "\\bdecision[- ]makers?\\b",
+        "\\bwho (?:handles|is in charge of|oversees) your\\b"
+      ]
+    }
+  }
+}

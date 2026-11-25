@@ -592,6 +592,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-050",
+      "name": "Contact-form spam checks",
+      "area": "Server",
+      "description": "@mn/blocks/server/spam: honeypot, time-to-fill, fake 555 phone, off-site link and sales-pitch phrase groups for contact forms, ported from Munger's form (F-022, MC-023) with new groups for investor and 'right person to talk to' pitches. The phrase list is a JSON file PHP sites can read too. First used by AutoDealer's leads.",
+      "status": "live",
+      "since": "2026-11-24",
+      "branch": "spam-check",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

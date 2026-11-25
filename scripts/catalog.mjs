@@ -37,6 +37,7 @@ const ENTRIES = [
     note: 'uiPrefsRouter and its stores alone (needs only Express; no jose or bcrypt).' },
   { sub: '/browser', file: 'server/browser.js' },
   { sub: '/siteapi', file: 'server/siteapi.js' },
+  { sub: '/server/spam', file: 'server/spam.js' },
   { sub: '/desktop-update', file: 'server/desktopUpdate.js' },
   { sub: '/ext-update', file: 'src/extUpdate.js' },
   { sub: '/email', file: 'server/email.js', subsetOf: '/server',
@@ -190,6 +191,11 @@ const AREAS = [
     { name: 'downloadText', does: 'Waits for the download a trigger starts (e.g. clicking Export) and returns its text.', props: '(page, trigger(page), {timeoutMs}) -> {fileName, text}' },
     { name: 'needsLogin', does: 'True when the page is a sign-in page (URL contains login/signin/sign-in, or a password field), so a job reports "log in to the automation profile" instead of scraping it.', props: '(page, {urlIncludes})' },
     { name: 'chromeCommand', also: ['chromeArgs', 'DEFAULT_PORT', 'DEFAULT_PROFILE_DIR'], does: 'The command to start the automation Chrome (dedicated profile, debug port bound to 127.0.0.1; Chrome 136+ ignores the port on the default profile); chromeArgs gives {command, args}.', props: '({port 9222, profileDir \'~/ChromeAutomation\', chromePath})' },
+  ] },
+  { title: 'Server: contact-form spam checks (no deps)', sub: '/server/spam', items: [
+    { name: 'spamCheck', also: ['botReason', 'contentReason', 'SPAM_MAYBE_HUMAN'], does: 'Every check in order: bots (filled honeypot, no time-to-fill value, under minMs) then content (fake 555-01xx phone, off-site link, sales pitch); returns the reason and the phrase groups the message hit, or null. The app decides what a hit does (keep as spam, skip alerts, show a fix-it page).', props: '({honeypot, elapsedMs, name, phone, message}, {minMs 3000, allowHosts [], phrases}) -> {reason honeypot|no-timing|too-fast|fake-phone|link|sales-pitch, groups} | null' },
+    { name: 'isSalesPitch', also: ['pitchGroups', 'SPAM_PHRASES'], does: 'Vendor-pitch check on message wording: at least 2 different phrase groups (call, opt-out, money, marketing, ai, target, partner, intro), one of them strong. The list is server/spamPhrases.json, PCRE-compatible so PHP sites read the same file.', props: '(text, {phrases}) -> bool; pitchGroups(text) -> [group]' },
+    { name: 'hasLink', also: ['isFakePhone'], does: 'Link check (http(s)://, www., [url, <a ) that lets links to your own hosts and their subdomains through; isFakePhone flags the fictional 555-0100..0199 range in any format.', props: '(text, {allowHosts []}); isFakePhone(phone)' },
   ] },
   { title: 'Server: siteapi (any website to an API; no deps, captureHar needs playwright-core)', sub: '/siteapi', items: [
     { name: 'siteFetch', also: ['SiteApiError'], does: 'Polite JSON client for one site\'s internal API: one request at a time with minGap between, cookie/token from ~/.config/siteapi/<site>.env, SiteApiError with .expired on 401/403 or an HTML page (logged out, bot wall).', props: '({base, site, minGap 1000, headers (object or (env) => object), timeoutMs, env}) -> {get(path, params), post(path, body, params), call(method, path, {params, body, headers}), env}' },

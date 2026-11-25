@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-24: v0.47.0 contact-form spam checks (BLK-050): `@mn/blocks/server/spam` (spamCheck, botReason, contentReason, isSalesPitch, pitchGroups, hasLink with allowHosts, isFakePhone) and `server/spamPhrases.json`, the phrase groups Munger's PHP form can read too. First used by AutoDealer's leads
 - 2026-11-24: v0.46.1 NavMenu searchExtra: results for an older query are hidden (and Enter can't open them) while the new search runs
 - 2026-11-24: v0.46.0 NavMenu `searchExtra` (+ `searchMin`, `searchDelay`): async record results (cars, trips…) in sections under the page matches, with a detail line, highlighted match, optional "See all" link, ↑/↓ through results, Esc clears, Enter opens the first record when no page matches. Default unchanged. First used by TuroApp's universal search
 - 2026-11-24: v0.45.0 apps installer (BLK-049): `ops/apps.mjs` + `ops/apps.json` install/update Michael's own apps on the Mac or Windows (electron-release via GitHub Releases with sha256 check, script-repo via clone/pull + per-OS hook); `--json` for Project Hub's Apps page
