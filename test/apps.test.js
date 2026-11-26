@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
-import { appsDir, classify, launchEnv, createApps, formatTable, firstLine, hookCommand, loadManifest, sameRepo, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
+import { appsDir, classify, launchEnv, createApps, formatTable, firstLine, hookCommand, loadManifest, sameRepo, TOOLS, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
 import { vi } from 'vitest';
 
 describe('apps manifest', () => {
@@ -447,6 +447,58 @@ describe('review fixes for picked folders', () => {
     expect(apps.checkFolder(web, 'C:\\src\\x&calc').ok).toBe(false);
     expect(apps.openFolder(web).ok).toBe(false);
     expect(calls.some((c) => c.startsWith('cmd'))).toBe(false);
+  });
+});
+
+describe('tools each app needs (PH-167)', () => {
+  const vitals = { name: 'Vitals', kind: 'script-repo', repo: 'o/vitals', branch: 'main', platforms: ['win32'], hook: { win32: 'scripts/apps-hook.ps1' }, needs: { win32: ['node', 'rust', 'msvc'] } };
+  const shell = (missing, extra = []) => {
+    const calls = [];
+    const sh = (cmd, args) => {
+      const line = [cmd, ...args].join(' ');
+      calls.push(line);
+      for (const m of missing) if (line.startsWith(m)) throw Object.assign(new Error('not found'), { code: 'ENOENT' });
+      for (const [p, out] of extra) if (line.startsWith(p)) return out;
+      if (cmd.endsWith('vswhere.exe')) return 'C:\\BuildTools';
+      return '';
+    };
+    return { sh, calls };
+  };
+  it('every listed need is a known tool with a check and a fix for that OS', () => {
+    for (const a of loadManifest()) for (const [os, ids] of Object.entries(a.needs ?? {})) for (const id of ids) {
+      expect(TOOLS[id], `${a.name}: ${id}`).toBeTruthy();
+      expect(TOOLS[id].check[os], `${a.name}: ${id} check on ${os}`).toBeTruthy();
+      expect(TOOLS[id].fix[os], `${a.name}: ${id} fix on ${os}`).toBeTruthy();
+    }
+    expect(loadManifest().find((a) => a.name === 'Vitals').needs).toEqual({ win32: ['node', 'rust', 'msvc'] });
+  });
+  it('reports what is missing with its fix, and refuses to install until it is there', () => {
+    const { sh, calls } = shell(['cargo']);
+    const apps = createApps({ platform: 'win32', dir: 'C:\\apps', sh, exists: () => false, log: () => {} });
+    expect(apps.status(vitals).missing).toEqual([{ id: 'rust', label: 'Rust', fix: 'winget install Rustlang.Rustup' }]);
+    const r = apps.act(vitals, 'install');
+    expect(r).toMatchObject({ action: 'failed', note: 'Needs Rust' });
+    expect(calls.some((c) => c.includes('clone'))).toBe(false);
+    expect(calls.filter((c) => c.startsWith('cargo'))).toHaveLength(1); // looked up once per run
+  });
+  it('an empty vswhere answer means no Build Tools', () => {
+    const { sh } = shell([], [['C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe', '']]);
+    expect(createApps({ platform: 'win32', dir: 'C:\\apps', sh, exists: () => false }).status(vitals).missing.map((m) => m.id)).toEqual(['msvc']);
+  });
+  it('git, gh and a gh sign-in are the computer\'s, reported once', () => {
+    expect(createApps({ platform: 'darwin', sh: shell([]).sh }).computer()).toEqual({ missing: [] });
+    expect(createApps({ platform: 'darwin', sh: shell(['gh auth token --hostname github.com']).sh }).computer().missing.map((m) => m.id)).toEqual(['gh-auth']);
+    expect(createApps({ platform: 'darwin', sh: shell(['gh']).sh }).computer().missing.map((m) => m.id)).toEqual(['gh']);
+    expect(createApps({ platform: 'win32', sh: shell(['git']).sh }).computer().missing[0]).toEqual({ id: 'git', label: 'git', fix: 'winget install Git.Git' });
+    // On a Mac, git and Swift are asked through xcode-select first, never the stubs that pop up a dialog.
+    expect(TOOLS.git.check.darwin[1][1]).toMatch(/^xcode-select -p/);
+    expect(TOOLS.swift.check.darwin[1][1]).toMatch(/^xcode-select -p/);
+  });
+  it('apps with no needs, or not for this OS, are never marked', () => {
+    const { sh } = shell(['cargo', 'node']);
+    const apps = createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => false });
+    expect(apps.status({ name: 'X', kind: 'code-repo', repo: 'o/X' }).missing).toBeUndefined();
+    expect(apps.status(vitals)).toMatchObject({ state: 'unsupported' });
   });
 });
 

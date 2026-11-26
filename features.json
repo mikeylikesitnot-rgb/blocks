@@ -712,6 +712,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-060",
+      "name": "apps.mjs: tools each app needs",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "ops/apps.json lists what each app needs per OS (Swift apps: Xcode command-line tools; Vitals: Node, Rust, VS C++ Build Tools; web projects: Node or Python). status reports the missing ones per app with the command to get each, and git / gh / a gh sign-in once for the computer; install and update refuse an app whose tools are missing. For Project Hub PH-167.",
+      "branch": "needs",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

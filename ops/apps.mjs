@@ -22,6 +22,9 @@
  * Per-computer folders: --folders '{"AutoDealer":"/Users/me/AutoDealer"}' uses an existing checkout for an app
  * instead of <apps folder>/<name> (check-folder <name> <path> says whether a path is a checkout of its repo).
  * open <name>: opens the app's folder in VS Code on this computer.
+ * Tools: each app lists what it needs per OS (`needs`, ids from TOOLS). status reports the missing ones per
+ * app (`missing`) and git / gh / a gh sign-in for the whole computer (`computer.missing`); install and update
+ * refuse an app whose tools are missing, so a build doesn't fail minutes in. Only quick lookups, nothing installed.
  * All GitHub access goes through `gh` (its login reaches private repos). Exit 1 if anything failed.
  */
 import { execFileSync } from 'node:child_process';
@@ -102,6 +105,35 @@ export function setupCommands(has, platform = process.platform) {
   return [];
 }
 
+/**
+ * What apps can need, how to tell it's there (a command that exits 0, per OS) and how to get it.
+ * `fix` is shown on the Apps page as is.
+ */
+export const TOOLS = {
+  // On a Mac without the command-line tools, /usr/bin/git and xcrun are stubs that pop up Apple's install dialog,
+  // so ask xcode-select (quiet) first, or look for Homebrew's git.
+  git: { label: 'git', check: { darwin: ['sh', ['-c', 'xcode-select -p >/dev/null 2>&1 || test -x /opt/homebrew/bin/git || test -x /usr/local/bin/git']], win32: ['git', ['--version']] },
+    fix: { darwin: 'xcode-select --install', win32: 'winget install Git.Git' } },
+  gh: { label: 'GitHub CLI (gh)', check: { darwin: ['gh', ['--version']], win32: ['gh', ['--version']] },
+    fix: { darwin: 'brew install gh', win32: 'winget install GitHub.cli' } },
+  // gh auth token: no network, and only github.com (auth status fails for any bad host or when offline).
+  'gh-auth': { label: 'GitHub CLI sign-in', check: { darwin: ['gh', ['auth', 'token', '--hostname', 'github.com']], win32: ['gh', ['auth', 'token', '--hostname', 'github.com']] },
+    fix: { darwin: 'gh auth login', win32: 'gh auth login' } },
+  node: { label: 'Node.js', check: { darwin: ['node', ['--version']], win32: ['node', ['--version']] },
+    fix: { darwin: 'brew install node', win32: 'winget install OpenJS.NodeJS.LTS' } },
+  python: { label: 'Python 3', check: { darwin: ['python3', ['--version']], win32: ['python', ['--version']] },
+    fix: { darwin: 'brew install python', win32: 'winget install Python.Python.3.12' } },
+  swift: { label: 'Xcode command-line tools', check: { darwin: ['sh', ['-c', 'xcode-select -p >/dev/null 2>&1 && xcrun --find swift >/dev/null']] },
+    fix: { darwin: 'xcode-select --install' } },
+  rust: { label: 'Rust', check: { darwin: ['cargo', ['--version']], win32: ['cargo', ['--version']] },
+    fix: { darwin: 'curl https://sh.rustup.rs -sSf | sh', win32: 'winget install Rustlang.Rustup' } },
+  msvc: { label: 'VS C++ Build Tools',
+    check: { win32: ['C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe', ['-products', '*', '-requires', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', '-property', 'installationPath']] },
+    fix: { win32: 'winget install Microsoft.VisualStudio.2022.BuildTools --override "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --quiet"' } },
+};
+/** What every computer needs for script and code apps (clone and pull go through git and gh). */
+export const COMPUTER_TOOLS = ['git', 'gh', 'gh-auth'];
+
 /** Characters cmd.exe treats as special, even in a quoted argument (`code` is a .cmd there). */
 export const WIN_UNSAFE = /[&|^%<>()!"]/;
 
@@ -123,6 +155,29 @@ export function createApps({
   stream = false,
   folders = {},
 } = {}) {
+  // Each tool is looked up at most once per run. vswhere prints the install path; empty means not there.
+  const seen = new Map();
+  const hasTool = (id) => {
+    if (!seen.has(id)) {
+      const c = TOOLS[id]?.check?.[platform];
+      let ok = false;
+      if (c) { try { const out = sh(c[0], c[1], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 15_000 }); ok = id !== 'msvc' || String(out ?? '').trim() !== ''; } catch { ok = false; } }
+      seen.set(id, ok);
+    }
+    return seen.get(id);
+  };
+  const describe = (id) => ({ id, label: TOOLS[id]?.label ?? id, fix: TOOLS[id]?.fix?.[platform] ?? null });
+  /** The tools this app needs here that aren't on this computer ([] when none, or none listed). */
+  const missingFor = (app) => (app.needs?.[platform] ?? []).filter((id) => !hasTool(id)).map(describe);
+  /** git, gh and a gh sign-in: needed by every script and code app, so reported once for the computer. */
+  function computer() {
+    const missing = [];
+    if (!hasTool('git')) missing.push(describe('git'));
+    if (!hasTool('gh')) missing.push(describe('gh'));
+    else if (!hasTool('gh-auth')) missing.push(describe('gh-auth'));
+    return { missing };
+  }
+
   /** Where an app lives on this computer: an existing folder the owner picked, else <apps folder>/<folder or name>. */
   const pathOf = (app) => folders[app.name] || join(dir, app.folder || app.name);
   const out = stream ? ['ignore', 2, 2] : ['ignore', 'pipe', 'pipe'];
@@ -177,6 +232,13 @@ export function createApps({
   }
 
   function status(app) {
+    const s = statusOf(app);
+    if (s.state === 'unsupported') return s;
+    const missing = missingFor(app);
+    return missing.length ? { ...s, missing } : s;
+  }
+
+  function statusOf(app) {
     const base = { name: app.name, kind: app.kind, about: app.about || '' };
     if (app.platforms && !app.platforms.includes(platform)) return { ...base, state: 'unsupported', installed: null, latest: null };
     try {
@@ -284,6 +346,7 @@ export function createApps({
     const before = status(app);
     if (before.state === 'error') return { ...before, action: 'failed' };
     if (!shouldAct(command, before.state, force)) return { ...before, action: 'skipped' };
+    if (before.missing?.length) return { ...before, action: 'failed', note: `Needs ${before.missing.map((m) => m.label).join(', ')}` };
     log(`${app.name}: ${command} (${before.installed || 'not installed'} → ${before.latest || 'latest'})`);
     try {
       if (app.kind === 'electron-release') installElectron(app, before);
@@ -325,7 +388,7 @@ export function createApps({
     }
   }
 
-  return { status, act, checkFolder, openFolder, dir };
+  return { status, act, checkFolder, openFolder, computer, dir };
 }
 
 /** The line that says what went wrong: the first one that looks like an error, else the last real one. Never
@@ -353,7 +416,7 @@ export function formatTable(rows) {
   return lines.map((l) => l.map((c, i) => (i === l.length - 1 ? c : c.padEnd(w[i]))).join('  ')).join('\n');
 }
 
-export const ROW_KEYS = ['name', 'kind', 'about', 'state', 'installed', 'latest', 'behind', 'branch', 'path', 'action', 'from', 'note', 'changes', 'commits', 'ok'];
+export const ROW_KEYS = ['name', 'kind', 'about', 'state', 'installed', 'latest', 'behind', 'branch', 'path', 'action', 'from', 'note', 'changes', 'commits', 'ok', 'missing'];
 /** Every row has the same keys (null when empty), so a UI can rely on them. */
 export const toRow = (r) => Object.fromEntries(ROW_KEYS.map((k) => [k, r[k] ?? null]));
 const FLAGS = ['--json', '--force', '--manifest', '--apps-dir', '--progress', '--folders'];
@@ -389,7 +452,8 @@ export function main(argv = process.argv.slice(2)) {
     return apps.act(a, command, { force: argv.includes('--force') });
   };
   const rows = picked.map((a) => toRow(one(a)));
-  if (json) console.log(JSON.stringify({ platform: process.platform, dir: apps.dir, apps: rows }, null, 2));
+  const extra = command === 'status' ? { computer: apps.computer() } : {};
+  if (json) console.log(JSON.stringify({ platform: process.platform, dir: apps.dir, ...extra, apps: rows }, null, 2));
   else console.log(formatTable(rows));
   return rows.some((r) => r.action === 'failed' || r.ok === false) ? 1 : 0;
 }

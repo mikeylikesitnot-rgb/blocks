@@ -1,5 +1,5 @@
 {
-  "$comment": "Michael's own apps for ops/apps.mjs. kind electron-release: installs the latest GitHub release (macOS .zip into /Applications, Windows NSIS .exe silently). kind code-repo: clones/pulls the repo into the apps folder and sets it up (npm ci, or a .venv for a pyproject.toml); nothing is deployed. kind script-repo: clones/pulls the repo into the apps folder, then runs the hook for this OS (.sh with sh, .ps1 with PowerShell) from the repo folder.",
+  "$comment": "Michael's own apps for ops/apps.mjs. kind electron-release: installs the latest GitHub release (macOS .zip into /Applications, Windows NSIS .exe silently). needs: tools each OS must have before install (ids in apps.mjs TOOLS). kind code-repo: clones/pulls the repo into the apps folder and sets it up (npm ci, or a .venv for a pyproject.toml); nothing is deployed. kind script-repo: clones/pulls the repo into the apps folder, then runs the hook for this OS (.sh with sh, .ps1 with PowerShell) from the repo folder.",
   "apps": [
     {
       "name": "SnagIt",
@@ -52,6 +52,7 @@
       "folder": "mac explorer",
       "platforms": ["darwin"],
       "hook": { "darwin": "scripts/install-app.sh" },
+      "needs": { "darwin": ["swift"] },
       "about": "Explorer-style file manager (builds into /Applications)"
     },
     {
@@ -62,6 +63,7 @@
       "folder": "screenshare",
       "platforms": ["darwin"],
       "hook": { "darwin": "scripts/install-app.sh" },
+      "needs": { "darwin": ["swift"] },
       "about": "MacBook as a second display for the Mac mini (rebuilds Host/Viewer; first install by hand)"
     },
     {
@@ -71,6 +73,7 @@
       "branch": "main",
       "platforms": ["darwin"],
       "hook": { "darwin": "scripts/apps-hook.sh" },
+      "needs": { "darwin": ["swift"] },
       "about": "Fast keyboard-driven image viewer and light editor (builds into /Applications)"
     },
     {
@@ -81,6 +84,7 @@
       "folder": "fineprint",
       "platforms": ["darwin"],
       "hook": { "darwin": "scripts/apps-hook.sh" },
+      "needs": { "darwin": ["swift"] },
       "about": "Print-to-PDF menu bar app and printer (builds into /Applications; printer setup asks once in the app)"
     },
     {
@@ -91,6 +95,7 @@
       "folder": "vitals",
       "platforms": ["win32"],
       "hook": { "win32": "scripts/apps-hook.ps1" },
+      "needs": { "win32": ["node", "rust", "msvc"] },
       "about": "Windows tray monitor: CPU, memory, GPU, battery (builds locally, ~9 min; needs Rust and VS C++ Build Tools)"
     },
     {
@@ -108,6 +113,7 @@
       "repo": "mikeylikesitnot-rgb/AutoDealer",
       "branch": "master",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["node"], "win32": ["node"] },
       "about": "NextGen Cars and Trucks website and back office (code kept current, not deployed)"
     },
     {
@@ -116,6 +122,7 @@
       "repo": "mikeylikesitnot-rgb/TuroApp",
       "branch": "master",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["node"], "win32": ["node"] },
       "about": "Turo fleet app (code kept current, not deployed)"
     },
     {
@@ -124,6 +131,7 @@
       "repo": "mikeylikesitnot-rgb/webmail",
       "branch": "main",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["node"], "win32": ["node"] },
       "about": "Private webmail for DreamHost hosting (code kept current, not deployed)"
     },
     {
@@ -132,6 +140,7 @@
       "repo": "mikeylikesitnot-rgb/learning",
       "branch": "master",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["node"], "win32": ["node"] },
       "about": "Adaptive daily math quests for the kids (code kept current, not deployed)"
     },
     {
@@ -140,6 +149,7 @@
       "repo": "mikeylikesitnot-rgb/auction",
       "branch": "master",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["python"], "win32": ["python"] },
       "about": "Auction run list into a short buyer's card (Python) (code kept current, not deployed)"
     },
     {
@@ -148,6 +158,7 @@
       "repo": "mikeylikesitnot-rgb/BigLoveInstall",
       "branch": "main",
       "platforms": ["darwin", "win32"],
+      "needs": { "darwin": ["node"], "win32": ["node"] },
       "about": "Multi-entity tax bookkeeping ledger (code kept current, not deployed)"
     },
     {
