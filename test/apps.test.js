@@ -380,7 +380,7 @@ describe('per-computer folders, check-folder, open, what blocks an update', () =
     expect(sameRepo('', 'o/AutoDealer')).toBe(false);
   });
   it('uses the folder given for this computer instead of the apps folder', () => {
-    const { sh, calls } = fakeShell([['git -C /Users/me/AutoDealer rev-parse --short HEAD', 'abc1234'], ['git -C /Users/me/AutoDealer rev-parse --short origin/master', 'abc1234'], ['git -C /Users/me/AutoDealer rev-list', '0']]);
+    const { sh, calls } = fakeShell([['git -C /Users/me/AutoDealer remote get-url origin', 'https://github.com/o/AutoDealer.git'], ['git -C /Users/me/AutoDealer rev-parse --abbrev-ref HEAD', 'master'], ['git -C /Users/me/AutoDealer rev-parse --short HEAD', 'abc1234'], ['git -C /Users/me/AutoDealer rev-parse --short origin/master', 'abc1234'], ['git -C /Users/me/AutoDealer rev-list', '0']]);
     const s = createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, folders: { AutoDealer: '/Users/me/AutoDealer' } }).status(web);
     expect(s.path).toBe('/Users/me/AutoDealer');
     expect(calls.some((c) => c.includes('/apps/AutoDealer'))).toBe(false);
@@ -414,6 +414,39 @@ describe('per-computer folders, check-folder, open, what blocks an update', () =
     expect(main(['open', '--json'])).toBe(2);
     expect(main(['check-folder', 'SnagIt', '--json'])).toBe(2);
     out.mockRestore(); err.mockRestore();
+  });
+});
+
+describe('review fixes for picked folders', () => {
+  const web = { name: 'AutoDealer', kind: 'code-repo', repo: 'o/AutoDealer', branch: 'master' };
+  const folders = { AutoDealer: '/Users/me/AutoDealer' };
+  const good = [['git -C /Users/me/AutoDealer remote get-url origin', 'git@github.com:o/AutoDealer.git'], ['git -C /Users/me/AutoDealer rev-parse --abbrev-ref HEAD', 'master'],
+    ['git -C /Users/me/AutoDealer rev-parse --short HEAD', 'abc1234'], ['git -C /Users/me/AutoDealer rev-parse --short origin/master', 'def5678'], ['git -C /Users/me/AutoDealer rev-list --count HEAD..', '1']];
+  it('a picked folder that is gone, another repo, or on another branch is an error, never cloned into or pulled', () => {
+    const gone = fakeShell([]);
+    const s1 = createApps({ platform: 'darwin', dir: '/apps', sh: gone.sh, exists: () => false, folders, log: () => {} }).act(web, 'install');
+    expect(s1).toMatchObject({ state: 'error', action: 'failed' });
+    expect(s1.note).toMatch(/gone/);
+    expect(gone.calls.some((c) => c.includes('clone'))).toBe(false);
+    const other = fakeShell([['git -C /Users/me/AutoDealer remote get-url origin', 'git@github.com:o/auction.git']]);
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh: other.sh, exists: () => true, folders }).status(web).note).toMatch(/not o\/AutoDealer/);
+    const branch = fakeShell([['git -C /Users/me/AutoDealer remote get-url origin', 'git@github.com:o/AutoDealer.git'], ['git -C /Users/me/AutoDealer rev-parse --abbrev-ref HEAD', 'feature-x']]);
+    const s3 = createApps({ platform: 'darwin', dir: '/apps', sh: branch.sh, exists: () => true, folders, log: () => {} }).act(web, 'update', { force: true });
+    expect(s3.note).toMatch(/on branch feature-x/);
+    expect(branch.calls.some((c) => c.includes('pull'))).toBe(false);
+  });
+  it('updates a picked folder without npm ci when its packages are already there', () => {
+    const { sh, calls } = fakeShell(good);
+    createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, folders, log: () => {} }).act(web, 'update');
+    expect(calls).toContain('git -C /Users/me/AutoDealer pull --ff-only origin master');
+    expect(calls.some((c) => c.startsWith('npm'))).toBe(false);
+  });
+  it('on Windows, refuses paths cmd.exe would read as commands', () => {
+    const { sh, calls } = fakeShell([]);
+    const apps = createApps({ platform: 'win32', dir: 'C:\\apps', sh, exists: () => true, folders: { AutoDealer: 'C:\\src\\x&calc' } });
+    expect(apps.checkFolder(web, 'C:\\src\\x&calc').ok).toBe(false);
+    expect(apps.openFolder(web).ok).toBe(false);
+    expect(calls.some((c) => c.startsWith('cmd'))).toBe(false);
   });
 });
 

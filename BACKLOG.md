@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-26: v0.54.1 picked folders are re-checked on every status (still there, same repo, on the app's branch), never cloned into, and keep their installed packages (no npm ci); Windows refuses cmd-special characters in folder paths (BLK-059 review fixes).
 - 2026-11-26: v0.54.0 apps.mjs per-computer folders, check-folder, open in VS Code, changed files and unpushed commits in status (BLK-059), for Project Hub PH-162 and PH-163.
 - 2026-11-26: v0.53.0 apps.mjs streams install output with --progress and names the real error line (BLK-058), for Project Hub PH-158 and PH-161.
 - 2026-11-26: v0.52.0 apps list for every computer (BLK-057): kind `code-repo` in ops/apps.mjs (clone/pull + npm ci or .venv), plus FinePrint, Vitals, claude-skills and AutoDealer, TuroApp, webmail, learning, auction, BigLoveInstall, mungercompany, llmlocal.

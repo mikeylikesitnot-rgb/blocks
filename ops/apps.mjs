@@ -102,6 +102,9 @@ export function setupCommands(has, platform = process.platform) {
   return [];
 }
 
+/** Characters cmd.exe treats as special, even in a quoted argument (`code` is a .cmd there). */
+export const WIN_UNSAFE = /[&|^%<>()!"]/;
+
 /** Whether a git remote URL points at owner/repo on GitHub (https or ssh, with or without .git, any case). */
 export function sameRepo(url, repo) {
   const m = String(url || '').trim().match(/github\.com[:/]+([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/i);
@@ -148,6 +151,16 @@ export function createApps({
 
   function scriptInfo(app) {
     const path = pathOf(app);
+    const picked = !!folders[app.name];
+    // A folder the owner picked is never cloned into or used blindly: it must still be there, still be a
+    // checkout of this app's repo, and be on its branch, or the app reads as an error with the reason.
+    if (picked) {
+      if (!exists(join(path, '.git'))) throw new Error(`the folder picked for ${app.name} (${path}) is gone or isn't a git checkout; pick another or use the apps folder`);
+      const url = tryOut('git', ['-C', path, 'remote', 'get-url', 'origin']);
+      if (!sameRepo(url, app.repo)) throw new Error(`${path} is now a checkout of ${url || 'no GitHub repo'}, not ${app.repo}`);
+      const on = tryOut('git', ['-C', path, 'rev-parse', '--abbrev-ref', 'HEAD']);
+      if (on && on !== (app.branch || 'main')) throw new Error(`${path} is on branch ${on}, not ${app.branch || 'main'}; switch back to update it here`);
+    }
     if (!exists(join(path, '.git'))) return { path, installed: null };
     const branch = app.branch || 'main';
     let fetched = true;
@@ -252,7 +265,10 @@ export function createApps({
       sh('git', ['-C', path, 'pull', '--ff-only', 'origin', app.branch || 'main'], { stdio: out });
     }
     const hook = app.hook?.[platform];
-    const steps = app.kind === 'code-repo' ? setupCommands((f) => exists(join(path, f)), platform) : hook ? [hookCommand(hook, platform)] : [];
+    // In a folder the owner picked (their working copy), packages already there are left alone: npm ci would
+    // wipe node_modules under a running dev server.
+    const installed = exists(join(path, 'node_modules')) || exists(join(path, '.venv'));
+    const steps = app.kind === 'code-repo' ? (folders[app.name] && installed ? [] : setupCommands((f) => exists(join(path, f)), platform)) : hook ? [hookCommand(hook, platform)] : [];
     if (steps.length || app.kind === 'code-repo') {
       for (const [cmd, args] of steps) {
         log(`  running ${[cmd, ...args].join(' ')}`);
@@ -284,6 +300,7 @@ export function createApps({
     const base = { name: app.name, kind: app.kind, about: app.about || '', path };
     if (app.kind === 'electron-release') return { ...base, ok: false, note: `${app.name} is an installed app, not a folder` };
     if (!path || !/^(\/|[A-Za-z]:[\\/]|~)/.test(path)) return { ...base, ok: false, note: 'Give the full path, like /Users/me/AutoDealer' };
+    if (platform === 'win32' && WIN_UNSAFE.test(path)) return { ...base, ok: false, note: 'On Windows the path can\'t contain & | ^ % < > ( ) ! or "' };
     const full = path.startsWith('~') ? join(homedir(), path.slice(1)) : path;
     if (!exists(full)) return { ...base, path: full, ok: false, note: `${full} doesn't exist on this computer` };
     if (!exists(join(full, '.git'))) return { ...base, path: full, ok: false, note: `${full} isn't a git checkout` };
@@ -298,6 +315,7 @@ export function createApps({
     if (app.kind === 'electron-release') return { ...base, ok: false, note: `${app.name} has no folder to open` };
     const path = pathOf(app);
     if (!exists(path)) return { ...base, path, ok: false, note: `${path} isn't on this computer yet` };
+    if (platform === 'win32' && WIN_UNSAFE.test(path)) return { ...base, path, ok: false, note: 'Open it by hand: its path has characters Windows\' command line treats as special' };
     try {
       if (platform === 'win32') sh('cmd', ['/c', 'code', path], { stdio: 'ignore', env: launchEnv() });
       else { try { sh('code', [path], { stdio: 'ignore', env: launchEnv() }); } catch { sh('open', ['-a', 'Visual Studio Code', path], { stdio: 'ignore', env: launchEnv() }); } }
