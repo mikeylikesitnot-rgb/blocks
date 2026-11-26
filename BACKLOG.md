@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-26: v0.53.0 apps.mjs streams install output with --progress and names the real error line (BLK-058), for Project Hub PH-158 and PH-161.
 - 2026-11-26: v0.52.0 apps list for every computer (BLK-057): kind `code-repo` in ops/apps.mjs (clone/pull + npm ci or .venv), plus FinePrint, Vitals, claude-skills and AutoDealer, TuroApp, webmail, learning, auction, BigLoveInstall, mungercompany, llmlocal.
 - 2026-11-26: v0.51.1 ImageViewer in ops/apps.json (BLK-056): script-repo with a build-and-install hook, so Project Hub's Apps page can install it.
 - 2026-11-26: v0.51.0 CompareImages remembers its view (BLK-055): `defaultPos`, `onModeChange`, `onPosChange`, so a gallery keeps Slider / Side by side and the line position between images (PhotoPrep Review).

@@ -688,6 +688,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-058",
+      "name": "apps.mjs: live install output and real error lines",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "With --json --progress, clone, pull, hooks and setup print to stderr as they run, so Project Hub can show steps live and keep a log. A failure's note is the line that names the error, never Node's crash footer, a stack frame or \"Command failed\".",
+      "branch": "stream-output",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

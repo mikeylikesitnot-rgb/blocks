@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
-import { appsDir, classify, launchEnv, createApps, formatTable, hookCommand, loadManifest, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
+import { appsDir, classify, launchEnv, createApps, formatTable, firstLine, hookCommand, loadManifest, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
 import { vi } from 'vitest';
 
 describe('apps manifest', () => {
@@ -351,6 +351,24 @@ describe('review fixes', () => {
 
 it('starts apps without ELECTRON_RUN_AS_NODE', () => {
   expect(launchEnv({ PATH: '/bin', ELECTRON_RUN_AS_NODE: '1' })).toEqual({ PATH: '/bin' });
+});
+
+describe('error lines and streamed output', () => {
+  it('picks the error, not the Node crash footer or a stack frame', () => {
+    const stderr = 'node:internal/x:1\n  throw err;\nError: Cannot find module \'/a/apps.mjs\'\n    at Module._resolve (x:1)\n\nNode.js v22.23.2\n';
+    expect(firstLine({ stderr })).toBe("Error: Cannot find module '/a/apps.mjs'");
+    expect(firstLine({ stderr: 'step 1\nstep 2\n' })).toBe('step 2');
+    expect(firstLine({ message: 'Command failed: sh x.sh', stderr: 'npm ERR! code ELIFECYCLE\n' })).toBe('npm ERR! code ELIFECYCLE');
+    expect(firstLine({})).toBe('failed');
+  });
+  it('with stream, hook and setup output goes to stderr (fd 2) instead of being captured', () => {
+    const seen = [];
+    const { sh } = fakeShell([['git -C /apps/Web rev-parse --short HEAD', 'abc1234'], ['git -C /apps/Web rev-parse --short origin/main', 'def5678'], ['git -C /apps/Web rev-list', '1']]);
+    const sh2 = (cmd, args, o) => { if (cmd === 'npm' || args.includes('pull')) seen.push(o.stdio); return sh(cmd, args, o); };
+    createApps({ platform: 'darwin', dir: '/apps', sh: sh2, exists: (p) => p.endsWith('.git') || p.endsWith('package.json'), log: () => {}, stream: true })
+      .act({ name: 'Web', kind: 'code-repo', repo: 'o/Web', branch: 'main' }, 'update');
+    expect(seen).toEqual([['ignore', 2, 2], ['ignore', 2, 2]]);
+  });
 });
 
 describe('--progress', () => {

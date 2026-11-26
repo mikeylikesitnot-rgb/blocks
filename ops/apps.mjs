@@ -106,7 +106,11 @@ export function createApps({
   sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], ...opts }),
   exists = existsSync,
   log = (m) => console.error(m),
+  // --progress: what install steps print (clone, pull, hooks, npm) goes to stderr as it happens, so a UI can
+  // show it live and keep it as the run's log. Off, it is captured and only its error line is kept.
+  stream = false,
 } = {}) {
+  const out = stream ? ['ignore', 2, 2] : ['ignore', 'pipe', 'pipe'];
   const tryOut = (cmd, args, opts) => { try { return String(sh(cmd, args, opts) ?? '').trim(); } catch { return ''; } };
 
   const latestRelease = (repo) => JSON.parse(sh('gh', ['api', `repos/${repo}/releases/latest`]));
@@ -224,10 +228,10 @@ export function createApps({
     const path = s.path || join(dir, app.folder || app.name);
     if (s.state === 'missing') {
       log(`  cloning ${app.repo} into ${path}`);
-      sh('gh', ['repo', 'clone', app.repo, path, '--', '--branch', app.branch || 'main']);
+      sh('gh', ['repo', 'clone', app.repo, path, '--', '--branch', app.branch || 'main'], { stdio: out });
     } else {
       log(`  pulling ${path}`);
-      sh('git', ['-C', path, 'pull', '--ff-only', 'origin', app.branch || 'main']);
+      sh('git', ['-C', path, 'pull', '--ff-only', 'origin', app.branch || 'main'], { stdio: out });
     }
     const hook = app.hook?.[platform];
     const steps = app.kind === 'code-repo' ? setupCommands((f) => exists(join(path, f)), platform) : hook ? [hookCommand(hook, platform)] : [];
@@ -235,7 +239,7 @@ export function createApps({
       for (const [cmd, args] of steps) {
         log(`  running ${[cmd, ...args].join(' ')}`);
         // npm is npm.cmd on Windows, which Node only starts through a shell.
-        sh(cmd, args, { cwd: path, stdio: ['ignore', 'pipe', 'pipe'], env: launchEnv(), shell: platform === 'win32' && cmd === 'npm', timeout: 20 * 60_000 });
+        sh(cmd, args, { cwd: path, stdio: out, env: launchEnv(), shell: platform === 'win32' && cmd === 'npm', timeout: 20 * 60_000 });
       }
       const head = tryOut('git', ['-C', path, 'rev-parse', '--short', 'HEAD']);
       if (head) sh('git', ['-C', path, 'config', 'apps.hooked', head]);
@@ -260,9 +264,16 @@ export function createApps({
   return { status, act };
 }
 
-function firstLine(e) {
-  const text = String(e?.stderr || e?.message || e).trim();
-  return text.split('\n').filter(Boolean).pop()?.slice(0, 300) || 'failed';
+/** The line that says what went wrong: the first one that looks like an error, else the last real one. Never
+ * Node's "Node.js vX" crash footer or a stack frame. */
+export function firstLine(e) {
+  const clean = (t) => String(t || '').split(/\r?\n/).map((l) => l.trim())
+    .filter((l) => l && !/^Node\.js v\d/.test(l) && !/^at\s/.test(l) && !/^\^+$/.test(l) && !/^Command failed:/.test(l));
+  // What the command printed first; the exception's own message only when it printed nothing.
+  let lines = [...clean(e?.stderr), ...clean(e?.stdout)];
+  if (!lines.length) lines = String(e?.message || (typeof e === 'string' ? e : '')).split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/^Node\.js v\d/.test(l));
+  const hit = lines.find((l) => /\b(error|fatal|failed|not found|denied|cannot|could ?n[o']t)\b|ERR!/i.test(l));
+  return (hit || lines.pop() || 'failed').slice(0, 300);
 }
 
 const STATE_LABEL = { missing: 'not installed', current: 'up to date', behind: 'update available', ahead: 'ahead of latest', dirty: 'local changes', unsupported: 'not for this OS', error: 'error' };
@@ -300,7 +311,7 @@ export function main(argv = process.argv.slice(2)) {
   // --progress: with --json, still write each step ("pulling …", "running hook …") to stderr, so a UI
   // can show it live; stdout stays the one JSON answer.
   const quiet = json && !argv.includes('--progress');
-  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: quiet ? () => {} : undefined });
+  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: quiet ? () => {} : undefined, stream: json && !quiet });
   const rows = picked.map((a) => toRow(command === 'status' ? apps.status(a) : apps.act(a, command, { force: argv.includes('--force') })));
   if (json) console.log(JSON.stringify({ platform: process.platform, apps: rows }, null, 2));
   else console.log(formatTable(rows));
