@@ -113,7 +113,7 @@ const AREAS = [
   ] },
   { title: 'Changelog', sub: '', items: [
     { name: 'Changelog', also: ['normalizeChangelog', 'changelogDay', 'CHANGE_TYPES'], does: 'What changed, newest first and grouped by day: New / Fixed / Improved badges, F-id, Open page / Commit / PR links and before/after screenshots, with a type filter and search; normalizeChangelog cleans a changelog.json (bad entries dropped, hashes and PR numbers become links, image paths resolved).', props: 'entries (raw file or normalized), baseUrl (image folder), repoUrl, loading, error, onRetry, query/onQueryChange, types/onTypesChange, empty, anchorPrefix (each entry gets id=prefix+entry id, to link or scroll to it), toolbar (false: no built-in search/Type row, for an app\'s own filters), toolbarRight' },
-    { name: 'CompareImages', does: 'Before/after screenshots: drag slider (touch and arrow keys) or side by side; either opens full size in a Lightbox; one image shows alone.', props: 'before, after, label, beforeLabel, afterLabel, defaultMode slider|side' },
+    { name: 'CompareImages', does: 'Before/after screenshots: drag slider (touch and arrow keys) or side by side; either opens full size in a Lightbox; one image shows alone; remember the view across images with defaultMode/defaultPos + onModeChange/onPosChange.', props: 'before, after, label, beforeLabel, afterLabel, defaultMode slider|side, defaultPos 0-100, onModeChange(mode), onPosChange(pos)' },
   ] },
   { title: 'States & overlays', sub: '', items: [
     { name: 'EmptyState', does: 'Empty, no-results or error message with the right icon and action.', props: 'variant empty|filtered|error, title, body, action, onClear, onRetry, compact' },

@@ -208,6 +208,20 @@ describe('CompareImages', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open before' }));
     expect(within(screen.getByRole('dialog')).getByRole('img').getAttribute('src')).toBe('/b.webp');
   });
+  it('starts at defaultMode/defaultPos and reports changes, so an app can remember the view', () => {
+    const modes = [];
+    const positions = [];
+    cmp({ defaultPos: 30, onModeChange: (m) => modes.push(m), onPosChange: (p) => positions.push(p) });
+    expect(document.querySelector('.mk-compare-slider').style.getPropertyValue('--mk-compare-pos')).toBe('30%');
+    fireEvent.change(screen.getByLabelText(/drag to compare/), { target: { value: '70' } });
+    expect(positions).toEqual([70]);
+    fireEvent.click(screen.getByRole('button', { name: 'Side by side' }));
+    expect(modes).toEqual(['side']);
+  });
+  it('clamps a bad defaultPos', () => {
+    cmp({ defaultPos: 250 });
+    expect(document.querySelector('.mk-compare-slider').style.getPropertyValue('--mk-compare-pos')).toBe('100%');
+  });
   it('shows a single image alone, without the view switch', () => {
     cmp({ before: null });
     expect(screen.queryByRole('button', { name: 'Slider' })).toBeNull();

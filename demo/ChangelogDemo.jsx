@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Changelog, CHANGE_TYPES, Panel, Segmented, Button, SearchInput, FilterMenu } from '../src/index.js';
+import { Changelog, CHANGE_TYPES, CompareImages, Panel, Segmented, Button, SearchInput, FilterMenu } from '../src/index.js';
 
 /* Fake screenshots: a little admin list drawn as SVG, so the demo needs no image files. */
 function shot({ rows, accent = '#1a56db', extra = false, title = 'Leads' }) {
@@ -44,10 +44,27 @@ const ENTRIES = {
   ],
 };
 
+/** A gallery that keeps Slider / Side by side and the line position from one image to the next. */
+function RememberedCompare() {
+  const pages = [{ title: 'Leads', rows: NAMES }, { title: 'Cars', rows: ['2021 F-150 XLT', '2019 Civic LX', '2018 Tahoe LT'] }];
+  const [i, setI] = useState(0);
+  const [view, setView] = useState({ mode: 'slider', pos: 50 });
+  const p = pages[i];
+  return (
+    <Panel title="Compare gallery" subtitle="defaultMode/defaultPos + onModeChange/onPosChange: the view stays as you left it on the next image."
+      actions={<Button size="sm" variant="secondary" onClick={() => setI((i + 1) % pages.length)}>Next image</Button>}>
+      <CompareImages key={i} label={p.title} before={shot({ rows: p.rows, title: p.title })} after={shot({ rows: p.rows, title: p.title, extra: true })}
+        defaultMode={view.mode} defaultPos={view.pos}
+        onModeChange={(mode) => setView((v) => ({ ...v, mode }))} onPosChange={(pos) => setView((v) => ({ ...v, pos }))} />
+    </Panel>
+  );
+}
+
 export function ChangelogDemo() {
   const [state, setState] = useState('data');
   return (
     <div style={{ display: 'grid', gap: 16 }}>
+      <RememberedCompare />
       <Panel title="Changelog" subtitle="Entries come from a committed changelog.json; screenshots from the ship step."
         actions={<Segmented label="State" value={state} onChange={setState}
           items={[{ value: 'data', label: 'Data' }, { value: 'loading', label: 'Loading' }, { value: 'empty', label: 'Empty' }, { value: 'error', label: 'Error' }]} />}>

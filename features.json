@@ -652,6 +652,18 @@
       "spec": null,
       "mockup": "https://claude.ai/artifact/NwuTPemv9izSXo4Sg9hib9",
       "fromRequest": null
+    },
+    {
+      "id": "BLK-055",
+      "name": "CompareImages remembers its view",
+      "area": "Media",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "CompareImages takes defaultPos and reports onModeChange / onPosChange, so a gallery keeps Slider or Side by side and the slider line where you left them from one image to the next. For PhotoPrep's Review large view.",
+      "branch": "compare-callbacks",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

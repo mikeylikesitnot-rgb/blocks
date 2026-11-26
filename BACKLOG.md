@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-26: v0.51.0 CompareImages remembers its view (BLK-055): `defaultPos`, `onModeChange`, `onPosChange`, so a gallery keeps Slider / Side by side and the line position between images (PhotoPrep Review).
 - 2026-11-25: v0.50.0 SectionTab (BLK-054): phone section menu for long pages, a left-edge tab (current section icon, red/amber dot) that opens a side panel to jump, Fold all / Open all and Reorder; `useCurrentSection` scroll-follow. Moved from TuroApp's car page (TA-093).
 - 2026-11-24: v0.47.0 contact-form spam checks (BLK-050): `@mn/blocks/server/spam` (spamCheck, botReason, contentReason, isSalesPitch, pitchGroups, hasLink with allowHosts, isFakePhone) and `server/spamPhrases.json`, the phrase groups Munger's PHP form can read too. First used by AutoDealer's leads
 - 2026-11-24: v0.46.1 NavMenu searchExtra: results for an older query are hidden (and Enter can't open them) while the new search runs

@@ -146,10 +146,18 @@ export function changelogDay(day) {
  * side by side; either image opens full size in a Lightbox. With only one
  * image it shows that one.
  *   <CompareImages before="/c/a-before.webp" after="/c/a-after.webp" label="Leads list" />
+ * To remember the view between images (e.g. a gallery), pass defaultMode/defaultPos and listen with
+ * onModeChange('slider' | 'side') and onPosChange(0-100).
  */
-export function CompareImages({ before, after, label = '', beforeLabel = 'Before', afterLabel = 'After', defaultMode = 'slider', className = '' }) {
-  const [mode, setMode] = useState(defaultMode === 'side' ? 'side' : 'slider');
-  const [pos, setPos] = useState(50);
+export function CompareImages({
+  before, after, label = '', beforeLabel = 'Before', afterLabel = 'After', defaultMode = 'slider', defaultPos = 50,
+  onModeChange, onPosChange, className = '',
+}) {
+  const [mode, setModeState] = useState(defaultMode === 'side' ? 'side' : 'slider');
+  const startPos = Number.isFinite(Number(defaultPos)) ? Math.min(100, Math.max(0, Math.round(Number(defaultPos)))) : 50;
+  const [pos, setPosState] = useState(startPos);
+  const setMode = (m) => { setModeState(m); onModeChange?.(m); };
+  const setPos = (p) => { setPosState(p); onPosChange?.(p); };
   const [open, setOpen] = useState(null); // 'before' | 'after'
   const sliderId = useId();
   const box = useRef(null);
