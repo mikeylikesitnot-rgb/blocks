@@ -19,6 +19,9 @@
  * - code-repo: a project kept current for working on it (nothing is deployed): cloned or pulled like
  *   script-repo, then set up: `npm ci` (`npm install` without a lockfile) when there's a package.json,
  *   a .venv plus `pip install -e .` when there's a pyproject.toml, nothing otherwise (setupCommands).
+ * Per-computer folders: --folders '{"AutoDealer":"/Users/me/AutoDealer"}' uses an existing checkout for an app
+ * instead of <apps folder>/<name> (check-folder <name> <path> says whether a path is a checkout of its repo).
+ * open <name>: opens the app's folder in VS Code on this computer.
  * All GitHub access goes through `gh` (its login reaches private repos). Exit 1 if anything failed.
  */
 import { execFileSync } from 'node:child_process';
@@ -32,7 +35,7 @@ import { compareVersions, pickAsset } from '../server/desktopUpdate.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** Env for anything we start: ELECTRON_RUN_AS_NODE (set by VS Code's terminal) makes Electron apps quit silently. */
 export function launchEnv(env = process.env) { const { ELECTRON_RUN_AS_NODE, ...rest } = env; return rest; }
-export const COMMANDS = ['status', 'install', 'update'];
+export const COMMANDS = ['status', 'install', 'update', 'check-folder', 'open'];
 export const KINDS = ['electron-release', 'script-repo', 'code-repo'];
 
 export function loadManifest(file = join(HERE, 'apps.json')) {
@@ -99,6 +102,12 @@ export function setupCommands(has, platform = process.platform) {
   return [];
 }
 
+/** Whether a git remote URL points at owner/repo on GitHub (https or ssh, with or without .git, any case). */
+export function sameRepo(url, repo) {
+  const m = String(url || '').trim().match(/github\.com[:/]+([^/\s]+\/[^/\s]+?)(?:\.git)?\/?$/i);
+  return !!m && m[1].toLowerCase() === String(repo).toLowerCase();
+}
+
 export function createApps({
   platform = process.platform,
   arch = process.arch,
@@ -109,9 +118,14 @@ export function createApps({
   // --progress: what install steps print (clone, pull, hooks, npm) goes to stderr as it happens, so a UI can
   // show it live and keep it as the run's log. Off, it is captured and only its error line is kept.
   stream = false,
+  folders = {},
 } = {}) {
+  /** Where an app lives on this computer: an existing folder the owner picked, else <apps folder>/<folder or name>. */
+  const pathOf = (app) => folders[app.name] || join(dir, app.folder || app.name);
   const out = stream ? ['ignore', 2, 2] : ['ignore', 'pipe', 'pipe'];
   const tryOut = (cmd, args, opts) => { try { return String(sh(cmd, args, opts) ?? '').trim(); } catch { return ''; } };
+  /** Like tryOut, but keeps leading spaces (git status --porcelain columns). */
+  const rawOut = (cmd, args) => { try { return String(sh(cmd, args) ?? ''); } catch { return ''; } };
 
   const latestRelease = (repo) => JSON.parse(sh('gh', ['api', `repos/${repo}/releases/latest`]));
   const macAppPath = (app) => app.macPath || `/Applications/${app.product || app.name}.app`;
@@ -133,7 +147,7 @@ export function createApps({
   }
 
   function scriptInfo(app) {
-    const path = join(dir, app.folder || app.name);
+    const path = pathOf(app);
     if (!exists(join(path, '.git'))) return { path, installed: null };
     const branch = app.branch || 'main';
     let fetched = true;
@@ -142,10 +156,11 @@ export function createApps({
     const remote = tryOut('git', ['-C', path, 'rev-parse', '--short', `origin/${branch}`]);
     const dirty = tryOut('git', ['-C', path, 'status', '--porcelain', '--untracked-files=no']) !== '';
     const behind = Number(tryOut('git', ['-C', path, 'rev-list', '--count', `HEAD..origin/${branch}`]) || 0);
+    const ahead = Number(tryOut('git', ['-C', path, 'rev-list', '--count', `origin/${branch}..HEAD`]) || 0);
     // The commit whose hook last finished (installScript records it). A hook that failed after
     // the pull leaves HEAD current but the app stale; that must still read as needing an update.
     const hookPending = (app.kind === 'code-repo' || !!app.hook?.[platform]) && !!head && tryOut('git', ['-C', path, 'config', '--get', 'apps.hooked']) !== head;
-    return { path, branch, installed: head || null, latest: remote || null, dirty, behind, fetched, hookPending };
+    return { path, branch, installed: head || null, latest: remote || null, dirty, behind, ahead, fetched, hookPending };
   }
 
   function status(app) {
@@ -163,7 +178,10 @@ export function createApps({
       if (state === 'behind' && !info.behind) state = 'ahead'; // local commits not on origin
       let note = info.installed && !info.fetched ? "couldn't reach GitHub; latest is from the last check" : null;
       if (state === 'current' && info.hookPending) { state = 'behind'; note = "install step hasn't finished for this version; Update runs it again"; }
-      return { ...base, installed: info.installed, latest: info.latest, state, behind: info.behind, path: info.path, branch: info.branch, note };
+      // What blocks an update: the changed files (up to 20) or the commits not on GitHub (up to 10).
+      const changes = state === 'dirty' ? rawOut('git', ['-C', info.path, 'status', '--porcelain', '--untracked-files=no']).split('\n').filter((l) => l.trim()).slice(0, 20) : null;
+      const commits = state === 'ahead' || (state === 'dirty' && info.ahead) ? tryOut('git', ['-C', info.path, 'log', '--oneline', '--no-decorate', '-n', '10', `origin/${info.branch}..HEAD`]).split('\n').filter(Boolean) : null;
+      return { ...base, installed: info.installed, latest: info.latest, state, behind: info.behind, path: info.path, branch: info.branch, note, changes, commits };
     } catch (e) {
       return { ...base, installed: null, latest: null, state: 'error', note: firstLine(e) };
     }
@@ -225,7 +243,7 @@ export function createApps({
   }
 
   function installScript(app, s) {
-    const path = s.path || join(dir, app.folder || app.name);
+    const path = s.path || pathOf(app);
     if (s.state === 'missing') {
       log(`  cloning ${app.repo} into ${path}`);
       sh('gh', ['repo', 'clone', app.repo, path, '--', '--branch', app.branch || 'main'], { stdio: out });
@@ -261,7 +279,35 @@ export function createApps({
     return { ...after, action: before.state === 'missing' ? 'installed' : 'updated', from: before.installed };
   }
 
-  return { status, act };
+  /** Whether `path` can stand in for this app here: a git checkout whose origin is the app's repo. */
+  function checkFolder(app, path) {
+    const base = { name: app.name, kind: app.kind, about: app.about || '', path };
+    if (app.kind === 'electron-release') return { ...base, ok: false, note: `${app.name} is an installed app, not a folder` };
+    if (!path || !/^(\/|[A-Za-z]:[\\/]|~)/.test(path)) return { ...base, ok: false, note: 'Give the full path, like /Users/me/AutoDealer' };
+    const full = path.startsWith('~') ? join(homedir(), path.slice(1)) : path;
+    if (!exists(full)) return { ...base, path: full, ok: false, note: `${full} doesn't exist on this computer` };
+    if (!exists(join(full, '.git'))) return { ...base, path: full, ok: false, note: `${full} isn't a git checkout` };
+    const url = tryOut('git', ['-C', full, 'remote', 'get-url', 'origin']);
+    if (!sameRepo(url, app.repo)) return { ...base, path: full, ok: false, note: `${full} is a checkout of ${url || 'no GitHub repo'}, not ${app.repo}` };
+    return { ...base, path: full, ok: true, note: null };
+  }
+
+  /** Opens the app's folder in VS Code (the `code` command, else the app by name on a Mac). */
+  function openFolder(app) {
+    const base = { name: app.name, kind: app.kind, about: app.about || '' };
+    if (app.kind === 'electron-release') return { ...base, ok: false, note: `${app.name} has no folder to open` };
+    const path = pathOf(app);
+    if (!exists(path)) return { ...base, path, ok: false, note: `${path} isn't on this computer yet` };
+    try {
+      if (platform === 'win32') sh('cmd', ['/c', 'code', path], { stdio: 'ignore', env: launchEnv() });
+      else { try { sh('code', [path], { stdio: 'ignore', env: launchEnv() }); } catch { sh('open', ['-a', 'Visual Studio Code', path], { stdio: 'ignore', env: launchEnv() }); } }
+      return { ...base, path, ok: true, note: null };
+    } catch (e) {
+      return { ...base, path, ok: false, note: `Couldn't open VS Code: ${firstLine(e)}` };
+    }
+  }
+
+  return { status, act, checkFolder, openFolder, dir };
 }
 
 /** The line that says what went wrong: the first one that looks like an error, else the last real one. Never
@@ -289,14 +335,14 @@ export function formatTable(rows) {
   return lines.map((l) => l.map((c, i) => (i === l.length - 1 ? c : c.padEnd(w[i]))).join('  ')).join('\n');
 }
 
-export const ROW_KEYS = ['name', 'kind', 'about', 'state', 'installed', 'latest', 'behind', 'branch', 'path', 'action', 'from', 'note'];
+export const ROW_KEYS = ['name', 'kind', 'about', 'state', 'installed', 'latest', 'behind', 'branch', 'path', 'action', 'from', 'note', 'changes', 'commits', 'ok'];
 /** Every row has the same keys (null when empty), so a UI can rely on them. */
 export const toRow = (r) => Object.fromEntries(ROW_KEYS.map((k) => [k, r[k] ?? null]));
-const FLAGS = ['--json', '--force', '--manifest', '--apps-dir', '--progress'];
+const FLAGS = ['--json', '--force', '--manifest', '--apps-dir', '--progress', '--folders'];
 
 export function main(argv = process.argv.slice(2)) {
   const opt = (f) => { const i = argv.indexOf(f); return i === -1 ? null : argv[i + 1]; };
-  const valued = new Set([opt('--manifest'), opt('--apps-dir')].filter(Boolean));
+  const valued = new Set([opt('--manifest'), opt('--apps-dir'), opt('--folders')].filter(Boolean));
   const words = argv.filter((a) => !a.startsWith('--') && !valued.has(a));
   const [command = 'status', name] = words;
   const json = argv.includes('--json');
@@ -305,17 +351,29 @@ export function main(argv = process.argv.slice(2)) {
   if (unknown.length) return bad(`unknown option ${unknown.join(' ')} (have ${FLAGS.join(' ')})`);
   if (!COMMANDS.includes(command)) return bad(`say ${COMMANDS.join(', ')}`);
   if (command === 'install' && !name) return bad('install <name|all>');
-  if (words.length > 2) return bad(`one app at a time, or all (got ${words.slice(1).join(' ')})`);
+  if ((command === 'open' || command === 'check-folder') && (!name || name === 'all')) return bad(`${command} <name>${command === 'check-folder' ? ' <path>' : ''}`);
+  if (command === 'check-folder' ? words.length !== 3 : words.length > 2) return bad(`one app at a time, or all (got ${words.slice(1).join(' ')})`);
+  let folders = {};
+  if (opt('--folders')) {
+    try { folders = JSON.parse(opt('--folders')); } catch { return bad('--folders must be JSON: {"App":"/path"}'); }
+    if (!folders || typeof folders !== 'object' || Array.isArray(folders) || Object.values(folders).some((v) => typeof v !== 'string')) return bad('--folders must be JSON: {"App":"/path"}');
+  }
   let picked;
   try { picked = selectApps(loadManifest(opt('--manifest') || undefined), name); } catch (e) { return bad(e.message); }
   // --progress: with --json, still write each step ("pulling …", "running hook …") to stderr, so a UI
   // can show it live; stdout stays the one JSON answer.
   const quiet = json && !argv.includes('--progress');
-  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: quiet ? () => {} : undefined, stream: json && !quiet });
-  const rows = picked.map((a) => toRow(command === 'status' ? apps.status(a) : apps.act(a, command, { force: argv.includes('--force') })));
-  if (json) console.log(JSON.stringify({ platform: process.platform, apps: rows }, null, 2));
+  const apps = createApps({ ...(opt('--apps-dir') ? { dir: opt('--apps-dir') } : {}), log: quiet ? () => {} : undefined, stream: json && !quiet, folders });
+  const one = (a) => {
+    if (command === 'status') return apps.status(a);
+    if (command === 'check-folder') return apps.checkFolder(a, words[2]);
+    if (command === 'open') return apps.openFolder(a);
+    return apps.act(a, command, { force: argv.includes('--force') });
+  };
+  const rows = picked.map((a) => toRow(one(a)));
+  if (json) console.log(JSON.stringify({ platform: process.platform, dir: apps.dir, apps: rows }, null, 2));
   else console.log(formatTable(rows));
-  return rows.some((r) => r.action === 'failed') ? 1 : 0;
+  return rows.some((r) => r.action === 'failed' || r.ok === false) ? 1 : 0;
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) process.exitCode = main();

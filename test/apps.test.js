@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
-import { appsDir, classify, launchEnv, createApps, formatTable, firstLine, hookCommand, loadManifest, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
+import { appsDir, classify, launchEnv, createApps, formatTable, firstLine, hookCommand, loadManifest, sameRepo, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
 import { vi } from 'vitest';
 
 describe('apps manifest', () => {
@@ -368,6 +368,52 @@ describe('error lines and streamed output', () => {
     createApps({ platform: 'darwin', dir: '/apps', sh: sh2, exists: (p) => p.endsWith('.git') || p.endsWith('package.json'), log: () => {}, stream: true })
       .act({ name: 'Web', kind: 'code-repo', repo: 'o/Web', branch: 'main' }, 'update');
     expect(seen).toEqual([['ignore', 2, 2], ['ignore', 2, 2]]);
+  });
+});
+
+describe('per-computer folders, check-folder, open, what blocks an update', () => {
+  const web = { name: 'AutoDealer', kind: 'code-repo', repo: 'o/AutoDealer', branch: 'master' };
+  it('matches a GitHub remote in any form', () => {
+    expect(sameRepo('git@github.com:o/AutoDealer.git', 'o/AutoDealer')).toBe(true);
+    expect(sameRepo('https://github.com/O/autodealer', 'o/AutoDealer')).toBe(true);
+    expect(sameRepo('https://github.com/o/AutoDealer-old.git', 'o/AutoDealer')).toBe(false);
+    expect(sameRepo('', 'o/AutoDealer')).toBe(false);
+  });
+  it('uses the folder given for this computer instead of the apps folder', () => {
+    const { sh, calls } = fakeShell([['git -C /Users/me/AutoDealer rev-parse --short HEAD', 'abc1234'], ['git -C /Users/me/AutoDealer rev-parse --short origin/master', 'abc1234'], ['git -C /Users/me/AutoDealer rev-list', '0']]);
+    const s = createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, folders: { AutoDealer: '/Users/me/AutoDealer' } }).status(web);
+    expect(s.path).toBe('/Users/me/AutoDealer');
+    expect(calls.some((c) => c.includes('/apps/AutoDealer'))).toBe(false);
+  });
+  it("accepts only a checkout of the app's own repo", () => {
+    const { sh } = fakeShell([['git -C /Users/me/AutoDealer remote get-url origin', 'git@github.com:o/AutoDealer.git'], ['git -C /Users/me/auction remote get-url origin', 'git@github.com:o/auction.git']]);
+    const apps = createApps({ platform: 'darwin', dir: '/apps', sh, exists: (p) => !p.startsWith('/nope') && !p.startsWith('/Users/me/plain/') });
+    expect(apps.checkFolder(web, '/Users/me/AutoDealer')).toMatchObject({ ok: true, path: '/Users/me/AutoDealer' });
+    expect(apps.checkFolder(web, '/Users/me/auction').note).toMatch(/not o\/AutoDealer/);
+    expect(apps.checkFolder(web, '/nope').note).toMatch(/doesn't exist/);
+    expect(apps.checkFolder(web, 'AutoDealer').note).toMatch(/full path/);
+    expect(apps.checkFolder({ name: 'SnagIt', kind: 'electron-release', repo: 'o/SnagIt' }, '/x').ok).toBe(false);
+  });
+  it('lists changed files for local changes and unpushed commits for ahead', () => {
+    const base = [['git -C /apps/AutoDealer rev-parse --short HEAD', 'abc1234'], ['git -C /apps/AutoDealer rev-parse --short origin/master', 'def5678'], ['git -C /apps/AutoDealer rev-list --count HEAD..', '0']];
+    const dirty = fakeShell([...base, ['git -C /apps/AutoDealer status', ' M server.js\n M web/app.tsx\n'], ['git -C /apps/AutoDealer rev-list --count origin', '0']]);
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh: dirty.sh, exists: () => true }).status(web)).toMatchObject({ state: 'dirty', changes: [' M server.js', ' M web/app.tsx'], commits: null });
+    const ahead = fakeShell([...base, ['git -C /apps/AutoDealer rev-list --count origin', '2'], ['git -C /apps/AutoDealer log', 'abc1234 Fix lot\n9f8e7d6 Add VIN\n']]);
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh: ahead.sh, exists: () => true }).status(web)).toMatchObject({ state: 'ahead', changes: null, commits: ['abc1234 Fix lot', '9f8e7d6 Add VIN'] });
+  });
+  it('opens the folder in VS Code, and never runs anything else', () => {
+    const { sh, calls } = fakeShell([]);
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true }).openFolder(web)).toMatchObject({ ok: true, path: '/apps/AutoDealer' });
+    expect(calls).toEqual(['code /apps/AutoDealer']);
+  });
+  it('the CLI refuses bad --folders and wants a name for open and check-folder', () => {
+    const out = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(main(['status', '--json', '--folders', 'nope'])).toBe(2);
+    expect(main(['status', '--json', '--folders', '{"A":1}'])).toBe(2);
+    expect(main(['open', '--json'])).toBe(2);
+    expect(main(['check-folder', 'SnagIt', '--json'])).toBe(2);
+    out.mockRestore(); err.mockRestore();
   });
 });
 

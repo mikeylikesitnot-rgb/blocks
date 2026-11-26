@@ -700,6 +700,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-059",
+      "name": "apps.mjs: per-computer folders, check-folder, open, what blocks an update",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "--folders '{\"App\":\"/path\"}' uses an existing checkout instead of <apps folder>/<name>; check-folder <name> <path> accepts only a checkout of that app's repo; open <name> opens its folder in VS Code; status lists the changed files (local changes, up to 20) and unpushed commits (ahead, up to 10); --json adds the apps folder as dir. For Project Hub PH-162 and PH-163.",
+      "branch": "folders",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
