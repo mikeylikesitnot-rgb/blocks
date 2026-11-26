@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, act, within } from '@testing-library/react';
 import {
   Button, Badge, toneFor, Field, Skeleton, Input, SearchInput, Modal, OverlayProvider, useConfirm, useToast,
-  matchesQuery, StatCard, PlusIcon, XIcon, DataTable,
+  matchesQuery, StatCard, PlusIcon, XIcon, DataTable, Segmented,
 } from '../src/index.js';
 
 afterEach(cleanup);
@@ -311,5 +311,29 @@ describe('DataTable', () => {
       render(<DataTable columns={COLS_INPUT} data={DATA} />);
       expect(screen.getAllByLabelText('City for Ana')).toHaveLength(2);
     });
+  });
+});
+
+describe('Segmented', () => {
+  const items = [{ value: 'a', label: 'A' }, { value: 'b', label: 'B', disabled: true, title: 'Add a key first' }, { value: 'c', label: 'C' }];
+  it('calls onChange for each enabled option clicked', () => {
+    const picks = [];
+    render(<Segmented label="Pick" items={items} value="a" onChange={(v) => picks.push(v)} />);
+    fireEvent.click(screen.getByRole('button', { name: 'C' }));
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    expect(picks).toEqual(['c', 'a']);
+    expect(screen.getByRole('button', { name: 'A' }).getAttribute('aria-pressed')).toBe('true');
+  });
+  it('a disabled option is shown with its reason and cannot be picked', () => {
+    const picks = [];
+    render(<Segmented label="Pick" items={items} value="a" onChange={(v) => picks.push(v)} />);
+    const b = screen.getByRole('button', { name: 'B' });
+    // Focusable, so keyboard and screen-reader users reach the reason.
+    expect(b.disabled).toBe(false);
+    expect(b.getAttribute('aria-disabled')).toBe('true');
+    expect(b.title).toBe('Add a key first');
+    expect(document.getElementById(b.getAttribute('aria-describedby')).textContent).toBe('Add a key first');
+    fireEvent.click(b);
+    expect(picks).toEqual([]);
   });
 });

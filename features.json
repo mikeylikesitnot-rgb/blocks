@@ -724,6 +724,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-061",
+      "name": "Segmented: disabled items",
+      "area": "Components",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "Segmented items take disabled and title: the item shows dimmed, can't be picked, stays focusable (aria-disabled) and carries its reason as a tooltip and screen-reader description. Default behaviour unchanged. For Project Hub PH-169.",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

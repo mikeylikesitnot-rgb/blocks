@@ -1,3 +1,4 @@
+import { Fragment, useId } from 'react';
 import { cx } from './cx.js';
 import { useCountUp } from './motion.js';
 
@@ -130,16 +131,30 @@ export function Tabs({ items, value, onChange, className = '', label }) {
   );
 }
 
-/** Few-option toggle, e.g. List / Board. */
+/**
+ * Few-option toggle, e.g. List / Board (2-5 options). An item may be `disabled` (shown, not pickable) with a `title`
+ * saying why, e.g. { value: 'api', label: 'API key only', disabled: !hasKey, title: 'Add an API key first' }.
+ * A disabled item stays focusable (aria-disabled) so keyboard and screen-reader users reach the reason, which is
+ * also its description.
+ */
 export function Segmented({ items, value, onChange, className = '', label }) {
+  const id = useId();
   return (
     <div className={cx('mk-segmented', className)} role="group" aria-label={label}>
-      {items.map((it) => (
-        <button key={it.value} type="button" className="mk-seg-btn" aria-pressed={it.value === value} onClick={() => onChange(it.value)}>
-          {it.icon && <it.icon className="mk-icon" aria-hidden />}
-          {it.label}
-        </button>
-      ))}
+      {items.map((it, i) => {
+        const why = it.disabled && it.title ? `${id}-why-${i}` : undefined;
+        return (
+          <Fragment key={it.value}>
+            <button type="button" className="mk-seg-btn" aria-pressed={it.value === value}
+              aria-disabled={it.disabled ? 'true' : undefined} aria-describedby={why} title={it.title}
+              onClick={() => { if (!it.disabled) onChange(it.value); }}>
+              {it.icon && <it.icon className="mk-icon" aria-hidden />}
+              {it.label}
+            </button>
+            {why && <span id={why} className="mk-sr-only">{it.title}</span>}
+          </Fragment>
+        );
+      })}
     </div>
   );
 }

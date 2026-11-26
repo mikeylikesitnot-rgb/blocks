@@ -194,7 +194,8 @@ button.mk-stat:hover { background: var(--mk-surface-2); border-color: var(--mk-b
   background: none; border: 0; border-radius: var(--mk-radius-sm);
   font: inherit; font-size: var(--mk-text-sm); font-weight: 500; color: var(--mk-muted); cursor: pointer;
 }
-.mk-seg-btn:hover { color: var(--mk-heading); }
+.mk-seg-btn:hover:not([aria-disabled='true']) { color: var(--mk-heading); }
+.mk-seg-btn[aria-disabled='true'] { opacity: 0.45; cursor: not-allowed; }
 .mk-seg-btn[aria-pressed='true'] { background: var(--mk-surface); color: var(--mk-heading); box-shadow: var(--mk-shadow); }
 
 .mk-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--mk-space-2); margin-bottom: var(--mk-space-4); }

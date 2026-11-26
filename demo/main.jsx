@@ -155,7 +155,7 @@ function Demo() {
             <Toolbar right={`${rows.length} of ${ROWS.length}`}>
               <SearchInput value={q} onChange={setQ} placeholder="Name, phone, status" />
               <Select active={false} defaultValue="all"><option value="all">All statuses</option></Select>
-              <Segmented label="View" value={view} onChange={setView} items={[{ value: 'list', label: 'List' }, { value: 'board', label: 'Board' }]} />
+              <Segmented label="View" value={view} onChange={setView} items={[{ value: 'list', label: 'List' }, { value: 'board', label: 'Board' }, { value: 'map', label: 'Map', disabled: true, title: 'Needs locations first' }]} />
             </Toolbar>
           </div>
           {rows.length === 0 ? (
