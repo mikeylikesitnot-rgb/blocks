@@ -664,6 +664,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-056",
+      "name": "ImageViewer in the apps list",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "ops/apps.json lists ImageViewer (script-repo, macOS): apps.mjs clones or pulls it and runs scripts/apps-hook.sh, which builds and installs ImageViewer.app.",
+      "branch": "imageviewer-entry",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

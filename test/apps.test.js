@@ -9,7 +9,8 @@ import { vi } from 'vitest';
 describe('apps manifest', () => {
   const apps = loadManifest();
   it('ships SnagIt and WindowsManager with a valid kind', () => {
-    expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['SnagIt', 'WindowsManager', 'AppShelf']));
+    expect(apps.map((a) => a.name)).toEqual(expect.arrayContaining(['SnagIt', 'WindowsManager', 'AppShelf', 'ImageViewer']));
+    expect(apps.find((a) => a.name === 'ImageViewer')).toMatchObject({ kind: 'script-repo', hook: { darwin: 'scripts/apps-hook.sh' } });
     expect(apps.find((a) => a.name === 'AppShelf')).toMatchObject({ kind: 'electron-release', product: 'AppShelf' });
     expect(apps.find((a) => a.name === 'WindowsManager').hook).toEqual({ darwin: 'mac/install.sh', win32: 'windows/setup.ps1' });
   });

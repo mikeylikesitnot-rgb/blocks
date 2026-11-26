@@ -63,6 +63,15 @@
       "platforms": ["darwin"],
       "hook": { "darwin": "scripts/install-app.sh" },
       "about": "MacBook as a second display for the Mac mini (rebuilds Host/Viewer; first install by hand)"
+    },
+    {
+      "name": "ImageViewer",
+      "kind": "script-repo",
+      "repo": "mikeylikesitnot-rgb/ImageViewer",
+      "branch": "main",
+      "platforms": ["darwin"],
+      "hook": { "darwin": "scripts/apps-hook.sh" },
+      "about": "Fast keyboard-driven image viewer and light editor (builds into /Applications)"
     }
   ]
 }
