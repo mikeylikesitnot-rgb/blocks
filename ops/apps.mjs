@@ -16,6 +16,9 @@
  *   APPS_DIR to change), or `git pull --ff-only`, then the hook for this OS from the repo folder.
  *   A repo with uncommitted changes is never pulled.
  * install = missing or behind; update = only apps already installed and behind; --force does it anyway.
+ * - code-repo: a project kept current for working on it (nothing is deployed): cloned or pulled like
+ *   script-repo, then set up: `npm ci` (`npm install` without a lockfile) when there's a package.json,
+ *   a .venv plus `pip install -e .` when there's a pyproject.toml, nothing otherwise (setupCommands).
  * All GitHub access goes through `gh` (its login reaches private repos). Exit 1 if anything failed.
  */
 import { execFileSync } from 'node:child_process';
@@ -30,7 +33,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** Env for anything we start: ELECTRON_RUN_AS_NODE (set by VS Code's terminal) makes Electron apps quit silently. */
 export function launchEnv(env = process.env) { const { ELECTRON_RUN_AS_NODE, ...rest } = env; return rest; }
 export const COMMANDS = ['status', 'install', 'update'];
-export const KINDS = ['electron-release', 'script-repo'];
+export const KINDS = ['electron-release', 'script-repo', 'code-repo'];
 
 export function loadManifest(file = join(HERE, 'apps.json')) {
   const data = JSON.parse(readFileSync(file, 'utf8'));
@@ -85,6 +88,17 @@ export function hookCommand(file, platform = process.platform) {
   throw new Error(`don't know how to run hook ${file}`);
 }
 
+/** code-repo setup for the files a repo has: a list of [command, args] run in order from the repo folder. */
+export function setupCommands(has, platform = process.platform) {
+  const win = platform === 'win32';
+  if (has('package.json')) return [['npm', has('package-lock.json') ? ['ci', '--no-audit', '--no-fund'] : ['install', '--no-audit', '--no-fund']]];
+  if (has('pyproject.toml')) {
+    const pip = win ? join('.venv', 'Scripts', 'pip.exe') : join('.venv', 'bin', 'pip');
+    return [[win ? 'python' : 'python3', ['-m', 'venv', '.venv']], [pip, ['install', '--quiet', '-e', '.']]];
+  }
+  return [];
+}
+
 export function createApps({
   platform = process.platform,
   arch = process.arch,
@@ -126,7 +140,7 @@ export function createApps({
     const behind = Number(tryOut('git', ['-C', path, 'rev-list', '--count', `HEAD..origin/${branch}`]) || 0);
     // The commit whose hook last finished (installScript records it). A hook that failed after
     // the pull leaves HEAD current but the app stale; that must still read as needing an update.
-    const hookPending = !!app.hook?.[platform] && !!head && tryOut('git', ['-C', path, 'config', '--get', 'apps.hooked']) !== head;
+    const hookPending = (app.kind === 'code-repo' || !!app.hook?.[platform]) && !!head && tryOut('git', ['-C', path, 'config', '--get', 'apps.hooked']) !== head;
     return { path, branch, installed: head || null, latest: remote || null, dirty, behind, fetched, hookPending };
   }
 
@@ -216,10 +230,13 @@ export function createApps({
       sh('git', ['-C', path, 'pull', '--ff-only', 'origin', app.branch || 'main']);
     }
     const hook = app.hook?.[platform];
-    if (hook) {
-      log(`  running ${hook}`);
-      const [cmd, args] = hookCommand(hook, platform);
-      sh(cmd, args, { cwd: path, stdio: ['ignore', 'pipe', 'pipe'], env: launchEnv() });
+    const steps = app.kind === 'code-repo' ? setupCommands((f) => exists(join(path, f)), platform) : hook ? [hookCommand(hook, platform)] : [];
+    if (steps.length || app.kind === 'code-repo') {
+      for (const [cmd, args] of steps) {
+        log(`  running ${[cmd, ...args].join(' ')}`);
+        // npm is npm.cmd on Windows, which Node only starts through a shell.
+        sh(cmd, args, { cwd: path, stdio: ['ignore', 'pipe', 'pipe'], env: launchEnv(), shell: platform === 'win32' && cmd === 'npm', timeout: 20 * 60_000 });
+      }
       const head = tryOut('git', ['-C', path, 'rev-parse', '--short', 'HEAD']);
       if (head) sh('git', ['-C', path, 'config', 'apps.hooked', head]);
     }

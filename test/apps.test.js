@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
-import { appsDir, classify, launchEnv, createApps, formatTable, hookCommand, loadManifest, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
+import { appsDir, classify, launchEnv, createApps, formatTable, hookCommand, loadManifest, setupCommands, main, ROW_KEYS, selectApps, shouldAct, toRow } from '../ops/apps.mjs';
 import { vi } from 'vitest';
 
 describe('apps manifest', () => {
@@ -21,6 +21,16 @@ describe('apps manifest', () => {
     }
     expect(apps.find((a) => a.name === 'Mac Explorer').folder).toBe('mac explorer');
     expect(apps.find((a) => a.name === 'edge-workspace-switcher').branch).toBe('master');
+  });
+  it('ships FinePrint, Vitals, claude-skills and the web projects as code-repos', () => {
+    expect(apps.find((a) => a.name === 'FinePrint')).toMatchObject({ kind: 'script-repo', platforms: ['darwin'], hook: { darwin: 'scripts/apps-hook.sh' } });
+    expect(apps.find((a) => a.name === 'Vitals')).toMatchObject({ kind: 'script-repo', platforms: ['win32'], hook: { win32: 'scripts/apps-hook.ps1' } });
+    expect(apps.find((a) => a.name === 'claude-skills').hook).toEqual({ darwin: 'scripts/apps-hook.sh', win32: 'scripts/apps-hook.ps1' });
+    const code = apps.filter((a) => a.kind === 'code-repo').map((a) => a.name);
+    expect(code).toEqual(['AutoDealer', 'TuroApp', 'webmail', 'learning', 'auction', 'BigLoveInstall', 'mungercompany', 'llmlocal']);
+    for (const a of apps.filter((x) => x.kind === 'code-repo')) expect(a.hook, `${a.name} needs no hook`).toBeUndefined();
+    // Project Hub's agent refuses names outside this pattern.
+    for (const a of apps) expect(a.name).toMatch(/^(?=.{1,64}$)[A-Za-z0-9._-]+(?: [A-Za-z0-9._-]+)*$/);
   });
   it('selects all, one (any case), or fails on an unknown name', () => {
     expect(selectApps(apps, 'all')).toHaveLength(apps.length);
@@ -197,6 +207,67 @@ describe('script-repo', () => {
   it('skips apps not made for this OS', () => {
     const s = createApps({ platform: 'linux', sh: () => '' }).status({ ...app, platforms: ['darwin'] });
     expect(s.state).toBe('unsupported');
+  });
+});
+
+describe('code-repo', () => {
+  const app = { name: 'Web', kind: 'code-repo', repo: 'o/Web', branch: 'main' };
+  const pulled = [
+    ['git -C /apps/Web rev-parse --short HEAD', 'abc1234'],
+    ['git -C /apps/Web rev-parse --short origin/main', 'def5678'],
+    ['git -C /apps/Web rev-list', '1'],
+  ];
+
+  it('picks the setup from the files the repo has', () => {
+    const has = (...files) => (f) => files.includes(f);
+    expect(setupCommands(has('package.json', 'package-lock.json'), 'darwin')).toEqual([['npm', ['ci', '--no-audit', '--no-fund']]]);
+    expect(setupCommands(has('package.json'), 'darwin')).toEqual([['npm', ['install', '--no-audit', '--no-fund']]]);
+    expect(setupCommands(has('pyproject.toml'), 'darwin')).toEqual([['python3', ['-m', 'venv', '.venv']], [join('.venv', 'bin', 'pip'), ['install', '--quiet', '-e', '.']]]);
+    expect(setupCommands(has('pyproject.toml'), 'win32')[0][0]).toBe('python');
+    expect(setupCommands(has('pyproject.toml'), 'win32')[1][0]).toBe(join('.venv', 'Scripts', 'pip.exe'));
+    expect(setupCommands(has(), 'darwin')).toEqual([]);
+  });
+
+  it('pulls, runs npm ci in the repo, and records the commit', () => {
+    const { sh, calls } = fakeShell(pulled);
+    const opts = [];
+    const sh2 = (cmd, args, o) => { if (cmd === 'npm') opts.push(o); return sh(cmd, args, o); };
+    const files = new Set(['/apps/Web/.git', '/apps/Web/package.json', '/apps/Web/package-lock.json']);
+    createApps({ platform: 'darwin', dir: '/apps', sh: sh2, exists: (p) => files.has(p), log: () => {} }).act(app, 'update');
+    expect(calls).toContain('git -C /apps/Web pull --ff-only origin main');
+    expect(calls).toContain('npm ci --no-audit --no-fund');
+    expect(opts[0]).toMatchObject({ cwd: '/apps/Web', shell: false });
+    expect(calls).toContain('git -C /apps/Web config apps.hooked abc1234');
+  });
+
+  it('starts npm through a shell on Windows (npm.cmd)', () => {
+    const { sh } = fakeShell(pulled);
+    const opts = [];
+    const sh2 = (cmd, args, o) => { if (cmd === 'npm') opts.push(o); return sh(cmd, args, o); };
+    const has = (p) => p.endsWith('.git') || p.endsWith('package.json');
+    createApps({ platform: 'win32', dir: '/apps', sh: sh2, exists: has, log: () => {} }).act(app, 'update');
+    expect(opts[0].shell).toBe(true);
+  });
+
+  it('a repo with nothing to set up is just kept current, and a failed setup reads as pending', () => {
+    const answers = [
+      ['git -C /apps/Web rev-parse --short HEAD', 'abc1234'],
+      ['git -C /apps/Web rev-parse --short origin/main', 'abc1234'],
+      ['git -C /apps/Web config --get apps.hooked', ''],
+      ['git -C /apps/Web rev-list', '0'],
+    ];
+    expect(createApps({ platform: 'darwin', dir: '/apps', sh: fakeShell(answers).sh, exists: () => true }).status(app).state).toBe('behind');
+    const { sh, calls } = fakeShell(pulled);
+    createApps({ platform: 'darwin', dir: '/apps', sh, exists: (p) => p.endsWith('.git'), log: () => {} }).act(app, 'update');
+    expect(calls.some((c) => c.startsWith('npm') || c.startsWith('python'))).toBe(false);
+    expect(calls).toContain('git -C /apps/Web config apps.hooked abc1234');
+  });
+
+  it('never pulls or sets up a repo with local changes', () => {
+    const { sh, calls } = fakeShell([...pulled, ['git -C /apps/Web status', ' M server.js']]);
+    const r = createApps({ platform: 'darwin', dir: '/apps', sh, exists: () => true, log: () => {} }).act(app, 'update', { force: true });
+    expect(r).toMatchObject({ state: 'dirty', action: 'skipped' });
+    expect(calls.some((c) => c.includes('pull') || c.startsWith('npm'))).toBe(false);
   });
 });
 

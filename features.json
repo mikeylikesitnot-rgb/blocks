@@ -676,6 +676,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-057",
+      "name": "Apps list: code-repo kind, more apps",
+      "area": "Ops",
+      "status": "live",
+      "since": "2026-11-26",
+      "description": "apps.mjs gains kind code-repo: clone or pull a project and set it up (npm ci, or a .venv plus pip install -e . for a pyproject.toml), nothing deployed. ops/apps.json adds FinePrint (Mac), Vitals (Windows), claude-skills (links skills into ~/.claude/skills) and the web projects as code-repos, so every computer can be kept current from Project Hub's Apps page.",
+      "branch": "code-repos",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
