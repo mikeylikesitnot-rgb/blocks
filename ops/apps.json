@@ -93,10 +93,10 @@
       "repo": "mikeylikesitnot-rgb/vitals",
       "branch": "main",
       "folder": "vitals",
-      "platforms": ["win32"],
-      "hook": { "win32": "scripts/apps-hook.ps1" },
-      "needs": { "win32": ["node", "rust", "msvc"] },
-      "about": "Windows tray monitor: CPU, memory, GPU, battery (builds locally, ~9 min; needs Rust and VS C++ Build Tools)"
+      "platforms": ["win32", "darwin"],
+      "hook": { "darwin": "scripts/apps-hook.sh", "win32": "scripts/apps-hook.ps1" },
+      "needs": { "win32": ["node", "rust", "msvc"], "darwin": ["node", "rust", "swift"] },
+      "about": "Tray / menu bar monitor: CPU, memory, GPU, battery (builds locally; needs Rust, plus VS C++ Build Tools on Windows)"
     },
     {
       "name": "claude-skills",

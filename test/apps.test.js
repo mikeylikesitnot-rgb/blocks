@@ -24,7 +24,7 @@ describe('apps manifest', () => {
   });
   it('ships FinePrint, Vitals, claude-skills and the web projects as code-repos', () => {
     expect(apps.find((a) => a.name === 'FinePrint')).toMatchObject({ kind: 'script-repo', platforms: ['darwin'], hook: { darwin: 'scripts/apps-hook.sh' } });
-    expect(apps.find((a) => a.name === 'Vitals')).toMatchObject({ kind: 'script-repo', platforms: ['win32'], hook: { win32: 'scripts/apps-hook.ps1' } });
+    expect(apps.find((a) => a.name === 'Vitals')).toMatchObject({ kind: 'script-repo', platforms: ['win32', 'darwin'], hook: { win32: 'scripts/apps-hook.ps1', darwin: 'scripts/apps-hook.sh' } });
     expect(apps.find((a) => a.name === 'claude-skills').hook).toEqual({ darwin: 'scripts/apps-hook.sh', win32: 'scripts/apps-hook.ps1' });
     const code = apps.filter((a) => a.kind === 'code-repo').map((a) => a.name);
     expect(code).toEqual(['AutoDealer', 'TuroApp', 'webmail', 'learning', 'auction', 'BigLoveInstall', 'mungercompany', 'llmlocal']);
@@ -470,7 +470,7 @@ describe('tools each app needs (PH-167)', () => {
       expect(TOOLS[id].check[os], `${a.name}: ${id} check on ${os}`).toBeTruthy();
       expect(TOOLS[id].fix[os], `${a.name}: ${id} fix on ${os}`).toBeTruthy();
     }
-    expect(loadManifest().find((a) => a.name === 'Vitals').needs).toEqual({ win32: ['node', 'rust', 'msvc'] });
+    expect(loadManifest().find((a) => a.name === 'Vitals').needs).toEqual({ win32: ['node', 'rust', 'msvc'], darwin: ['node', 'rust', 'swift'] });
   });
   it('reports what is missing with its fix, and refuses to install until it is there', () => {
     const { sh, calls } = shell(['cargo']);
