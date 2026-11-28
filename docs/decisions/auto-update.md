@@ -27,10 +27,14 @@
   then every 6 h.
 - **Running from source** (`app.isPackaged` false): updates are reported, never installed.
 - **Permissions on macOS:** an ad-hoc signed app gets a new code identity each build, so macOS
-  asks for Screen Recording (and similar) again after every update. electron-builder signs with
-  any code-signing identity it finds in the login keychain (the Mac has a self-signed
-  "ScreenShare Dev" one), which keeps the identity stable across builds. Build releases on that
-  Mac; a build without the identity will cost the permission once.
+  asks for Screen Recording (and similar) again after every update. electron-builder only finds
+  Apple-issued identities on its own; with a self-signed one it silently falls back to ad-hoc.
+  So each app names it in `package.json` (`build.mac.identity: "Local Code Signing"`, with
+  `hardenedRuntime: false` and `gatekeeperAssess: false`), committed, since releases build only
+  from a clean tree. The requirement is then "bundle id + that certificate", stable across
+  builds. Build releases on the Mac that holds the certificate; check with
+  `codesign -d -r- <App>.app` (it should name the certificate, not a `cdhash`). The first signed
+  release after ad-hoc ones still costs the permission once.
 
 ## Chrome extensions
 
