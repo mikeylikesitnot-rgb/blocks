@@ -7,6 +7,7 @@
 
 ## Done
 
+- 2026-11-27: v0.58.0 Modal `side="right"` (BLK-063): a drawer, full height on the right on desktop (`size="full"` is 80% of the window), full screen on phones; Esc, focus trap and stacking as before. Default stays centered. For Project Hub PH-189 (PhotoPrep in FB imports).
 - 2026-11-27: v0.57.1 nodemailer 10 allowed as the optional peer (`^7 || ^8 || ^9 || ^10`); the mailer's createTransport / sendMail / verify are unchanged on 10.6.1 and the suite passes on it. AIBrain (nodemailer 10) can drop its install override.
 - 2026-11-27: v0.57.0 Tab titles (BLK-062): `usePageTitle(parts, {app, status})` + `pageTitle` + `TITLE_STATUS` give each browser tab a title for its screen, project first and a short app suffix ("⏳ ImageViewer · IV-015 Fixed-ratio… · Hub"), with a status mark (busy ⏳, attention ⚠, done ✓, new ●) and the old title back on unmount. For Project Hub, AutoDealer admin, TuroApp and AIBrain.
 - 2026-11-26: v0.56.0 Segmented items can be `disabled` with a `title` saying why (BLK-061): the item stays focusable (aria-disabled) and its reason is its description; clicks on it do nothing. For Project Hub PH-169.

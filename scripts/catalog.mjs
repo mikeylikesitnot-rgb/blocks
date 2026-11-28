@@ -122,7 +122,7 @@ const AREAS = [
     { name: 'SkeletonRows', does: 'Loading placeholder for a table.', props: 'rows, cols' },
     { name: 'SkeletonStats', does: 'Loading placeholder for a StatGrid.', props: 'count' },
     { name: 'Banner', also: ['ErrorBanner'], does: 'Inline message bar, optionally with Retry.', props: 'tone (danger), onRetry' },
-    { name: 'Modal', does: 'Dialog on desktop, bottom sheet on phones (grab handle: drag down or flick to close, short drags spring back); Esc/backdrop close, focus trapped. Mark a control in the title row `data-no-drag` to keep it out of the drag.', props: 'open, onClose, title, subtitle, footer, size' },
+    { name: 'Modal', does: 'Dialog on desktop, bottom sheet on phones (grab handle: drag down or flick to close, short drags spring back); Esc/backdrop close, focus trapped. Mark a control in the title row `data-no-drag` to keep it out of the drag. side="right" makes it a drawer: full height on the right on desktop (size full = 80% wide), full screen on phones.', props: 'open, onClose, title, subtitle, footer, size, side (center | right)' },
     { name: 'OverlayProvider', does: 'Wrap the app once so confirm, alert and toasts render.' },
     { name: 'useConfirm', does: 'Promise-based confirm instead of window.confirm.', props: 'await confirm({title, body, confirmLabel, danger})' },
     { name: 'useAlert', does: 'Promise-based alert instead of window.alert.', props: 'await alert({title, body})' },

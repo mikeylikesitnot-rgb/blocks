@@ -748,6 +748,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-063",
+      "name": "Modal drawer (side=\"right\")",
+      "area": "Overlays",
+      "status": "live",
+      "since": "2026-11-27",
+      "description": "Modal side=\"right\": a drawer, full height on the right on desktop (size full = 80% wide), full screen on phones. Default stays centered.",
+      "branch": "drawer",
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }

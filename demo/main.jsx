@@ -66,6 +66,7 @@ function Demo() {
   const trips = TRIPS.filter((t) => matchesQuery(tq, [t.guest, t.car, t.status]));
   const [open, setOpen] = useState(false);
   const [innerOpen, setInnerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [revenue, setRevenue] = useState(48210);
   const confirm = useConfirm();
@@ -87,6 +88,7 @@ function Demo() {
             <Segmented label="Theme" value={theme} onChange={setTheme}
               items={[{ value: 'system', label: 'Auto' }, { value: 'light', label: 'Light', icon: SunIcon }, { value: 'dark', label: 'Dark', icon: MoonIcon }]} />
             <Button icon={PlusIcon} onClick={() => setOpen(true)}>Open modal</Button>
+            <Button variant="secondary" onClick={() => setDrawerOpen(true)}>Open drawer</Button>
           </>
         }
       >
@@ -257,6 +259,10 @@ function Demo() {
         <Field label="Name"><Input defaultValue="Ana Lopez" /></Field>
         <Field label="Phone"><Input defaultValue="(214) 555-2415" /></Field>
         <Button variant="ghost" size="sm" onClick={() => setInnerOpen(true)}>Edit options… (a modal on top; Esc closes only it)</Button>
+      </Modal>
+      <Modal open={drawerOpen} onClose={() => setDrawerOpen(false)} title="2015 Volkswagen Jetta" subtitle="A drawer: full screen on phones" side="right" size="full"
+        footer={<Button onClick={() => setDrawerOpen(false)}>Done</Button>}>
+        <p>Work on one item without leaving the list behind it.</p>
       </Modal>
       <Modal open={innerOpen} onClose={() => setInnerOpen(false)} title="Edit options" size="sm"
         footer={<Button onClick={() => setInnerOpen(false)}>Done</Button>}>

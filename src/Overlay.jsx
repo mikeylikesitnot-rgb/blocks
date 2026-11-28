@@ -31,8 +31,10 @@ function unlockScroll() {
  * handle: drag it (or the title row) down past ~30% of its height, or flick
  * it down, to close; a shorter drag springs back.
  *   <Modal open={open} onClose={close} title="Edit task" footer={<>…buttons…</>}>…</Modal>
+ * side="right" makes it a drawer: full height on the right on desktop (size sets the width;
+ * full is 80% of the window), full screen on phones. Default side="center".
  */
-export function Modal({ open, onClose, title, subtitle, children, footer, size = 'md', className = '' }) {
+export function Modal({ open, onClose, title, subtitle, children, footer, size = 'md', side = 'center', className = '' }) {
   const panel = useRef(null);
   const titleId = useId();
   const onCloseRef = useRef(onClose);
@@ -108,7 +110,7 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
 
   if (!open) return null;
   return createPortal(
-    <div className="mk-modal-root">
+    <div className={cx('mk-modal-root', side === 'right' && 'mk-modal-root-right')}>
       <div className="mk-modal-backdrop" onClick={() => { if (!closeTimer.current) onClose?.(); }} aria-hidden />
       <div
         ref={panel}
@@ -116,7 +118,7 @@ export function Modal({ open, onClose, title, subtitle, children, footer, size =
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={cx('mk-modal', `mk-modal-${size}`, className)}
+        className={cx('mk-modal', `mk-modal-${size}`, side === 'right' && 'mk-modal-right', className)}
       >
         {onClose && <div className="mk-modal-grab" aria-hidden {...drag}><span /></div>}
         {(title || onClose) && (

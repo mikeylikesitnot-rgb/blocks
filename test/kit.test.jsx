@@ -146,6 +146,17 @@ describe('Modal', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(closed).toEqual(['inner', 'outer']);
   });
+
+  it('side="right" renders a drawer, and the default stays centered', () => {
+    const { rerender } = render(<Modal open title="Drawer" side="right" size="full" onClose={() => {}}>Body</Modal>);
+    const d = screen.getByRole('dialog', { name: 'Drawer' });
+    expect(d.className).toContain('mk-modal-right');
+    expect(d.parentElement.className).toContain('mk-modal-root-right');
+    rerender(<Modal open title="Plain" onClose={() => {}}>Body</Modal>);
+    const p = screen.getByRole('dialog', { name: 'Plain' });
+    expect(p.className).not.toContain('mk-modal-right');
+    expect(p.parentElement.className).not.toContain('mk-modal-root-right');
+  });
 });
 
 describe('OverlayProvider', () => {
