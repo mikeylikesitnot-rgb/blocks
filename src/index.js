@@ -20,6 +20,7 @@ export { SectionTab, useCurrentSection } from './SectionTab.jsx';
 export { FilterMenu, filterSummary } from './FilterMenu.jsx';
 export { GroupedList } from './GroupedList.jsx';
 export { useTheme } from './theme.js';
+export { pageTitle, usePageTitle, TITLE_STATUS } from './title.js';
 export { cx } from './cx.js';
 export * from './icons.jsx';
 export { SessionProvider, useSession, AuthGate, LoginPage } from './auth.jsx';

@@ -59,6 +59,7 @@ const AREAS = [
     { name: 'InitialIcon', also: ['initials'], does: 'Coloured square with a name\'s initials (or any child) for nav rows.', props: 'name, color 0-n, tone, size' },
     { name: 'ThemeSwitch', does: 'Light / dark / system segmented switch wired to useTheme.', props: 'icons' },
     { name: 'useTheme', does: 'Light/dark/system choice, written to <html data-theme> and remembered as mk-theme.', props: 'returns [theme, setTheme]' },
+    { name: 'usePageTitle', also: ['pageTitle', 'TITLE_STATUS'], does: 'Browser tab title for the current screen, most specific first so cut-short tabs still tell apart ("⏳ ImageViewer · IV-015 Fixed-ratio… · Hub"); puts the old title back on unmount; the deepest page wins.', props: '(parts [project, page…] (blanks skipped, each cut to max), {app (short suffix), status: busy ⏳ | attention ⚠ | done ✓ | new ● | any symbol, sep (" · "), max (40)}) -> title' },
     { name: 'PageHeader', does: 'Top of every page: title left, actions right, stacks on phones.', props: 'title, subtitle, actions, meta' },
     { name: 'Panel', does: 'Card section with optional header row.', props: 'title, subtitle, actions, flush, as' },
     { name: 'StatCard', does: 'One KPI tile with optional delta arrow; `count` ticks to each new number instead of jumping (no motion under reduce motion).', props: 'label, value, count (number, instead of value), format(n) (rounded with commas), sub, delta, deltaSuffix, invert, onClick' },

@@ -5,7 +5,7 @@ import premiumCss from '../src/premium.css?inline';
 import {
   Button, CopyButton, Badge, PageHeader, Panel, StatCard, StatGrid, Tabs, Segmented, Toolbar,
   Input, Textarea, SearchInput, Select, Field, EmptyState, SkeletonRows, SkeletonStats, Banner,
-  DataTable, Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery,
+  DataTable, Modal, OverlayProvider, useConfirm, useToast, useUrlState, useTheme, matchesQuery, usePageTitle,
   PlusIcon, TrashIcon, XIcon, SunIcon, MoonIcon, LoginPage,
 } from '../src/index.js';
 import { HubDemo } from './HubDemo.jsx';
@@ -71,6 +71,8 @@ function Demo() {
   const confirm = useConfirm();
   const toast = useToast();
   const rows = ROWS.filter((r) => matchesQuery(q, [r.name, r.phone, r.status]));
+  // Tab title follows the demo tab; a status mark shows while the table is loading.
+  usePageTitle([tab[0].toUpperCase() + tab.slice(1), q && `“${q}”`], { app: 'Blocks', status: tableLoading ? 'busy' : null });
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px 96px' }}>

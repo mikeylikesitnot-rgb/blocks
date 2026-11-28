@@ -736,6 +736,18 @@
       "spec": null,
       "mockup": null,
       "fromRequest": null
+    },
+    {
+      "id": "BLK-062",
+      "name": "Tab titles",
+      "area": "Layout",
+      "status": "live",
+      "since": "2026-11-27",
+      "description": "usePageTitle / pageTitle: browser tab title per screen, project first, short app suffix, optional status mark (⏳ ⚠ ✓ ●).",
+      "branch": null,
+      "spec": null,
+      "mockup": null,
+      "fromRequest": null
     }
   ]
 }
